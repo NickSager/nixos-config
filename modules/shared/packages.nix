@@ -1,5 +1,6 @@
 { pkgs, ... }:
 
+# TODO: Review packages
 with pkgs; [
   # General packages for development and system management
   act
@@ -14,6 +15,7 @@ with pkgs; [
   du-dust
   gcc
   git-filter-repo
+  iterm2
   killall
   neofetch
   openssh

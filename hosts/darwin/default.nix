@@ -1,6 +1,6 @@
 { agenix, config, pkgs, ... }:
 
-let user = "dustin"; in
+let user = "nick"; in
 {
 
   imports = [
@@ -81,12 +81,12 @@ let user = "dustin"; in
       };
 
       dock = {
-        autohide = false;
+        autohide = true;
         show-recents = false;
         launchanim = true;
         mouse-over-hilite-stack = true;
         orientation = "bottom";
-        tilesize = 48;
+        tilesize = 32;
       };
 
       finder = {
@@ -101,7 +101,8 @@ let user = "dustin"; in
 
     keyboard = {
       enableKeyMapping = true;
-      remapCapsLockToControl = true;
+      # remapCapsLockToControl = true;
+      remapCapsLockToEscape = true;
     };
   };
 }

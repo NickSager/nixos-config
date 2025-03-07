@@ -1,7 +1,7 @@
 { config, pkgs, lib, home-manager, ... }:
 
 let
-  user = "dustin";
+  user = "nick";
   # Define the content of your file as a derivation
   myEmacsLauncher = pkgs.writeScript "emacs-launcher.command" ''
     #!/bin/sh
@@ -37,8 +37,8 @@ in
     # $ mas search <app name>
     #
     masApps = {
-      "hidden-bar" = 1452453066;
-      "wireguard" = 1451685025;
+      # "hidden-bar" = 1452453066;
+      # "wireguard" = 1451685025;
     };
   };
 
@@ -70,33 +70,35 @@ in
   local = {
     dock.enable = true;
     dock.entries = [
-      { path = "/Applications/Slack.app/"; }
+      { path = "/System/Applications/Finder.app/"; }
+      { path = "/System/Applications/Launchpad.app/"; }
+      { path = "/System/Applications/Mail.app/"; }
+      { path = "/System/Applications/Safari.app/"; }
       { path = "/System/Applications/Messages.app/"; }
-      { path = "/System/Applications/Facetime.app/"; }
-      { path = "/Applications/Telegram.app/"; }
-      { path = "${pkgs.alacritty}/Applications/Alacritty.app/"; }
-      { path = "/System/Applications/Music.app/"; }
-      { path = "/System/Applications/News.app/"; }
+      { path = "/System/Applications/Calendar.app/"; }
+      { path = "/System/Applications/Reminders.app/"; }
+      { path = "/System/Applications/Notes.app/"; }
       { path = "/System/Applications/Photos.app/"; }
-      { path = "/System/Applications/Photo Booth.app/"; }
-      { path = "/System/Applications/TV.app/"; }
-      { path = "${pkgs.jetbrains.phpstorm}/Applications/PhpStorm.app/"; }
-      { path = "/Applications/TablePlus.app/"; }
-      { path = "/Applications/Asana.app/"; }
-      { path = "/Applications/Drafts.app/"; }
-      { path = "/System/Applications/Home.app/"; }
-      { path = "/Applications/iPhone Mirroring.app/"; }
-      {
-        path = toString myEmacsLauncher;
-        section = "others";
-      }
+      { path = "/System/Applications/Maps.app/"; }
+      { path = "/System/Applications/FaceTime.app/"; }
+      { path = "/System/Applications/Music.app/"; }
+      { path = "/System/Applications/Books.app/"; }
+      { path = "${pkgs.iterm2}/Applications/iTerm.app/"; }
+      { path = "${pkgs.alacritty}/Applications/Alacritty.app/"; }
+      { path = "/Applications/Slack.app/"; }
+      { path = "/Applications/Discord.app/"; }
       {
         path = "${config.users.users.${user}.home}/.local/share/";
         section = "others";
         options = "--sort name --view grid --display folder";
       }
       {
-        path = "${config.users.users.${user}.home}/.local/share/downloads";
+        path = "~/Downloads";
+        section = "others";
+        options = "--sort name --view grid --display stack";
+      }
+      {
+        path = "~/Trash";
         section = "others";
         options = "--sort name --view grid --display stack";
       }
