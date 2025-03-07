@@ -488,7 +488,7 @@ let name = "Nick Sager";
       set -g renumber-windows on       # renumber all windows when any window is closed
       set -g set-clipboard on          # use system clipboard
       set -g status-position top       # macOS / darwin style
-      set -g default-terminal "${TERM}"
+      # set -g default-terminal "${TERM}"
       setw -g mode-keys vi
       set -g pane-active-border-style 'fg=magenta,bg=default'
       set -g pane-border-style 'fg=brightblack,bg=default'
