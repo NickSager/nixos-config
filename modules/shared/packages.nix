@@ -6,6 +6,7 @@ with pkgs; [
   act
   alacritty
   aspell
+  atuin
   aspellDicts.en
   bash-completion
   bat
@@ -24,6 +25,7 @@ with pkgs; [
   wget
   zip
   uv
+  zoxide
 
   # Encryption and security tools
   _1password
@@ -33,18 +35,18 @@ with pkgs; [
   libfido2
 
   # Cloud-related tools and SDKs
-  # docker
-  # docker-compose
+  docker
+  docker-compose
   # awscli2 - marked broken Mar 22
-  flyctl
-  google-cloud-sdk
-  go
-  gopls
-  ngrok
-  ssm-session-manager-plugin
-  terraform
-  terraform-ls
-  tflint
+  # flyctl
+  # google-cloud-sdk
+  # go
+  # gopls
+  # ngrok
+  # ssm-session-manager-plugin
+  # terraform
+  # terraform-ls
+  # tflint
 
   # Media-related packages
   emacs-all-the-icons-fonts
@@ -62,12 +64,12 @@ with pkgs; [
   pngquant
 
   # PHP
-  php82
-  php82Packages.composer
-  php82Packages.php-cs-fixer
-  php82Extensions.xdebug
-  php82Packages.deployer
-  phpunit
+  # php82
+  # php82Packages.composer
+  # php82Packages.php-cs-fixer
+  # php82Extensions.xdebug
+  # php82Packages.deployer
+  # phpunit
 
   # Node.js development tools
   fzf
@@ -93,10 +95,11 @@ with pkgs; [
   tmux
   unrar
   unzip
-  zsh-powerlevel10k
+  # zsh-powerlevel10k
 
   # Python packages
   black
+  poetry
   python3
   virtualenv
 ]

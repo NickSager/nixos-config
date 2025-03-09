@@ -5,6 +5,13 @@ let name = "Nick Sager";
     email = "sager.nick@gmail.com"; in
 {
 
+# TODO: test neovim addon
+  neovim = {
+    enable = true;
+    extraConfig = ''
+    '';
+  };
+
   direnv = {
       enable = true;
       enableZshIntegration = true;
