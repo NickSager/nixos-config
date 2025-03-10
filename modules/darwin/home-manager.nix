@@ -94,12 +94,12 @@ in
         options = "--sort name --view grid --display folder";
       }
       {
-        path = "~/Downloads";
+        path = "$HOME/Downloads";
         section = "others";
         options = "--sort name --view grid --display stack";
       }
       {
-        path = "~/Trash";
+        path = "$HOME/Trash";
         section = "others";
         options = "--sort name --view grid --display stack";
       }
