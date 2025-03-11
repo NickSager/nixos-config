@@ -14,6 +14,7 @@ with pkgs; [
   coreutils
   difftastic
   du-dust
+  eza
   gcc
   git-filter-repo
   iterm2
@@ -22,6 +23,7 @@ with pkgs; [
   openssh
   pandoc
   sqlite
+  starship
   wget
   zip
   uv

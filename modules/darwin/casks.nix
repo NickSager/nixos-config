@@ -2,6 +2,7 @@ _:
 
 [
   # Development Tools
+  # TODO: Clean up
   "homebrew/cask/docker"
   "claude"
   "insomnia"

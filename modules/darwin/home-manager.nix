@@ -105,4 +105,7 @@ in
       }
     ];
   };
+
+  ids.gids.nixbld = 350;
+
 }
