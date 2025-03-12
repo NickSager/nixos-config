@@ -84,7 +84,7 @@ in
       { path = "/System/Applications/FaceTime.app/"; }
       { path = "/System/Applications/Music.app/"; }
       { path = "/System/Applications/Books.app/"; }
-      { path = "${pkgs.iterm2}/Applications/iTerm.app/"; }
+      { path = "${pkgs.iterm2}/Applications/iTerm2.app/"; }
       { path = "${pkgs.alacritty}/Applications/Alacritty.app/"; }
       { path = "/Applications/Slack.app/"; }
       { path = "/Applications/Discord.app/"; }
