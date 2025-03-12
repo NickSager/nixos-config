@@ -17,7 +17,6 @@ with pkgs; [
   eza
   gcc
   git-filter-repo
-  iterm2
   killall
   neofetch
   openssh
