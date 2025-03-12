@@ -4,36 +4,36 @@ _:
   # Development Tools
   # TODO: Clean up
   "homebrew/cask/docker"
-  "claude"
-  "insomnia"
-  "tableplus"
-  "ngrok"
-  "postico"
+  # "claude"
+  # "insomnia"
+  # "tableplus"
+  # "ngrok"
+  # "postico"
   "visual-studio-code"
-  "wireshark"
+  # "wireshark"
 
   # Communication Tools
   "discord"
-  "loom"
+  # "loom"
   "slack"
-  "telegram"
+  # "telegram"
   "zoom"
 
   # Utility Tools
-  "appcleaner"
+  # "appcleaner"
   "syncthing"
 
   # Entertainment Tools
-  "steam"
-  "vlc"
+  # "steam"
+  # "vlc"
 
   # Productivity Tools
-  "raycast"
-  "asana"
+  # "raycast"
+  # "asana"
 
   # Browsers
   "google-chrome"
 
   # AI
-  "diffusionbee"
+  # "diffusionbee"
 ]
