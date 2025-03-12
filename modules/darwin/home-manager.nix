@@ -71,7 +71,7 @@ in
     dock.enable = true;
     # dock.autohide = true;
     dock.entries = [
-      { path = "/System/Applications/Finder.app/"; }
+      # { path = "/System/Applications/Finder.app/"; }
       { path = "/System/Applications/Launchpad.app/"; }
       { path = "/System/Applications/Mail.app/"; }
       { path = "/System/Applications/Safari.app/"; }
@@ -98,11 +98,11 @@ in
         section = "others";
         options = "--sort name --view grid --display stack";
       }
-      {
-        path = "${config.users.users.${user}.home}/Trash";
-        section = "others";
-        # options = "--sort name --view grid --display stack";
-      }
+      # {
+      #   path = "${config.users.users.${user}.home}/Trash";
+      #   section = "others";
+      #   # options = "--sort name --view grid --display stack";
+      # }
     ];
   };
 
