@@ -444,48 +444,25 @@ let name = "Nick Sager";
       sensible
       yank
       prefix-highlight
-      # {
-      #   plugin = power-theme;
-      #   extraConfig = ''
-      #      set -g @tmux_power_theme 'gold'
-      #   '';
-      # }
-      {
-        plugin = resurrect; # Used by tmux-continuum
-
-        # Use XDG data directory
-        # https://github.com/tmux-plugins/tmux-resurrect/issues/348
-        extraConfig = ''
-          # set -g @resurrect-dir '/Users/nick/.cache/tmux/resurrect'
-          set -g @resurrect-capture-pane-contents 'on'
-          set -g @resurrect-pane-contents-area 'visible'
-        '';
-      }
-      {
-        plugin = continuum;
-        extraConfig = ''
-          set -g @continuum-restore 'on'
-          set -g @continuum-save-interval '5' # minutes
-        '';
-      }
+      resurrect
+      continuum
+      catppuccin
+      tmux-fzf # prefix-F
     ];
     terminal = "screen-256color";
     prefix = "C-Space";
-    escapeTime = 10;
+    escapeTime = 0;
     historyLimit = 100000;
     extraConfig = ''
+      set-option -g default-shell "$(which zsh)"
+      set-option -g default-command "exec $(which zsh)"
+
       # Color Options
-      # set -s default-terminal "tmux-256color"
-      # set -sa terminal-overrides ",xterm-256color:Tc"
-
-      # set-option -g default-terminal 'screen-256color'
-      # set-option -g terminal-overrides ',xterm-256color:RGB'
-
-      # Remove Vim mode delays
-      set -g focus-events on
+      set-option -g default-terminal 'screen-256color'
 
       unbind C-b
       # set -g prefix C-Space
+      set -g focus-events on           # Remove Vim mode delays
       set -g mouse on
       set -g base-index 1              # start indexing windows at 1 instead of 0
       set -g pane-base-index 1
@@ -499,6 +476,14 @@ let name = "Nick Sager";
       set -g pane-active-border-style 'fg=magenta,bg=default'
       set -g pane-border-style 'fg=brightblack,bg=default'
       bind C-Space send-prefix
+
+      # Resurrect (prefix-^-s and prefix-^-r)
+      # set -g @resurrect-dir '/Users/nick/.cache/tmux/resurrect'
+      set -g @resurrect-capture-pane-contents 'on'
+      set -g @resurrect-pane-contents-area 'visible'
+      set -g @continuum-save-interval '5' # minutes
+      set -g @continuum-restore 'off' # restore tmux on tmux start
+      set -g @resurrect-strategy-nvim 'session'
 
       # Use Alt-arrow keys without prefix key to switch panes
       bind -n M-Left select-pane -L
@@ -522,20 +507,8 @@ let name = "Nick Sager";
       bind '_' split-window -v -c "#{pane_current_path}"
       bind '|' split-window -h -c "#{pane_current_path}"
 
-
-      # set -g @plugin 'tmux-plugins/tpm'
-      # set -g @plugin 'tmux-plugins/tmux-sensible'
-      # set -g @plugin 'christoomey/vim-tmux-navigator'
-      set -g @plugin 'catppuccin/tmux'
-      set -g @plugin 'sainnhe/tmux-fzf' # prefix-F
-      # set -g @plugin 'tmux-plugins/tmux-resurrect' # prefix-^-s save, prefix-^-r restore
-      # set -g @plugin 'tmux-plugins/tmux-continuum'
-      # set -g @plugin 'tmux-plugins/tmux-yank'
-
       # Themes: latte, frappe, macchiato, mocha
       set -g @catppuccin_flavour 'mocha'
-      set -g @continuum-restore 'on' # restore tmux on tmux start
-      set -g @resurrect-strategy-nvim 'session'
 
       # Catpuccin setup
       set -g @catppuccin_window_left_separator ""
@@ -555,36 +528,6 @@ let name = "Nick Sager";
       set -g @catppuccin_status_connect_separator "no"
       set -g @catppuccin_directory_text "#{b:pane_current_path}"
       set -g @catppuccin_date_time_text "%H:%M"
-
-      # Not needed?
-      # run '~/.config/tmux/plugins/tpm/tpm'
-
-      # OLD From nixos config. Saved for reference
-      # # Move around panes with vim-like bindings (h,j,k,l)
-      # bind-key -n M-k select-pane -U
-      # bind-key -n M-h select-pane -L
-      # bind-key -n M-j select-pane -D
-      # bind-key -n M-l select-pane -R
-      #
-      # # Smart pane switching with awareness of Vim splits.
-      # # This is copy paste from https://github.com/christoomey/vim-tmux-navigator
-      # is_vim="ps -o state= -o comm= -t '#{pane_tty}' \
-      #   | grep -iqE '^[^TXZ ]+ +(\\S+\\/)?g?(view|n?vim?x?)(diff)?$'"
-      # bind-key -n 'C-h' if-shell "$is_vim" 'send-keys C-h'  'select-pane -L'
-      # bind-key -n 'C-j' if-shell "$is_vim" 'send-keys C-j'  'select-pane -D'
-      # bind-key -n 'C-k' if-shell "$is_vim" 'send-keys C-k'  'select-pane -U'
-      # bind-key -n 'C-l' if-shell "$is_vim" 'send-keys C-l'  'select-pane -R'
-      # tmux_version='$(tmux -V | sed -En "s/^tmux ([0-9]+(.[0-9]+)?).*/\1/p")'
-      # if-shell -b '[ "$(echo "$tmux_version < 3.0" | bc)" = 1 ]' \
-      #   "bind-key -n 'C-\\' if-shell \"$is_vim\" 'send-keys C-\\'  'select-pane -l'"
-      # if-shell -b '[ "$(echo "$tmux_version >= 3.0" | bc)" = 1 ]' \
-      #   "bind-key -n 'C-\\' if-shell \"$is_vim\" 'send-keys C-\\\\'  'select-pane -l'"
-      #
-      # bind-key -T copy-mode-vi 'C-h' select-pane -L
-      # bind-key -T copy-mode-vi 'C-j' select-pane -D
-      # bind-key -T copy-mode-vi 'C-k' select-pane -U
-      # bind-key -T copy-mode-vi 'C-l' select-pane -R
-      # bind-key -T copy-mode-vi 'C-\' select-pane -l
       '';
     };
 }
