@@ -82,6 +82,7 @@ with pkgs; [
 
   # Source code management, Git, GitHub tools
   gh
+  lazygit
 
   # Text and terminal utilities
   htop
