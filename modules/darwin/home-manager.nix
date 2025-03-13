@@ -74,7 +74,8 @@ in
       # { path = "/System/Applications/Finder.app/"; }
       { path = "/System/Applications/Launchpad.app/"; }
       { path = "/System/Applications/Mail.app/"; }
-      { path = "/System/Applications/Safari.app/"; }
+      # { path = "/System/Applications/Safari.app/"; }
+      { path = "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app/"; }
       { path = "/System/Applications/Messages.app/"; }
       { path = "/System/Applications/Calendar.app/"; }
       { path = "/System/Applications/Reminders.app/"; }
