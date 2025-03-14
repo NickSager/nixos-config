@@ -22,28 +22,53 @@ let name = "Nick Sager";
   zsh = {
     enable = true;
     autocd = false;
+    autosuggestion = {
+        enable = true;
+    };
     cdpath = [ "~/.local/share/src" ];
-      oh-my-zsh = {
+    oh-my-zsh = {
       enable = true;
-      plugins = [ "git" "thefuck" "zsh-autosuggestions" "zsh-syntax-highlighting" "starship" "poetry" ];
+      plugins = [ "git" "thefuck" "starship" "poetry" ];
       theme = "robbyrussell";
     };
-    initExtraFirst = ''
+    sessionVariables = {
+      # Environment Variables
+    };
+    shellAliases = {
+      cat="bat";
+      # alias cd="z";
+      cl='clear';
+      lg='lazygit';
+      nm="nmap -sC -sV -oN nmap";
+      v="nvim";
+
+      # Eza
+      # alias ls="eza --color=always --long --git --no-filesize --icons=always --no-time --no-user --no-permissions";
+      ls="eza --git --icons=always";
+      l="eza -l --icons --git -a";
+      lt="eza --tree --level=2 --long --icons --git";
+      ltree="eza --tree --level=2  --icons --git";
+
+    };
+    syntaxHighlighting = {
+      enable = true;
+    };
+    initExtra = '' #initExtraFirst for beginning in zshrc
       # ---- ALIASES -----
       # bindkey jj vi-cmd-mode
-      alias cat="bat"
+      # alias cat="bat"
       # alias cd="z"
-      alias cl='clear'
-      alias lg='lazygit'
-      alias nm="nmap -sC -sV -oN nmap"
-      alias v="nvim"
+      # alias cl='clear'
+      # alias lg='lazygit'
+      # alias nm="nmap -sC -sV -oN nmap"
+      # alias v="nvim"
 
       # Eza
       # alias ls="eza --color=always --long --git --no-filesize --icons=always --no-time --no-user --no-permissions"
-      alias ls="eza --git --icons=always"
-      alias l="eza -l --icons --git -a"
-      alias lt="eza --tree --level=2 --long --icons --git"
-      alias ltree="eza --tree --level=2  --icons --git"
+      # alias ls="eza --git --icons=always"
+      # alias l="eza -l --icons --git -a"
+      # alias lt="eza --tree --level=2 --long --icons --git"
+      # alias ltree="eza --tree --level=2  --icons --git"
 
       # Set Work Directory
       export Work="$HOME/Documents/Workspace/"
@@ -262,7 +287,7 @@ let name = "Nick Sager";
         };
         size = lib.mkMerge [
           (lib.mkIf pkgs.stdenv.hostPlatform.isLinux 10)
-          (lib.mkIf pkgs.stdenv.hostPlatform.isDarwin 14)
+          (lib.mkIf pkgs.stdenv.hostPlatform.isDarwin 11)
         ];
       };
 

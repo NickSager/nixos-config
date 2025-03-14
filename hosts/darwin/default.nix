@@ -86,7 +86,7 @@ let user = "nick"; in
         launchanim = true;
         mouse-over-hilite-stack = true;
         orientation = "bottom";
-        tilesize = 32;
+        tilesize = 36;
       };
 
       finder = {
