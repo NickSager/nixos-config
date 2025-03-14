@@ -69,7 +69,6 @@ in
   # Fully declarative dock using the latest from Nix Store
   local = {
     dock.enable = true;
-    # dock.autohide = true;
     dock.entries = [
       # { path = "/System/Applications/Finder.app/"; }
       { path = "/System/Applications/Launchpad.app/"; }

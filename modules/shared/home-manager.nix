@@ -18,7 +18,6 @@ let name = "Nick Sager";
       nix-direnv.enable = true;
     };
 
-  # TODO: test zsh config
   zsh = {
     enable = true;
     autocd = false;
@@ -36,39 +35,25 @@ let name = "Nick Sager";
     };
     shellAliases = {
       cat="bat";
-      # alias cd="z";
-      cl='clear';
-      lg='lazygit';
+      # cd="z";
+      cl="clear";
+      fk="thefuck";
+      lg="lazygit";
       nm="nmap -sC -sV -oN nmap";
       v="nvim";
 
       # Eza
-      # alias ls="eza --color=always --long --git --no-filesize --icons=always --no-time --no-user --no-permissions";
+      # ls="eza --color=always --long --git --no-filesize --icons=always --no-time --no-user --no-permissions";
       ls="eza --git --icons=always";
       l="eza -l --icons --git -a";
       lt="eza --tree --level=2 --long --icons --git";
       ltree="eza --tree --level=2  --icons --git";
-
     };
     syntaxHighlighting = {
       enable = true;
     };
     initExtra = '' #initExtraFirst for beginning in zshrc
       # ---- ALIASES -----
-      # bindkey jj vi-cmd-mode
-      # alias cat="bat"
-      # alias cd="z"
-      # alias cl='clear'
-      # alias lg='lazygit'
-      # alias nm="nmap -sC -sV -oN nmap"
-      # alias v="nvim"
-
-      # Eza
-      # alias ls="eza --color=always --long --git --no-filesize --icons=always --no-time --no-user --no-permissions"
-      # alias ls="eza --git --icons=always"
-      # alias l="eza -l --icons --git -a"
-      # alias lt="eza --tree --level=2 --long --icons --git"
-      # alias ltree="eza --tree --level=2  --icons --git"
 
       # Set Work Directory
       export Work="$HOME/Documents/Workspace/"
@@ -352,7 +337,7 @@ let name = "Nick Sager";
     enable = true;
     plugins = with pkgs.tmuxPlugins; [
       vim-tmux-navigator
-      sensible
+      # sensible
       yank
       prefix-highlight
       resurrect
@@ -365,11 +350,9 @@ let name = "Nick Sager";
     escapeTime = 0;
     historyLimit = 100000;
     extraConfig = ''
-      set-option -g default-shell "$(which zsh)"
-      set-option -g default-command "exec $(which zsh)"
-
       # Color Options
-      set-option -g default-terminal 'screen-256color'
+      # set-option -g default-terminal 'screen-256color'
+      set -ga terminal-overrides ",xterm-256color:Tc"
 
       unbind C-b
       # set -g prefix C-Space

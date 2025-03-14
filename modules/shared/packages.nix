@@ -93,6 +93,7 @@ with pkgs; [
   jq
   ripgrep
   slack
+  thefuck
   tree
   tmux
   unrar
