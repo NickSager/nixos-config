@@ -57,6 +57,7 @@ let user = "nick"; in
     };
   };
 
+# TODO: Test macos system settings
   system = {
     stateVersion = 4;
 
@@ -91,11 +92,54 @@ let user = "nick"; in
 
       finder = {
         _FXShowPosixPathInTitle = false;
+        FXPreferredViewStyle = "clmv"; # Column view
       };
 
       trackpad = {
         Clicking = true;
-        TrackpadThreeFingerDrag = true;
+        TrackpadThreeFingerDrag = false;
+        Dragging = true;              # Enable tap-to-drag
+        # DragLock = true;              # Enable drag lock
+      };
+
+      screensaver = {
+        askForPassword = true;
+        askForPasswordDelay = 5; # Seconds
+      };
+
+      # Hot corners
+      # Possible values:
+      #  0: no-op
+      #  2: Mission Control
+      #  3: Show application windows
+      #  4: Desktop
+      #  5: Start screen saver
+      #  6: Disable screen saver
+      #  7: Dashboard
+      # 10: Put display to sleep
+      # 11: Launchpad
+      # 12: Notification Center
+      # 13: Lock Screen
+      # 14: Quick Note
+      loginwindow = {
+        GuestEnabled = false;
+        SHOWFULLNAME = false;
+      };
+
+      CustomUserPreferences = {
+        "com.apple.screensaver" = {
+          idleTime = 300; # 5 minutes
+        };
+        # Hot corners
+        "com.apple.dock" = {
+          wvous-tr-corner = 5; # Top right corner starts screensaver
+          wvous-tr-modifier = 0;
+        };
+        system.defaults."com.apple.AppleMultitouchTrackpad" = {
+          Clicking = true;              # Enable tap-to-click
+          Dragging = 1;                 # Enable drag with Drag Lock
+          TrackpadThreeFingerDrag = false; # Ensure Three-Finger Drag is disabled to avoid conflicts
+        };
       };
     };
 
@@ -104,5 +148,12 @@ let user = "nick"; in
       # remapCapsLockToControl = true;
       remapCapsLockToEscape = true;
     };
+
+    # Power management - Not working
+    # power= {
+    #   sleep = {
+    #       # Sleep options
+    #     };
+    # };
   };
 }
