@@ -134,7 +134,7 @@ let name = "Nick Sager";
 	    editor = "vim";
         autocrlf = "input";
       };
-      commit.gpgsign = true;
+      # commit.gpgsign = true; # Uncomment to use secrets, else system figures out
       pull.rebase = true;
       rebase.autoStash = true;
     };
