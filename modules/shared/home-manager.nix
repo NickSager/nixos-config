@@ -35,7 +35,7 @@ let name = "Nick Sager";
     };
     shellAliases = {
       cat="bat";
-      # cd="z";
+      cd="z";
       cl="clear";
       fk="thefuck";
       lg="lazygit";
@@ -260,9 +260,10 @@ let name = "Nick Sager";
       window = {
         opacity = 1.0;
         padding = {
-          x = 24;
-          y = 24;
+          x = 6;
+          y = 6;
         };
+        decorations = "buttonless"; # full, buttonless, None
       };
 
       font = {
@@ -332,7 +333,7 @@ let name = "Nick Sager";
     };
   };
 
-  # TODO: Test Tmux config
+  # TODO: Re-sourcing? Tmux config (:source-file ~/.config/tmux/tmux.conf)
   tmux = {
     enable = true;
     plugins = with pkgs.tmuxPlugins; [
