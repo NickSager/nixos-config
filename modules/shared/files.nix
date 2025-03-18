@@ -64,4 +64,20 @@ in
   ".ssh/pgp_github.pub" = {
     text = githubPublicSigningKey;
   };
+
+  # Symlink all Neovim configuration files
+  ".config/nvim" = {
+    source = ./config/nvim;
+    recursive = true;
+  };
+
+  # Symlink Starship shell prompt configuration
+  ".config/starship.toml" = {
+    source = ./config/starship.toml;
+  };
+
+  # Symlink iterm2 exported settings
+  ".config/iterm2.itermexport" = {
+    source = ./config/iTerm2.itermexport;
+  };
 }
