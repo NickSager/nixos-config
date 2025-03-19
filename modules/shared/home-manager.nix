@@ -5,7 +5,6 @@ let name = "Nick Sager";
     email = "sager.nick@gmail.com"; in
 {
 
-# TODO: test neovim addon
   neovim = {
     enable = true;
     extraConfig = ''
@@ -371,6 +370,7 @@ let name = "Nick Sager";
       set -g pane-active-border-style 'fg=magenta,bg=default'
       set -g pane-border-style 'fg=brightblack,bg=default'
       bind C-Space send-prefix
+      bind R source-file ~/.config/tmux/tmux.conf # Reset tmux
 
       # Resurrect (prefix-^-s and prefix-^-r)
       # set -g @resurrect-dir '/Users/nick/.cache/tmux/resurrect'
