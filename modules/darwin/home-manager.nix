@@ -26,7 +26,7 @@ in
   homebrew = {
     # This is a module from nix-darwin
     # Homebrew is *installed* via the flake input nix-homebrew
-    enable = true;
+    enable = false;
     casks = pkgs.callPackage ./casks.nix {};
 
     # These app IDs are from using the mas CLI app
