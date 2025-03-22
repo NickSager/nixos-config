@@ -5,35 +5,42 @@ with pkgs; [
   # General packages for development and system management
   act
   alacritty
-  aspell
+  # aspell
   atuin
-  aspellDicts.en
-  bash-completion
+  # aspellDicts.en
+  # bash-completion
   bat
   btop
-  coreutils
-  difftastic
+  # coreutils
+  # difftastic
   du-dust
   eza
   gcc
-  git-filter-repo
+  # git-filter-repo
   killall
   neofetch
   openssh
   pandoc
   sqlite
   starship
+  syncthing
   wget
   zip
   uv
   zoxide
 
   # Encryption and security tools
-  _1password
+  _1password-cli
   age
   age-plugin-yubikey
   gnupg
   libfido2
+
+  # Communication tools
+  discord
+  firefox
+  slack
+  zoom-us
 
   # Cloud-related tools and SDKs
   docker
@@ -58,11 +65,11 @@ with pkgs; [
   font-awesome
   glow
   hack-font
-  jpegoptim
+  # jpegoptim
   meslo-lgs-nf
   noto-fonts
   noto-fonts-emoji
-  pngquant
+  # pngquant
 
   # PHP
   # php82
@@ -73,12 +80,11 @@ with pkgs; [
   # phpunit
 
   # Node.js development tools
-  fzf
-  nodePackages.live-server
-  nodePackages.nodemon
-  nodePackages.prettier
-  nodePackages.npm
-  nodejs
+  # nodePackages.live-server
+  # nodePackages.nodemon
+  # nodePackages.prettier
+  # nodePackages.npm
+  # nodejs
 
   # Source code management, Git, GitHub tools
   gh
@@ -86,18 +92,20 @@ with pkgs; [
 
   # Text and terminal utilities
   htop
-  hunspell
+  # hunspell
+  fzf
   iftop
   jetbrains-mono
-  jetbrains.phpstorm
+  # jetbrains.phpstorm
   jq
   ripgrep
-  slack
   thefuck
-  tree
+  # tree
   tmux
   unrar
   unzip
+  vscode
+  # vscodium
   # zsh-powerlevel10k
 
   # Python packages
