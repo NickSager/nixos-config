@@ -93,14 +93,18 @@
           inherit system;
           specialArgs = inputs;
           modules = [
-            # TODO: Fix this
             mac-app-util.darwinModules.default
             home-manager.darwinModules.home-manager
             (
               { pkgs, config, inputs, ... }:
               {
                 # To enable it for all users:
-                home-manager.sharedModules = [
+                # home-manager.sharedModules = [
+                #   mac-app-util.homeManagerModules.default
+                # ];
+
+                # Or to enable it for a single user only:
+                home-manager.users.${user}.imports = [
                   mac-app-util.homeManagerModules.default
                 ];
               }
