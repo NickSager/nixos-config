@@ -58,6 +58,9 @@ in
         stateVersion = "23.11";
       };
 
+      # Enable mac-app-util
+      # services.mac-app-util.enable = true;
+
       programs = {} // import ../shared/home-manager.nix { inherit config pkgs lib; };
 
       # Marked broken Oct 20, 2022 check later to remove this

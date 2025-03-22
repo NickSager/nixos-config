@@ -4,6 +4,7 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     agenix.url = "github:ryantm/agenix";
     home-manager.url = "github:nix-community/home-manager";
+    mac-app-util.url = "github:hraban/mac-app-util";
     darwin = {
       url = "github:LnL7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -32,7 +33,7 @@
       flake = false;
     };
   };
-  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, disko, agenix, secrets } @inputs:
+  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, disko, agenix, secrets, mac-app-util } @inputs:
     let
       user = "nick";
       linuxSystems = [ "x86_64-linux" "aarch64-linux" ];
@@ -92,7 +93,18 @@
           inherit system;
           specialArgs = inputs;
           modules = [
+            # TODO: Fix this
+            mac-app-util.darwinModules.default
             home-manager.darwinModules.home-manager
+            (
+              { pkgs, config, inputs, ... }:
+              {
+                # To enable it for all users:
+                home-manager.sharedModules = [
+                  mac-app-util.homeManagerModules.default
+                ];
+              }
+            )
             nix-homebrew.darwinModules.nix-homebrew
             {
               nix-homebrew = {
