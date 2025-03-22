@@ -57,7 +57,6 @@ let user = "nick"; in
     };
   };
 
-# TODO: Test macos system settings
   system = {
     stateVersion = 4;
 

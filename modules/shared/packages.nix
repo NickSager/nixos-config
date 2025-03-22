@@ -21,6 +21,7 @@ with pkgs; [
   neofetch
   openssh
   pandoc
+  R
   sqlite
   starship
   syncthing
