@@ -332,7 +332,6 @@ let name = "Nick Sager";
     };
   };
 
-  # TODO: Re-sourcing? Tmux config (:source-file ~/.config/tmux/tmux.conf)
   tmux = {
     enable = true;
     plugins = with pkgs.tmuxPlugins; [

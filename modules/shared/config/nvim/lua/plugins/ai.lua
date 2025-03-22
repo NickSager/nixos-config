@@ -6,83 +6,34 @@ return {
     version = false, -- set this if you want to always pull the latest change
     opts = {
       -- add any opts here
-      -- provider = "copilot",
-      provider = "claude",
-      auto_suggestions_provider = "claude-haiku", -- Since auto-suggestions are a high-frequency operation and therefore expensive, it is recommended to specify an inexpensive provider or even a free provider: copilot
-      vendors = {
-          ---@type AvanteProvider
-          ollama = {
-              ['local'] = true,
-              endpoint = "http://localhost:11434/v1",
-              model = "llama3",
-              parse_curl_args = function(opts, code_opts)
-                  return {
-                      url = opts.endpoint .. "/chat/completions",
-                      headers = {
-                          ["Accept"] = "application/json",
-                          ["Content-Type"] = "application/json",
-                          ['x-api-key'] = 'ollama',
-                      },
-                      body = {
-                          model = opts.model,
-                          messages = require("avante.providers").copilot.parse_messages(code_opts), -- you can make your own message, but this is very advanced
-                          max_tokens = 2048,
-                          stream = true,
-                      },
-                  }
-              end,
-              parse_response_data = function(data_stream, event_state, opts)
-                  require("avante.providers").openai.parse_response(data_stream, event_state, opts)
-              end,
-          },
-          ---@type AvanteSupportedProvider
-          ["claude-haiku"] = {
-            endpoint = "https://api.anthropic.com",
-            model = "claude-3-5-haiku-20241022",
-            timeout = 30000, -- Timeout in milliseconds
-            temperature = 0,
-            max_tokens = 8000,
-            ["local"] = false,
-          },
-          ---@type AvanteSupportedProvider
-          ["openai-mini"] = {
-            endpoint = "https://api.openai.com/v1",
-            model = "o1-mini", -- "gpt-4o-mini"
-            timeout = 16384, -- Timeout in milliseconds
-            temperature = 0,
-            max_tokens = 4096,
-            ["local"] = false,
-          },
-        },
-      ---@type AvanteSupportedProvider
-      openai = {
-        endpoint = "https://api.openai.com/v1",
-        model = "gpt-4o",
-        timeout = 30000, -- Timeout in milliseconds
-        temperature = 0,
-        max_tokens = 16384,
-        ["local"] = false,
+      provider = "ollama",
+      auto_suggestions_provider = "ollama", -- Since auto-suggestions are a high-frequency operation and therefore expensive, it is recommended to specify an inexpensive provider or even a free provider: copilot
+      cursor_applying_provider = 'ollama',
+      ollama = {
+        endpoint = "http://127.0.0.1:11434", -- Note that there is no /v1 at the end.
+        model = "qwq:32b",
       },
-      ---@type AvanteSupportedProvider
-      copilot = {
-        endpoint = "https://api.githubcopilot.com",
-        model = "gpt-4o-2024-05-13",
-        proxy = nil, -- [protocol://]host[:port] Use this proxy
-        allow_insecure = false, -- Allow insecure server connections
-        timeout = 30000, -- Timeout in milliseconds
-        temperature = 0,
-        max_tokens = 4096,
-      },
-      ---@type AvanteSupportedProvider
-      claude = {
-        endpoint = "https://api.anthropic.com",
-        model = "claude-3-5-sonnet-20241022",
-        timeout = 30000, -- Timeout in milliseconds
-        temperature = 0,
-        max_tokens = 8000,
-        ["local"] = false,
-      },
+      --- To Customize These:
+      -- openai = {
+      --   endpoint = "https://api.openai.com/v1",
+      --   model = "gpt-4o", -- your desired model (or use gpt-4o, etc.)
+      --   timeout = 30000, -- Timeout in milliseconds, increase this for reasoning models
+      --   temperature = 0,
+      --   max_completion_tokens = 8192, -- Increase this to include reasoning tokens (for reasoning models)
+      --   --reasoning_effort = "medium", -- low|medium|high, only used for reasoning models
+      -- },
+      ---claude = {
+      ---  endpoint = "https://api.anthropic.com",
+      ---  model = "claude-3-5-sonnet-20241022",
+      ---  timeout = 30000, -- Timeout in milliseconds
+      ---  temperature = 0,
+      ---  max_tokens = 8000,
+      ---  disable_tools = true,
+      ---  ["local"] = false,
+      ---},
       behaviour = {
+        enable_cursor_planning_mode = true,
+        enable_claude_text_editor_tool_mode = false, -- only works with claude provider
         auto_suggestions = false, -- Experimental stage
         auto_set_highlight_group = true,
         auto_set_keymaps = true,
@@ -100,6 +51,10 @@ return {
       "nvim-lua/plenary.nvim",
       "MunifTanjim/nui.nvim",
       --- The below dependencies are optional,
+      "echasnovski/mini.pick", -- for file_selector provider mini.pick
+      "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
+      "hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
+      "ibhagwan/fzf-lua", -- for file_selector provider fzf
       "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
       "zbirenbaum/copilot.lua", -- for providers='copilot'
       {
