@@ -26,7 +26,7 @@ in
   homebrew = {
     # This is a module from nix-darwin
     # Homebrew is *installed* via the flake input nix-homebrew
-    enable = false;
+    enable = true;
     casks = pkgs.callPackage ./casks.nix {};
 
     # These app IDs are from using the mas CLI app
@@ -86,8 +86,7 @@ in
       { path = "/System/Applications/Books.app/"; }
       { path = "${pkgs.iterm2}/Applications/iTerm2.app/"; }
       { path = "${pkgs.alacritty}/Applications/Alacritty.app/"; }
-      { path = "/Applications/Slack.app/"; }
-      { path = "/Applications/Discord.app/"; }
+      # { path = "/Applications/Slack.app/"; }
       {
         path = "${config.users.users.${user}.home}/Downloads";
         section = "others";
