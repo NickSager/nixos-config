@@ -53,6 +53,9 @@ let name = "Nick Sager";
     };
     initExtra = '' #initExtraFirst for beginning in zshrc
       # ---- ALIASES -----
+      e() {
+          emacsclient -t "$@"
+      }
 
       # Set Work Directory
       export Work="$HOME/Documents/Workspace/"
