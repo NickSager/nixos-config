@@ -1,13 +1,24 @@
 { config, pkgs, agenix, secrets, ... }:
 
-let user = "nick"; in
+let 
+  user = "nick"; 
+in
 {
   age = { 
     identityPaths = [ 
-      "/Users/${user}/.ssh/id_ed25519"
+      "/Users/${user}/.ssh/id_ed25519_sk"
     ];
 
     secrets = { 
+      "anthropic-api-key" = {
+        symlink = true;
+        path = "/Users/${user}/.ssh/anthropic-api-key"; # Put in SSH to keep keys in same place
+        file =  "${secrets}/anthropic-api-key.age";
+        mode = "600";
+        owner = "${user}";
+        group = "staff";
+      };
+
       # "syncthing-cert" = {
       #   symlink = true;
       #   path = "/Users/${user}/Library/Application Support/Syncthing/cert.pem";
