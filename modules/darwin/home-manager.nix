@@ -1,7 +1,7 @@
 { config, pkgs, lib, home-manager, ... }:
 
 let
-  user = "nick";
+  user = "nsager";
   # Define the content of your file as a derivation
   myEmacsLauncher = pkgs.writeScript "emacs-launcher.command" ''
     #!/bin/sh
@@ -76,25 +76,18 @@ in
     dock.entries = [
       # { path = "/System/Applications/Finder.app/"; }
       { path = "/System/Applications/Launchpad.app/"; }
-      { path = "/System/Applications/Mail.app/"; }
-      # { path = "/System/Applications/Safari.app/"; }
-      { path = "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app/"; }
-      { path = "/System/Applications/Messages.app/"; }
+      { path = "/Applications/Microsoft Outlook.app/"; }
       { path = "/System/Applications/Calendar.app/"; }
       { path = "/System/Applications/Reminders.app/"; }
       { path = "/System/Applications/Notes.app/"; }
-      { path = "/System/Applications/Photos.app/"; }
-      { path = "/System/Applications/Maps.app/"; }
-      { path = "/System/Applications/FaceTime.app/"; }
-      { path = "/System/Applications/Music.app/"; }
-      { path = "/System/Applications/Books.app/"; }
+      { path = "/Applications/Firefox.app/"; }
       { path = "${pkgs.iterm2}/Applications/iTerm2.app/"; }
       { path = "${pkgs.alacritty}/Applications/Alacritty.app/"; }
-      # { path = "/Applications/Slack.app/"; }
-      # {
-      #   path = toString myEmacsLauncher;
-      #   section = "others";
-      # }
+      { path = "/Applications/Slack.app/"; }
+      {
+        path = toString myEmacsLauncher;
+        section = "others";
+      }
       {
         path = "${config.users.users.${user}.home}/Downloads";
         section = "others";
