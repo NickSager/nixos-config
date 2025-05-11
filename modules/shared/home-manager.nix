@@ -118,6 +118,9 @@ let name = "Nick Sager";
       export PATH="$PATH:/Users/nick/.local/bin"
       eval "$(/opt/homebrew/bin/brew shellenv)"
 
+      # Nix Path
+      export PATH="$HOME/.nix-profile/bin:$PATH"
+
       # Remove history data we don't want to see
       export HISTIGNORE="pwd:ls:cd"
     '';

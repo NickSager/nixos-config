@@ -6,12 +6,15 @@ return {
     version = false, -- set this if you want to always pull the latest change
     opts = {
       -- add any opts here
-      provider = "ollama",
+      provider = "bedrock",
       auto_suggestions_provider = "ollama", -- Since auto-suggestions are a high-frequency operation and therefore expensive, it is recommended to specify an inexpensive provider or even a free provider: copilot
-      cursor_applying_provider = 'ollama',
+      cursor_applying_provider = 'bedrock',
       ollama = {
         endpoint = "http://127.0.0.1:11434", -- Note that there is no /v1 at the end.
         model = "qwq:32b",
+      },
+      bedrock = {
+          model = "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
       },
       --- To Customize These:
       -- openai = {

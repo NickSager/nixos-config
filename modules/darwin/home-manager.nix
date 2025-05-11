@@ -64,6 +64,7 @@ in
       # https://github.com/nix-community/home-manager/issues/3344
       manual.manpages.enable = false;
     };
+    backupFileExtension = "backup";
   };
 
   # Fully declarative dock using the latest from Nix Store
