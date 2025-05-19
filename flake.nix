@@ -1,5 +1,5 @@
 {
-  description = "General Purpose Configuration for macOS and NixOS";
+  description = "General Purpose Configuration for macOS, Linux, and NixOS";
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     agenix.url = "github:ryantm/agenix";
@@ -58,6 +58,7 @@
       };
       mkLinuxApps = system: {
         "apply" = mkApp "apply" system;
+        "build" = mkApp "build" system;
         "build-switch" = mkApp "build-switch" system;
         "copy-keys" = mkApp "copy-keys" system;
         "create-keys" = mkApp "create-keys" system;
@@ -141,6 +142,18 @@
               };
             }
             ./hosts/nixos
+          ];
+        }
+      );
+      # Linux (non-NixOS) configs.
+      homeConfigurations = nixpkgs.lib.genAttrs linuxSystems (system: let
+        user = "nick";
+      in
+        home-manager.lib.homeManagerConfiguration {
+          pkgs = nixpkgs.legacyPackages.${system};
+          extraSpecialArgs = inputs;
+          modules = [
+            ./hosts/linux
           ];
         }
       );

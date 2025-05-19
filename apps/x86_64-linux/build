@@ -1,0 +1,39 @@
+#!/bin/sh -e
+
+GREEN='\033[1;32m'
+RED='\033[1;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+SYSTEM=$(uname -m)
+
+case "$SYSTEM" in
+    x86_64)
+        FLAKE_TARGET="x86_64-linux"
+        ;;
+    aarch64)
+        FLAKE_TARGET="aarch64-linux"
+        ;;
+    *)
+        echo "${RED}Unsupported architecture: $SYSTEM${NC}"
+        exit 1
+        ;;
+esac
+
+is_nix_os() {
+    [ -e /etc/NIXOS ] && return 0
+
+    return 1
+}
+
+echo "${YELLOW}Starting build...${NC}"
+
+if is_nix_os; then
+    echo "Running on a NixOS-based system"
+    /run/current-system/sw/bin/nixos-rebuild build --flake .#$FLAKE_TARGET $@
+else
+    echo "Running on a Linux system (non-NixOS)"
+    home-manager build --flake .#$FLAKE_TARGET $@
+fi
+
+echo "${GREEN}Build complete!${NC}"
