@@ -52,7 +52,7 @@ let name = "Nick Sager";
     syntaxHighlighting = {
       enable = true;
     };
-    initExtra = '' #initExtraFirst for beginning in zshrc
+    initContent = '' #initExtraFirst for beginning in zshrc
       # ---- ALIASES -----
       e() {
           emacsclient -t "$@"
