@@ -38,6 +38,9 @@ else
     nix --extra-experimental-features 'nix-command flakes' \
         build .#homeConfigurations.$FLAKE_TARGET.activationPackage "$@" \
         --show-trace
+
+    # Activate the built configuration
+    ./result/activate
 fi
 
 echo "${GREEN}Switch to new generation complete!${NC}"
