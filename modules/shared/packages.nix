@@ -38,10 +38,10 @@ with pkgs; [
   libfido2
 
   # Communication tools
-  discord
+  # discord
   firefox
-  slack
-  zoom-us
+  # slack
+  # zoom-us
 
   # Cloud-related tools and SDKs
   docker
@@ -100,7 +100,7 @@ with pkgs; [
   # jetbrains.phpstorm
   jq
   ripgrep
-  thefuck
+  # thefuck
   # tree
   tmux
   unrar
