@@ -12,7 +12,7 @@ in {
     packages = pkgs.callPackage ./packages.nix { };
     sessionPath = [ "$HOME/.local/bin" ];
     sessionVariables = {
-      EDITOR = "${pkgs.my-emacs-with-packages}/bin/emacsclient";
+      # EDITOR = "${pkgs.my-emacs-with-packages}/bin/emacsclient";
     };
     file = lib.mkMerge [ sharedFiles additionalFiles ];
     stateVersion = "23.11";
