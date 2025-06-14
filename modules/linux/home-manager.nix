@@ -1,13 +1,13 @@
 { config, osConfig, pkgs, lib, home-manager, ... }:
 
 let
-  user = "nicke";
+  user = "nick";
   sharedFiles = import ../shared/files.nix { inherit config pkgs; };
   additionalFiles = import ./files.nix { inherit user config pkgs; };
 in {
   home = {
     username = user;
-    homeDirectory = "/home/${user}.linux";
+    homeDirectory = "/home/${user}";
     enableNixpkgsReleaseCheck = false;
     packages = pkgs.callPackage ./packages.nix { };
     sessionPath = [ "$HOME/.local/bin" ];
