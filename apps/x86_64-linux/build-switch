@@ -35,7 +35,9 @@ if is_nix_os; then
     # /run/current-system/sw/bin/nixos-rebuild switch --flake .#$FLAKE_TARGET $@
 else
     echo "Running on a Linux system (non-NixOS)"
-    home-manager switch --flake .#$FLAKE_TARGET $@
+    nix --extra-experimental-features 'nix-command flakes' \
+        build .#homeConfigurations.$FLAKE_TARGET.activationPackage "$@" \
+        --show-trace
 fi
 
 echo "${GREEN}Switch to new generation complete!${NC}"

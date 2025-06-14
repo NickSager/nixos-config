@@ -28,12 +28,22 @@ is_nix_os() {
 
 echo "${YELLOW}Starting build...${NC}"
 
+nixpkgs_date=$(nix flake metadata | grep -A1 'nixpkgs:' | grep '202' | awk '{print $NF}')
+echo "nixpkgs input last updated: $nixpkgs_date"
+
+if [ "$(date -d "$nixpkgs_date" +%s)" -lt "$(date -d '90 days ago' +%s)" ]; then
+    echo "⚠️  nixpkgs input is over 90 days old. Consider running:"
+    echo "   nix flake update"
+fi
+
 if is_nix_os; then
     echo "Running on a NixOS-based system"
-    /run/current-system/sw/bin/nixos-rebuild build --flake .#$FLAKE_TARGET $@
+    /run/current-system/sw/bin/nixos-rebuild build --flake .#$FLAKE_TARGET "$@"
 else
     echo "Running on a Linux system (non-NixOS)"
-    home-manager build --flake .#$FLAKE_TARGET $@
+    nix --extra-experimental-features 'nix-command flakes' \
+        build .#homeConfigurations.$FLAKE_TARGET.activationPackage "$@" \
+        --show-trace
 fi
 
 echo "${GREEN}Build complete!${NC}"
