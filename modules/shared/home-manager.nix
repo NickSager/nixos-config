@@ -348,8 +348,17 @@ let name = "Nick Sager";
       prefix-highlight
       resurrect
       continuum
-      catppuccin
+      # catppuccin
+      tokyo-night-tmux
       tmux-fzf # prefix-F
+      # {
+      #   plugin = dracula;
+      #   extraConfig = ''
+      #     set -g @dracula-show-battery false
+      #     set -g @dracula-show-powerline true
+      #     set -g @dracula-refresh-rate 10
+      #   '';
+      # }
     ];
     terminal = "screen-256color";
     prefix = "C-Space";
@@ -429,6 +438,10 @@ let name = "Nick Sager";
       set -g @catppuccin_status_connect_separator "no"
       set -g @catppuccin_directory_text "#{b:pane_current_path}"
       set -g @catppuccin_date_time_text "%H:%M"
+
+      # TokyoNight Setup. Recommend bc (netspeed, git), jq (git), nowplaying-cli (mac)
+      set -g @tokyo-night-tmux_theme night    # storm | day | default to 'night'
+      set -g @tokyo-night-tmux_transparent 1  # 1 or 0
       '';
     };
 }

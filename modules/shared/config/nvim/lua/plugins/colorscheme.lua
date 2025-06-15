@@ -138,7 +138,7 @@ return {
       }, -- "float_win", "toggleterm", "telescope", "which-key", "renamer", "neo-tree", "nvim-tree", "bufferline"
       plugins = {
         bufferline = {
-          underline_selected = true,
+          underline_selected = false,
           underline_visible = false,
           underline_fill = true,
           bold = false,
@@ -152,71 +152,107 @@ return {
   },
 
   {
+    'sainnhe/gruvbox-material',
+    lazy = false,
+    priority = 1000,
+    config = function()
+      -- Optionally configure and load the colorscheme
+      -- directly inside the plugin declaration.
+      vim.g.gruvbox_material_background = 'medium' -- hard, medium, soft
+      vim.g.gruvbox_material_foreground = 'material' -- material, mix, original
+      vim.g.gruvbox_material_better_performance = 0
+      -- vim.g.gruvbox_material_enable_italic = true
+      -- vim.cmd.colorscheme('gruvbox-material')
+    end
+  },
+
+  {
     "scottmckendry/cyberdream.nvim",
     lazy = false,
     priority = 1000,
     opts = {
-      -- Set light or dark variant
-      variant = "default", -- use "light" for the light variant. Also accepts "auto" to set dark or light colors based on the current value of `vim.o.background`
+        -- Set light or dark variant
+        variant = "auto", -- use "light" for the light variant. Also accepts "auto" to set dark or light colors based on the current value of `vim.o.background`
 
-      -- Enable transparent background
-      transparent = false,
+        -- Enable transparent background
+        transparent = false,
 
-      -- Reduce the overall saturation of colours for a more muted look
-      saturation = 1, -- accepts a value between 0 and 1. 0 will be fully desaturated (greyscale) and 1 will be the full color (default)
+        -- Reduce the overall saturation of colours for a more muted look
+        saturation = 1, -- accepts a value between 0 and 1. 0 will be fully desaturated (greyscale) and 1 will be the full color (default)
 
-      -- Enable italics comments
-      italic_comments = false,
+        -- Enable italics comments
+        italic_comments = false,
 
-      -- Replace all fillchars with ' ' for the ultimate clean look
-      hide_fillchars = false,
+        -- Replace all fillchars with ' ' for the ultimate clean look
+        hide_fillchars = false,
 
-      -- Apply a modern borderless look to pickers like Telescope, Snacks Picker & Fzf-Lua
-      borderless_pickers = false,
+        -- Apply a modern borderless look to pickers like Telescope, Snacks Picker & Fzf-Lua
+        borderless_pickers = false,
 
-      -- Set terminal colors used in `:terminal`
-      terminal_colors = true,
+        -- Set terminal colors used in `:terminal`
+        terminal_colors = true,
 
-      -- Improve start up time by caching highlights. Generate cache with :CyberdreamBuildCache and clear with :CyberdreamClearCache
-      cache = false,
+        -- Improve start up time by caching highlights. Generate cache with :CyberdreamBuildCache and clear with :CyberdreamClearCache
+        cache = false,
 
-      -- Override highlight groups with your own colour values
-      highlights = {
-          -- Highlight groups to override, adding new groups is also possible
-          -- See `:h highlight-groups` for a list of highlight groups or run `:hi` to see all groups and their current values
+        -- Override highlight groups with your own colour values
+        highlights = {
+            -- Highlight groups to override, adding new groups is also possible
+            -- See `:h highlight-groups` for a list of highlight groups or run `:hi` to see all groups and their current values
 
-          -- Example:
-          Comment = { fg = "#696969", bg = "NONE", italic = true },
+            -- Example:
+            Comment = { fg = "#696969", bg = "NONE", italic = true },
 
-          -- More examples can be found in `lua/cyberdream/extensions/*.lua`
-      },
+            -- More examples can be found in `lua/cyberdream/extensions/*.lua`
+        },
+        colors = {
+          dark = {
+            bg = "#000000", -- Chalkboard Grey
+          },
+        },
 
-      -- Override a highlight group entirely using the built-in colour palette
-      -- overrides = function(colors) -- NOTE: This function nullifies the `highlights` option
-      --     -- Example:
-      --     return {
-      --         Comment = { fg = colors.green, bg = "NONE", italic = true },
-      --         ["@property"] = { fg = colors.magenta, bold = true },
-      --     }
-      -- end,
-
-      -- Override a color entirely
-      -- colors = {
-      --     -- For a list of colors see `lua/cyberdream/colours.lua`
-      --     -- Example:
-      --     bg = "#000000",
-      --     green = "#00ff00",
-      --     magenta = "#ff00ff",
-      -- },
-
-      -- Disable or enable colorscheme extensions
-      extensions = {
-          telescope = true,
-          notify = true,
-          mini = true,
-          ...
-      },
+        -- Disable or enable colorscheme extensions
+        extensions = {
+            telescope = true,
+            notify = true,
+            mini = true,
+            ...
+        },
     },
+  },
+
+  {
+      'maxmx03/fluoromachine.nvim',
+      lazy = false,
+      priority = 1000,
+      config = function ()
+        local fm = require 'fluoromachine'
+
+        fm.setup {
+          glow = true,
+          theme = 'delta', -- flouromachine, retrowave, delta,
+          transparent = false,
+        }
+        local lualine = require 'lualine'
+
+        lualine.setup {
+          options = {
+            theme = 'fluoromachine'
+          }
+        }
+
+      end
+  },
+
+  { "savq/melange-nvim" },
+
+  {
+    "nvim-lualine/lualine.nvim",
+    event = "VeryLazy",
+    opts = function(_, opts)
+      opts.options = opts.options or {}
+      opts.options.theme = "auto"
+    end,
   },
 
   -- Configure LazyVim to load theme
