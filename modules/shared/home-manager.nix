@@ -26,7 +26,7 @@ let name = "Nick Sager";
     cdpath = [ "~/.local/share/src" ];
     oh-my-zsh = {
       enable = true;
-      plugins = [ "git" "thefuck" "starship" "poetry" ];
+      plugins = [ "git" "starship" "poetry" ];
       theme = "robbyrussell";
     };
     sessionVariables = {
@@ -37,7 +37,6 @@ let name = "Nick Sager";
       cat="bat";
       cd="z";
       cl="clear";
-      fk="thefuck";
       lg="lazygit";
       nm="nmap -sC -sV -oN nmap";
       v="nvim";
@@ -104,7 +103,8 @@ let name = "Nick Sager";
       }
 
 
-      export XDG_CONFIG_HOME="/Users/nick/.config"
+      # Set XDG_CONFIG_HOME
+      export XDG_CONFIG_HOME="$HOME/.config"
 
       # ---- MISC -----
       export STARSHIP_CONFIG=~/.config/starship.toml
@@ -115,8 +115,8 @@ let name = "Nick Sager";
       # eval "$(direnv hook zsh)"
 
       # Pipx Path
-      export PATH="$PATH:/Users/nick/.local/bin"
-      eval "$(/opt/homebrew/bin/brew shellenv)"
+      # export PATH="$PATH:/Users/nick/.local/bin"
+      # eval "$(/opt/homebrew/bin/brew shellenv)"
 
       # Nix Path
       export PATH="$HOME/.nix-profile/bin:$PATH"
