@@ -2,7 +2,11 @@
 
 let
   user = "nick";
-  sharedFiles = import ../shared/files.nix { inherit config pkgs; };
+  # sharedFiles = import ../shared/files.nix { inherit config pkgs; };
+  sharedFiles = import ../shared/files.nix {
+    inherit pkgs config;
+    lib = home-manager.lib;          #  ← gives files.nix the hm library
+  };
   additionalFiles = import ./files.nix { inherit user config pkgs; };
 in {
   home = {
