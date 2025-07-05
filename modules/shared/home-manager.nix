@@ -272,6 +272,10 @@ let name = "Nick Sager";
         decorations = "buttonless"; # full, buttonless, None
       };
 
+      env = {
+        TERM = "xterm-256color";
+      };
+
       font = {
         normal = {
           family = "MesloLGS NF";
