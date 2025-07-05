@@ -92,6 +92,7 @@ with pkgs; [
   lazygit
 
   # Text and terminal utilities
+  bc
   htop
   # hunspell
   fzf
