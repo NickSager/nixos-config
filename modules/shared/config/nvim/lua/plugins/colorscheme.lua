@@ -233,13 +233,6 @@ return {
           theme = 'delta', -- flouromachine, retrowave, delta,
           transparent = false,
         }
-        local lualine = require 'lualine'
-
-        lualine.setup {
-          options = {
-            theme = 'fluoromachine'
-          }
-        }
 
       end
   },
