@@ -69,9 +69,10 @@ in
   };
 
   # Fully declarative dock using the latest from Nix Store
-  local = { 
+  local = {
     dock = {
       enable = true;
+      username = user;
       entries = [
         { path = "/Applications/Slack.app/"; }
         { path = "/System/Applications/Messages.app/"; }

@@ -1,8 +1,11 @@
 { config, inputs, pkgs, ... }:
 
-let user = "%USER%";
-    keys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOk8iAnIaa1deoc7jw8YACPNVka1ZFJxhnU4G74TmS+p" ]; in
-{
+let
+  user = "%USER%";
+  sshKeys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOk8iAnIaa1deoc7jw8YACPNVka1ZFJxhnU4G74TmS+p"
+  ];
+in {
   imports = [
     ../../modules/nixos/disk-config.nix
     ../../modules/shared
@@ -50,7 +53,7 @@ let user = "%USER%";
     extraOptions = ''
       experimental-features = nix-command flakes
     '';
-   };
+  };
 
   # Manages keys and such
   programs = {
@@ -63,7 +66,13 @@ let user = "%USER%";
     zsh.enable = true;
   };
 
-  services = { 
+  services = {
+    # Fallback console on tty1: auto-login your user
+    getty.autologinUser = user;
+    getty.autologinOnce = false;
+
+    # Display manager & X server
+    displayManager.defaultSession = "none+bspwm";
     xserver = {
       enable = true;
 
@@ -81,7 +90,6 @@ let user = "%USER%";
       # '';
 
       displayManager = {
-        defaultSession = "none+bspwm";
         lightdm = {
           enable = true;
           greeters.slick.enable = true;
@@ -94,14 +102,15 @@ let user = "%USER%";
         enable = true;
       };
 
-      # Turn Caps Lock into Ctrl
-      layout = "us";
-      xkbOptions = "ctrl:nocaps";
-
-      # Better support for general peripherals
-      libinput.enable = true;
-
+      xkb = {
+        # Turn Caps Lock into Ctrl
+        layout = "us";
+        options = "ctrl:nocaps";
+      };
     };
+
+    # Better support for general peripherals
+    libinput.enable = true;
 
     # Let's be able to SSH into this machine
     openssh.enable = true;
@@ -223,10 +232,10 @@ let user = "%USER%";
     tumbler.enable = true; # Thumbnail support for images
 
     # Emacs runs as a daemon
-    emacs = {
-      enable = true;
-      package = pkgs.emacs-unstable;
-    };
+    #emacs = {
+    #  enable = true;
+    #  package = pkgs.emacs-unstable;
+    #};
   };
 
   # When emacs builds from no cache, it exceeds the 90s timeout default
@@ -239,7 +248,7 @@ let user = "%USER%";
 
   # Video support
   hardware = {
-    opengl.enable = true;
+    graphics.enable = true;
     # pulseaudio.enable = true;
     # hardware.nvidia.modesetting.enable = true;
 
@@ -249,7 +258,6 @@ let user = "%USER%";
     # Crypto wallet support
     ledger.enable = true;
   };
-
 
   # Add docker daemon
   virtualisation = {
@@ -268,11 +276,11 @@ let user = "%USER%";
         "docker"
       ];
       shell = pkgs.zsh;
-      openssh.authorizedKeys.keys = keys;
+      openssh.authorizedKeys.keys = sshKeys;
     };
 
     root = {
-      openssh.authorizedKeys.keys = keys;
+      openssh.authorizedKeys.keys = sshKeys;
     };
   };
 
@@ -306,5 +314,4 @@ let user = "%USER%";
   ];
 
   system.stateVersion = "21.05"; # Don't change this
-
 }

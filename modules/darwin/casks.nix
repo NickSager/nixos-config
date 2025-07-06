@@ -1,18 +1,14 @@
 _:
 
-[
-  # Casks to install
-]
 # [
 #   # Development Tools
-#   "homebrew/cask/docker"
 #   "claude"
 #   "insomnia"
 #   "tableplus"
 #   "ngrok"
 #   "postico"
 #   "visual-studio-code"
-#   "wireshark"
+#   "wireshark-app"
 #
 #   # Communication Tools
 #   "discord"
@@ -23,7 +19,7 @@ _:
 #
 #   # Utility Tools
 #   "appcleaner"
-#   "syncthing"
+#   "syncthing-app"
 #
 #   # Entertainment Tools
 #   "steam"
@@ -35,7 +31,4 @@ _:
 #
 #   # Browsers
 #   "google-chrome"
-#
-#   # AI
-#   "diffusionbee"
 # ]

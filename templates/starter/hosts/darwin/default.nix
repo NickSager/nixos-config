@@ -28,7 +28,6 @@ let user = "%USER%"; in
     '';
   };
 
-  system.checks.verifyNixPath = false;
 
   environment.systemPackages = with pkgs; [
     emacs-unstable
@@ -47,6 +46,8 @@ let user = "%USER%"; in
   };
 
   system = {
+    checks.verifyNixPath = false;
+    primaryUser = user;
     stateVersion = 4;
 
     defaults = {

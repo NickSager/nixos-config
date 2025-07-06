@@ -31,7 +31,7 @@ let name = "Nick Sager";
     };
     sessionVariables = {
       # Environment Variables
-      ANTHROPIC_API_KEY="$(cat ~/.ssh/anthropic_api_key)";
+      # ANTHROPIC_API_KEY="$(cat ~/.ssh/anthropic_api_key)";
     };
     shellAliases = {
       cat="bat";
@@ -51,14 +51,28 @@ let name = "Nick Sager";
     syntaxHighlighting = {
       enable = true;
     };
+
     initContent = '' #initExtraFirst for beginning in zshrc
+      # Other way to start w/ nix initialization
+      # initContent = lib.mkBefore
+      #   if [[ -f /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh ]]; then
+      #     . /nix/var/nix/profiles/default/etc/profile.d/nix-daemon.sh
+      #     . /nix/var/nix/profiles/default/etc/profile.d/nix.sh
+      #   fi
+
       # ---- ALIASES -----
       e() {
           emacsclient -t "$@"
       }
 
+      # Claude GUI
+      # alias claude-desktop='nohup claude-desktop > /dev/null 2>&1 & disown'
+
       # Set Work Directory
       export Work="$HOME/Documents/Workspace/"
+
+      # Remove history data we don't want to see
+      export HISTIGNORE="pwd:ls:cd"
 
       # ---- FZF -----
 
@@ -148,7 +162,7 @@ let name = "Nick Sager";
 
   vim = {
     enable = true;
-    plugins = with pkgs.vimPlugins; [ vim-airline vim-airline-themes copilot-vim vim-startify vim-tmux-navigator ];
+    plugins = with pkgs.vimPlugins; [ vim-airline vim-airline-themes vim-tmux-navigator ];
     settings = { ignorecase = true; };
     extraConfig = ''
       "" General
@@ -169,7 +183,7 @@ let name = "Nick Sager";
       set ruler
       set backspace=indent,eol,start
       set laststatus=2
-      set clipboard=autoselect
+      set clipboard=unnamedplus
 
       " Dir stuff
       set nobackup
@@ -328,23 +342,25 @@ let name = "Nick Sager";
         "/Users/${user}/.ssh/config_external"
       )
     ];
-    matchBlocks = {
-      "github.com" = {
-        identitiesOnly = true;
-        identityFile = [
-          (lib.mkIf pkgs.stdenv.hostPlatform.isLinux
-            "/home/${user}/.ssh/id_github"
-          )
-          (lib.mkIf pkgs.stdenv.hostPlatform.isDarwin
-            "/Users/${user}/.ssh/id_github"
-          )
-        ];
-      };
-    };
+    #matchBlocks = {
+    #  "github.com" = {
+    #    identitiesOnly = true;
+    #    identityFile = [
+    #      (lib.mkIf pkgs.stdenv.hostPlatform.isLinux
+    #        "/home/${user}/.ssh/id_github"
+    #      )
+    #      (lib.mkIf pkgs.stdenv.hostPlatform.isDarwin
+    #        "/Users/${user}/.ssh/id_github"
+    #      )
+    #    ];
+    #  };
+    #};
   };
 
   tmux = {
     enable = true;
+    shell = "${pkgs.zsh}/bin/zsh";
+    sensibleOnTop = false;
     plugins = with pkgs.tmuxPlugins; [
       vim-tmux-navigator
       # sensible
@@ -446,6 +462,10 @@ let name = "Nick Sager";
       # TokyoNight Setup. Recommend bc (netspeed, git), jq (git), nowplaying-cli (mac)
       set -g @tokyo-night-tmux_theme night    # storm | day | default to 'night'
       set -g @tokyo-night-tmux_transparent 1  # 1 or 0
+
+      # Darwin-specific fix for tmux 3.5a with sensible plugin
+      # This MUST be at the very end of the config
+      # set -g default-command "$SHELL"
       '';
     };
 }

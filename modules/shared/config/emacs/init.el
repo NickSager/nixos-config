@@ -20,6 +20,7 @@
   (add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t))
 
 (setq package-enable-at-startup nil)
+(package-initialize)
 
 ;; -------------------------
 ;; Use-Package Setup
@@ -36,6 +37,11 @@
 ;; -------------------------
 ;; Environment Variables Setup
 ;; -------------------------
+(unless (package-installed-p 'exec-path-from-shell)
+  (package-refresh-contents)
+  (package-install 'exec-path-from-shell))
+
+(exec-path-from-shell-initialize)
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns x))
   :config
@@ -67,11 +73,40 @@
     (error "Error: Failed to load Straight.el.")))
 
 (setq straight-use-package-by-default t)
-(package-initialize)
+
+;; Fix for f.el shortdoc issue in Emacs 30 - must be done before loading f.el
+(when (>= emacs-major-version 30)
+  ;; Define advice to filter out :noeval from shortdoc-add-function calls
+  (defun my/filter-shortdoc-args (group &rest args)
+    "Filter out :noeval from shortdoc arguments."
+    (let ((filtered-args nil)
+          (i 0))
+      (while (< i (length args))
+        (if (eq (nth i args) :noeval)
+            ;; Skip :noeval and its value
+            (setq i (+ i 2))
+          ;; Keep other arguments
+          (setq filtered-args (append filtered-args (list (nth i args))))
+          (setq i (1+ i))))
+      (cons group filtered-args)))
+  
+  ;; Apply the advice before shortdoc is loaded
+  (advice-add 'shortdoc-add-function :filter-args #'my/filter-shortdoc-args))
+
+;; Load org early to prevent version mismatch
+(straight-use-package 'org)
 
 ;; -------------------------
 ;; Window and UI Setup
 ;; -------------------------
+(defun system-is-mac ()
+  "Return true if system is darwin-based (Mac OS X)"
+  (string-equal system-type "darwin"))
+
+(defun system-is-linux ()
+  "Return true if system is linux-based"
+  (string-equal system-type "gnu/linux"))
+
 (defun dl/window-setup ()
   (condition-case nil
       (progn
@@ -80,9 +115,11 @@
         (menu-bar-mode -1)
         (tool-bar-mode 0)
         (winner-mode 1)
-        (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
-        (add-to-list 'default-frame-alist '(ns-appearance . dark))
-        (setq ns-use-proxy-icon nil)
+        ;; Only apply macOS-specific settings on macOS
+        (when (system-is-mac)
+          (add-to-list 'default-frame-alist '(ns-transparent-titlebar . t))
+          (add-to-list 'default-frame-alist '(ns-appearance . dark))
+          (setq ns-use-proxy-icon nil))
         (setq frame-title-format nil)
         (message "Window and UI setup completed successfully."))
     (error (message "Error occurred in Window and UI setup."))))
@@ -103,6 +140,7 @@
     (error (message "Error occurred in Org mode setup."))))
 
 (use-package org
+  :straight nil  ; Use built-in org-mode, don't install via straight
   :defer t
   :hook (org-mode . dl/org-mode-setup)
   :config

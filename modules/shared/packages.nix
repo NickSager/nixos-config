@@ -1,118 +1,140 @@
 { pkgs, ... }:
+let
+  myPython = pkgs.python3.withPackages (ps: with ps; [
+    slpp
+    pip
+    rich
+    virtualenv
+    black
+    poetry
+  ]);
 
-# TODO: Review packages
+  myPHP = pkgs.php82.withExtensions ({ enabled, all }: enabled ++ (with all; [
+    xdebug
+  ]));
+
+  myFonts = import ./fonts.nix { inherit pkgs; };
+in
 with pkgs; [
-  # General packages for development and system management
-  act
-  alacritty
-  # aspell
-  atuin
-  # aspellDicts.en
-  # bash-completion
-  bat
-  btop
-  # coreutils
-  # difftastic
-  du-dust
-  eza
-  gcc
-  # git-filter-repo
-  killall
-  neofetch
-  openssh
-  pandoc
-  R
-  sqlite
-  starship
-  syncthing
-  wget
-  zip
-  uv
-  zoxide
+  # A
+  act # Run Github actions locally
+  age # File encryption tool
+  age-plugin-yubikey # YubiKey plugin for age encryption
+  alacritty # GPU-accelerated terminal emulator
+  # aspell # Spell checker
+  # aspellDicts.en # English dictionary for aspell
+  atuin # Fancy ctrl-r
 
-  # Encryption and security tools
-  _1password-cli
-  age
-  age-plugin-yubikey
-  gnupg
-  libfido2
+  # B
+  bash-completion # Bash completion scripts
+  bat # Cat clone with syntax highlighting
+  bc # Calculator
+  btop # System monitor and process viewer
 
-  # Communication tools
-  # discord
-  firefox
-  # slack
-  # zoom-us
+  # C
+  # coreutils # Basic file/text/shell utilities
 
-  # Cloud-related tools and SDKs
+  # D
+  direnv # Environment variable management per directory
+  difftastic # Structural diff tool
+  # discord # Discord
   docker
   docker-compose
-  # awscli2 - marked broken Mar 22
-  # flyctl
-  # google-cloud-sdk
+  du-dust # Disk usage analyzer
+
+  # E
+  eza # Better ls
+
+  # F
+  fd # Fast find alternative
+  ffmpeg # Multimedia framework
+  firefox # Browser
+  fzf # Fuzzy finder
+
+  # G
+  gcc # GNU Compiler Collection
+  gh # GitHub CLI
+  glow # Markdown renderer for terminal
+  gnupg # GNU Privacy Guard
   # go
-  # gopls
-  # ngrok
-  # ssm-session-manager-plugin
-  # terraform
-  # terraform-ls
-  # tflint
+  # gopls # Go language server
 
-  # Media-related packages
-  emacs-all-the-icons-fonts
-  imagemagick
-  dejavu_fonts
-  ffmpeg
-  fd
-  font-awesome
-  glow
-  hack-font
-  # jpegoptim
-  meslo-lgs-nf
-  noto-fonts
-  noto-fonts-emoji
-  # pngquant
+  # H
+  htop # Interactive process viewer
+  # hunspell # Spell checker
 
-  # PHP
-  # php82
-  # php82Packages.composer
-  # php82Packages.php-cs-fixer
-  # php82Extensions.xdebug
-  # php82Packages.deployer
-  # phpunit
+  # I
+  iftop # Network bandwidth monitor
+  imagemagick # Image manipulation toolkit
 
-  # Node.js development tools
-  # nodePackages.live-server
-  # nodePackages.nodemon
-  # nodePackages.prettier
-  # nodePackages.npm
-  # nodejs
+  # J
+  # jetbrains.phpstorm # PHP IDE
+  # jpegoptim # JPEG optimizer
+  jq # JSON processor
 
-  # Source code management, Git, GitHub tools
-  gh
-  lazygit
+  # K
+  killall # Kill processes by name
 
-  # Text and terminal utilities
-  bc
-  htop
-  # hunspell
-  fzf
-  iftop
-  jetbrains-mono
-  # jetbrains.phpstorm
-  jq
-  ripgrep
-  # thefuck
-  # tree
-  tmux
-  unrar
-  unzip
-  vscode
+  # L
+  lazygit # Git TUI
+  libfido2 # FIDO2 library
+
+  # M
+  # myPHP # Custom PHP with extensions
+  myPython # Custom Python with packages
+
+  # N
+  ncurses # Terminal control library with terminfo database
+  neofetch # System information tool
+  ngrok # Secure tunneling service
+  # nodePackages.live-server # Development server with live reload
+  # nodePackages.nodemon # Node.js file watcher
+  # nodePackages.npm # Node package manager
+  # (hiPrio nodePackages.prettier) # Code formatter
+
+  # O
+  openssh # SSH client and server
+
+  # P
+  pandoc # Document converter
+  # php82Packages.composer # PHP dependency manager
+  # php82Packages.deployer # PHP deployment tool
+  # php82Packages.php-cs-fixer # PHP code style fixer
+  # phpunit # PHP testing framework
+  # pngquant # PNG compression tool
+
+  # R
+  ripgrep # Fast text search tool
+  # R # Stats language
+
+  # S
+  # slack # Team communication app
+  sqlite # SQL database engine
+  starship # Prompt in Rust
+  # syncthing # Syncing directories
+
+  # T
+  # terraform # Infrastructure as code tool
+  # terraform-ls # Terraform language server
+  # tflint # Terraform linter
+  tmux # Terminal multiplexer
+  tree # Directory tree viewer
+
+  # U
+  unrar # RAR archive extractor
+  unzip # ZIP archive extractor
+  uv # Python package installer
+
+  # V
+  # vscode
   # vscodium
-  # zsh-powerlevel10k
 
-  # Python packages
-  black
-  poetry
-  python3
-  virtualenv
-]
+  # W
+  wget # File downloader
+
+  # Z
+  zip # ZIP archive creator
+  # zsh-powerlevel10k # Zsh theme
+  # zoom-us # Zoom
+  zoxide # Better cd
+] ++ myFonts

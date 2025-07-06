@@ -65,6 +65,7 @@ let user = "%USER%";
   };
 
   services = {
+    displayManager.defaultSession = "none+bspwm";
     xserver = {
       enable = true;
 
@@ -81,7 +82,6 @@ let user = "%USER%";
       # '';
 
       # LightDM Display Manager
-      displayManager.defaultSession = "none+bspwm";
       displayManager.lightdm = {
         enable = true;
         greeters.slick.enable = true;
@@ -93,13 +93,15 @@ let user = "%USER%";
         enable = true;
       };
 
-      # Turn Caps Lock into Ctrl
-      layout = "us";
-      xkbOptions = "ctrl:nocaps";
-
-      # Better support for general peripherals
-      libinput.enable = true;
+      xkb = {
+        # Turn Caps Lock into Ctrl
+        layout = "us";
+        options = "ctrl:nocaps";
+      };
     };
+
+    # Better support for general peripherals
+    libinput.enable = true;
 
     # Let's be able to SSH into this machine
     openssh.enable = true;
@@ -218,10 +220,10 @@ let user = "%USER%";
     tumbler.enable = true; # Thumbnail support for images
 
     # Emacs runs as a daemon
-    emacs = {
-      enable = true;
-      package = pkgs.emacs-unstable;
-    };
+    #emacs = {
+    #  enable = true;
+    #  package = pkgs.emacs-unstable;
+    #};
   };
 
   # When emacs builds from no cache, it exceeds the 90s timeout default
@@ -239,7 +241,7 @@ let user = "%USER%";
 
   # Video support
   hardware = {
-    opengl.enable = true;
+    graphics.enable = true;
     # nvidia.modesetting.enable = true;
 
     # Enable Xbox support

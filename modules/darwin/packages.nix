@@ -3,7 +3,12 @@
 with pkgs;
 let shared-packages = import ../shared/packages.nix { inherit pkgs; }; in
 shared-packages ++ [
-  fswatch
-  dockutil
-  iterm2
+  # D
+  dockutil # Manage icons in the dock
+
+  # F
+  fswatch # File change monitor
+
+  # I
+  iterm2 # Terminal for Macos
 ]
