@@ -368,8 +368,43 @@ let name = "Nick Sager";
       prefix-highlight
       resurrect
       continuum
-      # catppuccin
-      tokyo-night-tmux
+      # {
+      #   plugin = catppuccin;
+      #   extraConfig = ''
+      #     # Catpuccin setup
+      #     set -g @catppuccin_flavour 'mocha'  # Themes: latte, frappe, macchiato, mocha
+      #     set -g @catppuccin_window_left_separator ""
+      #     set -g @catppuccin_window_right_separator " "
+      #     set -g @catppuccin_window_middle_separator " █"
+      #     set -g @catppuccin_window_number_position "right"
+      #     set -g @catppuccin_window_default_fill "number"
+      #     set -g @catppuccin_window_default_text "#W"
+      #     set -g @catppuccin_window_current_fill "number"
+      #     set -g @catppuccin_window_current_text "#W#{?window_zoomed_flag,(),}"
+      #     set -g @catppuccin_status_modules_right "directory meetings date_time"
+      #     set -g @catppuccin_status_modules_left "session"
+      #     set -g @catppuccin_status_left_separator  " "
+      #     set -g @catppuccin_status_right_separator " "
+      #     set -g @catppuccin_status_right_separator_inverse "no"
+      #     set -g @catppuccin_status_fill "icon"
+      #     set -g @catppuccin_status_connect_separator "no"
+      #     set -g @catppuccin_directory_text "#{b:pane_current_path}"
+      #     set -g @catppuccin_date_time_text "%H:%M"
+      #   '';
+      # }
+      {
+        plugin = tokyo-night-tmux;
+        extraConfig = ''
+          # TokyoNight Setup. Recommend bc (netspeed, git), jq (git), nowplaying-cli (mac)
+          set -g @tokyo-night-tmux_theme night    # storm | day | default to 'night'
+          set -g @tokyo-night-tmux_transparent 1  # 1 or 0
+          set -g @tokyo-night-tmux_show_hostname 1
+          set -g @tokyo-night-tmux_window_tidy_icons 0  # No extra spaces between icons
+          set -g @tokyo-night-tmux_window_id_style hsquare
+          set -g @tokyo-night-tmux_pane_id_style super
+          set -g @tokyo-night-tmux_zoom_id_style dsquare
+        '';
+      }
       tmux-fzf # prefix-F
       # {
       #   plugin = dracula;
@@ -436,32 +471,6 @@ let name = "Nick Sager";
 
       bind '_' split-window -v -c "#{pane_current_path}"
       bind '|' split-window -h -c "#{pane_current_path}"
-
-      # Themes: latte, frappe, macchiato, mocha
-      set -g @catppuccin_flavour 'mocha'
-
-      # Catpuccin setup
-      set -g @catppuccin_window_left_separator ""
-      set -g @catppuccin_window_right_separator " "
-      set -g @catppuccin_window_middle_separator " █"
-      set -g @catppuccin_window_number_position "right"
-      set -g @catppuccin_window_default_fill "number"
-      set -g @catppuccin_window_default_text "#W"
-      set -g @catppuccin_window_current_fill "number"
-      set -g @catppuccin_window_current_text "#W#{?window_zoomed_flag,(),}"
-      set -g @catppuccin_status_modules_right "directory meetings date_time"
-      set -g @catppuccin_status_modules_left "session"
-      set -g @catppuccin_status_left_separator  " "
-      set -g @catppuccin_status_right_separator " "
-      set -g @catppuccin_status_right_separator_inverse "no"
-      set -g @catppuccin_status_fill "icon"
-      set -g @catppuccin_status_connect_separator "no"
-      set -g @catppuccin_directory_text "#{b:pane_current_path}"
-      set -g @catppuccin_date_time_text "%H:%M"
-
-      # TokyoNight Setup. Recommend bc (netspeed, git), jq (git), nowplaying-cli (mac)
-      set -g @tokyo-night-tmux_theme night    # storm | day | default to 'night'
-      set -g @tokyo-night-tmux_transparent 1  # 1 or 0
 
       # Darwin-specific fix for tmux 3.5a with sensible plugin
       # This MUST be at the very end of the config
