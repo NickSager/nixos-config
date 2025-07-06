@@ -6,13 +6,13 @@
     home-manager.url = "github:nix-community/home-manager";
     mac-app-util.url = "github:hraban/mac-app-util";
     agenix.url = "github:ryantm/agenix";
-    claude-desktop = {
-      url = "github:k3d3/claude-desktop-linux-flake";
-      inputs = { 
-        nixpkgs.follows = "nixpkgs";
-        flake-utils.follows = "flake-utils";
-      };
-    };
+    # claude-desktop = {
+    #   url = "github:k3d3/claude-desktop-linux-flake";
+    #   inputs = { 
+    #     nixpkgs.follows = "nixpkgs";
+    #     flake-utils.follows = "flake-utils";
+    #   };
+    # };
     darwin = {
       url = "github:LnL7/nix-darwin/master";
       inputs.nixpkgs.follows = "nixpkgs";

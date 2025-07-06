@@ -63,11 +63,11 @@ in
         };
         programs = {} // import ../shared/home-manager.nix { inherit config pkgs lib; };
         manual.manpages.enable = false;
-        backupFileExtension = "backup";
+        # backupFileExtension = "backup";
       };
       # programs = {} // import ../shared/home-manager.nix { inherit config pkgs lib; };
       # manual.manpages.enable = false;
-      # backupFileExtension = "backup";
+      backupFileExtension = "backup";
   };
 
   # Fully declarative dock using the latest from Nix Store

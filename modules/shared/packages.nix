@@ -6,7 +6,6 @@ let
     rich
     virtualenv
     black
-    poetry
   ]);
 
   myPHP = pkgs.php82.withExtensions ({ enabled, all }: enabled ++ (with all; [
@@ -38,8 +37,8 @@ with pkgs; [
   direnv # Environment variable management per directory
   difftastic # Structural diff tool
   # discord # Discord
-  docker
-  docker-compose
+  # docker
+  # docker-compose
   du-dust # Disk usage analyzer
 
   # E
@@ -102,6 +101,7 @@ with pkgs; [
   # php82Packages.php-cs-fixer # PHP code style fixer
   # phpunit # PHP testing framework
   # pngquant # PNG compression tool
+  poetry # Package manager for python
 
   # R
   ripgrep # Fast text search tool

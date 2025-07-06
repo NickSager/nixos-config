@@ -1,6 +1,6 @@
 _:
 
-# [
+[
 #   # Development Tools
 #   "claude"
 #   "insomnia"
@@ -31,4 +31,4 @@ _:
 #
 #   # Browsers
 #   "google-chrome"
-# ]
+]
