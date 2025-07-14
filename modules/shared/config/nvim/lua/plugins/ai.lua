@@ -1,97 +1,133 @@
 return {
   {
-    "yetone/avante.nvim",
-    event = "VeryLazy",
-    version = false, -- Never set this value to "*"! Never!
-    ---@module 'avante'
-    ---@type avante.Config
-    opts = {
-      -- add any opts here
-      -- for example
-      provider = "ollama",
-      auto_suggestions_provider = "ollama",
-      cursor_applying_provider = 'ollama',
-      providers = {
-        -- claude = {
-        --   endpoint = "https://api.anthropic.com",
-        --   model = "claude-sonnet-4-20250514",
-        --   timeout = 30000, -- Timeout in milliseconds
-        --     extra_request_body = {
-        --       temperature = 0.75,
-        --       max_tokens = 20480,
-        --     },
-        -- },
-        -- ollama = {
-        --   endpoint = "http://localhost:11434",
-        --   model = "qwq:32b",
-        -- },
-      },
-      behaviour = {
-        enable_cursor_planning_mode = true,
-        auto_suggestions = false, -- Experimental stage
-      },
-      hints = { enabled = false },
-    },
+    "olimorris/codecompanion.nvim", -- The KING of AI programming
+    cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionActions" },
     dependencies = {
-      "nvim-lua/plenary.nvim",
-      "MunifTanjim/nui.nvim",
-      --- The below dependencies are optional,
-      "echasnovski/mini.pick", -- for file_selector provider mini.pick
-      "nvim-telescope/telescope.nvim", -- for file_selector provider telescope
-      "hrsh7th/nvim-cmp", -- autocompletion for avante commands and mentions
-      "ibhagwan/fzf-lua", -- for file_selector provider fzf
-      "stevearc/dressing.nvim", -- for input provider dressing
-      "folke/snacks.nvim", -- for input provider snacks
-      "nvim-tree/nvim-web-devicons", -- or echasnovski/mini.icons
-      "zbirenbaum/copilot.lua", -- for providers='copilot'
+      "j-hui/fidget.nvim", -- Display status
+      -- {"ravitemer/mcphub.nvim",
+      --   callback = "mcphub.extensions.codecompanion",
+      --   opts = {
+      --     make_vars = true,
+      --     make_slash_commands = true,
+      --     show_result_in_chat = true
+      -- },
+      -- {
+      --   "Davidyz/VectorCode", -- Index and search code in your repositories
+      --   version = "*",
+      --   build = "pipx upgrade vectorcode",
+      --   dependencies = { "nvim-lua/plenary.nvim" },
+      -- },
       {
-        -- support for image pasting
-        "HakonHarnes/img-clip.nvim",
-        event = "VeryLazy",
-        opts = {
-          -- recommended settings
-          default = {
-            embed_image_as_base64 = false,
-            prompt_for_file_name = false,
-            drag_and_drop = {
-              insert_mode = true,
+        "echasnovski/mini.diff",
+        config = function()
+          local diff = require("mini.diff")
+          diff.setup({
+            -- Disabled by default
+            source = diff.gen_source.none(),
+          })
+        end,
+      },
+      -- { "echasnovski/mini.pick", config = true },
+      -- { "ibhagwan/fzf-lua", config = true },
+    },
+    opts = {
+      ---@module "codecompanion"
+      ---@type CodeCompanion.Config
+      adapters = {
+        anthropic = function()
+          return require("codecompanion.adapters").extend("anthropic", {
+            -- env = {
+            --   api_key = "cmd:op read op://personal/Anthropic_API/credential --no-newline",
+            -- },
+            schema = {
+              extended_thinking = {
+                default = true,
+              },
             },
-            -- required for Windows users
-            use_absolute_path = true,
+          })
+        end,
+        bedrock = function()
+          return require("config.adapters.bedrock")
+        end,
+        ollama = function()
+          return require("codecompanion.adapters").extend("ollama", {
+            schema = {
+              model = {
+                default = "qwen3:latest",
+              },
+              num_ctx = {
+                default = 20000,
+              },
+            },
+          })
+        end,
+      },
+      strategies = {
+        chat = {
+          -- adapter = "anthropic",
+          adapter = {
+            name = "anthropic",
+            model = "claude-sonnet-4-20250514",
+          },
+          -- roles = {
+          --   user = "olimorris",
+          -- },
+        },
+        inline = {
+          adapter = {
+            name = "anthropic",
+            -- model = "gpt-4.1",
           },
         },
       },
-      {
-        -- Make sure to set this up properly if you have lazy=true
-        'MeanderingProgrammer/render-markdown.nvim',
-        opts = {
-          file_types = { "markdown", "Avante" },
+      display = {
+        action_palette = {
+          provider = "default",
+          opts = {
+            show_default_actions = true, -- Show the default actions in the action palette?
+            show_default_prompt_library = true, -- Show the default prompt library in the action palette?
+          },
         },
-        ft = { "markdown", "Avante" },
+        chat = {
+          -- show_references = true,
+          -- show_header_separator = false,
+          -- show_settings = false,
+          auto_scroll = true,
+          icons = {
+            tool_success = "󰸞",
+          },
+        },
+        diff = {
+          provider = "mini_diff",
+        },
+      },
+      opts = {
+        log_level = "DEBUG",
       },
     },
+    keys = {
+      {
+        "<C-a>",
+        "<cmd>CodeCompanionActions<CR>",
+        desc = "Open the action palette",
+        mode = { "n", "v" },
+      },
+      {
+        "<Leader>a",
+        "<cmd>CodeCompanionChat Toggle<CR>",
+        desc = "Toggle a chat buffer",
+        mode = { "n", "v" },
+      },
+      {
+        "<LocalLeader>a",
+        "<cmd>CodeCompanionChat Add<CR>",
+        desc = "Add code to a chat buffer",
+        mode = { "v" },
+      },
+    },
+    init = function()
+      vim.cmd([[cab cc CodeCompanion]])
+      -- require("plugins.custom.spinner"):init()
+    end,
   },
-
-  -- {
-  --   'saghen/blink.cmp',
-  --   dependencies = {
-  --       'Kaiser-Yang/blink-cmp-avante',
-  --       -- ... Other dependencies
-  --   },
-  --   opts = {
-  --       sources = {
-  --           -- Add 'avante' to the list
-  --           default = { 'avante', 'lsp', 'path', 'luasnip', 'buffer' },
-  --           providers = {
-  --               avante = {
-  --                   module = 'blink-cmp-avante',
-  --                   name = 'Avante',
-  --                   opts = {
-  --                       -- options for blink-cmp-avante
-  --                   }
-  --               }
-  --           },
-  --       }
-  --   }
-  -- }
 }
