@@ -29,13 +29,13 @@ return {
       -- Change code style ---
       -- Options are italic, bold, underline, none
       -- You can configure multiple style with comma separated, For e.g., keywords = 'italic,bold'
-      code_style = {
-        comments = "italic",
-        keywords = "none",
-        functions = "none",
-        strings = "none",
-        variables = "none",
-      },
+      -- code_style = {
+      --   comments = "italic",
+      --   keywords = "none",
+      --   functions = "none",
+      --   strings = "none",
+      --   variables = "none",
+      -- },
 
       -- Lualine options --
       lualine = {
@@ -53,6 +53,60 @@ return {
         background = true, -- use background color for virtual text
       },
     },
+  },
+
+  {
+    'ribru17/bamboo.nvim',
+    lazy = false,
+    opts = {
+      -- Main options --
+      -- NOTE: to use the light theme, set `vim.o.background = 'light'`
+      style = 'vulgaris', -- Choose between 'vulgaris' (regular), 'multiplex' (greener), and 'light'
+      toggle_style_key = "<leader>C", -- Keybind to toggle theme style. Leave it nil to disable it, or set it to a string, e.g. "<leader>ts"
+      toggle_style_list = { 'vulgaris', 'multiplex', 'light' }, -- List of styles to toggle between
+      transparent = false, -- Show/hide background
+      dim_inactive = false, -- Dim inactive windows/buffers
+      term_colors = true, -- Change terminal color as per the selected theme style
+      ending_tildes = false, -- Show the end-of-buffer tildes. By default they are hidden
+      cmp_itemkind_reverse = false, -- reverse item kind highlights in cmp menu
+
+      -- Change code style ---
+      -- Options are anything that can be passed to the `vim.api.nvim_set_hl` table
+      -- You can also configure styles with a string, e.g. keywords = 'italic,bold'
+      code_style = {
+        comments = { italic = true },
+        conditionals = { italic = true },
+        keywords = {},
+        functions = {},
+        namespaces = { italic = true },
+        parameters = { italic = true },
+        strings = {},
+        variables = {},
+      },
+
+      -- Lualine options --
+      lualine = {
+        transparent = false, -- lualine center bar transparency
+      },
+
+      -- Custom Highlights --
+      colors = {}, -- Override default colors
+      highlights = {}, -- Override highlight groups
+
+      -- Plugins Config --
+      diagnostics = {
+        darker = false, -- darker colors for diagnostic
+        undercurl = true, -- use undercurl instead of underline for diagnostics
+        background = true, -- use background color for virtual text
+      },
+    },
+    priority = 1000,
+    -- config = function()
+    --   require('bamboo').setup {
+    --     -- optional configuration here
+    --   }
+    --   require('bamboo').load()
+    -- end,
   },
 
   {
@@ -230,7 +284,7 @@ return {
 
         fm.setup {
           glow = true,
-          theme = 'delta', -- flouromachine, retrowave, delta,
+          theme = 'fluoromachine', -- flouromachine, retrowave, delta,
           transparent = false,
         }
 
@@ -238,6 +292,45 @@ return {
   },
 
   { "savq/melange-nvim" },
+
+  {
+    "rose-pine/neovim",
+    name = "rose-pine",
+    opts = {
+      variant = "auto", -- auto, main, moon, or dawn
+      dark_variant = "main", -- main, moon, or dawn
+      dim_inactive_windows = false,
+      extend_background_behind_borders = true,
+    },
+    -- config = function()
+    --   vim.cmd("colorscheme rose-pine")
+    -- end
+  },
+
+  {
+    "nyoom-engineering/oxocarbon.nvim"
+    -- Add in any other configuration; 
+    --   event = foo, 
+    --   config = bar
+    --   end,
+  },
+
+  {
+    'maxmx03/solarized.nvim',
+    lazy = false,
+    priority = 1000,
+    ---@type solarized.config
+    opts = {
+      palette = 'solarized', -- solarized (default) | selenized
+      variant = 'winter', -- "spring" | "summer" | "autumn" | "winter" (default)
+    },
+    -- config = function(_, opts)
+    --   vim.o.termguicolors = true
+    --   vim.o.background = 'light'
+    --   require('solarized').setup(opts)
+    --   vim.cmd.colorscheme 'solarized'
+    -- end,
+  },
 
   {
     "nvim-lualine/lualine.nvim",
