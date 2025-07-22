@@ -220,18 +220,18 @@ return {
       },
       strategies = {
         chat = {
-          -- adapter = "anthropic",
-          adapter = {
-            name = "anthropic",
-            model = "claude-sonnet-4-20250514",
-          },
+          adapter = "bedrock",
+          -- adapter = {
+          --   name = "anthropic",
+          --   model = "claude-sonnet-4-20250514",
+          -- },
           -- roles = {
           --   user = "olimorris",
           -- },
         },
         inline = {
           adapter = {
-            name = "anthropic",
+            name = "bedrock",
             -- model = "gpt-4.1",
           },
         },
