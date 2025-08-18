@@ -1,6 +1,44 @@
 -- Method 1: ---------------
 return {
 
+    {
+      "ibhagwan/fzf-lua",
+      keys = {
+        -- {
+        --   "<leader>sA",
+        --   function()
+        --     require("codesearch.fzf").code_search()
+        --   end,
+        --   mode = { "n", "v" },
+        --   silent = true,
+        --   desc = "Amazon Code Search using FZF",
+        -- },
+
+        -- (Optional) Example of custom query appending `path:!*test*`, filtering out tests
+        {
+          "<leader>sA",
+          function()
+            local cs = require("codesearch.fzf")
+            cs.code_search({
+              search = "repo:Goku* " .. cs.visual_or_input({
+                input_prompt = "Code Search (Goku*): ",
+              }),
+            })
+          end,
+          mode = { "n", "v" },
+          silent = true,
+          desc = "Amazon Code Search - Goku*",
+        },
+      },
+      dependencies = {
+        {
+          "https://git.amazon.com/pkg/NvimCodeSearch",
+          branch = "mainline",
+          lazy = false,
+        },
+      },
+    },
+
     -- Use `bemol --watch --verbose` to run LSP
     {
     "neovim/nvim-lspconfig",
