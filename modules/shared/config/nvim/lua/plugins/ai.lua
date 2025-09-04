@@ -89,7 +89,7 @@ return {
       ---@type CodeCompanion.Config
       adapters = {
         anthropic = function()
-          return require("codecompanion.adapters").extend("anthropic", {
+          return require("codecompanion.adapters.http").extend("anthropic", {
             -- env = {
             --   api_key = "cmd:op read op://personal/Anthropic_API/credential --no-newline",
             -- },
@@ -102,10 +102,10 @@ return {
         end,
 
         bedrock = function()
-          local anthropic = require 'codecompanion.adapters.anthropic'
+          local anthropic = require 'codecompanion.adapters.http.anthropic'
 
           ---@class Bedrock.Adapter: CodeCompanion.Adapter
-          return require('codecompanion.adapters').extend('anthropic', {
+          return require('codecompanion.adapters.http').extend('anthropic', {
             name = 'bedrock',
             formatted_name = 'Bedrock',
             url = 'https://bedrock-runtime.${aws_region}.amazonaws.com/model/${model}/${endpoint}',
@@ -206,7 +206,7 @@ return {
         end,
 
         ollama = function()
-          return require("codecompanion.adapters").extend("ollama", {
+          return require("codecompanion.adapters.http").extend("ollama", {
             schema = {
               model = {
                 default = "qwen3:latest",
