@@ -71,17 +71,17 @@ return {
       --   build = "pipx upgrade vectorcode",
       --   dependencies = { "nvim-lua/plenary.nvim" },
       -- },
-      {
-        "echasnovski/mini.diff",
-        config = function()
-          local diff = require("mini.diff")
-          diff.setup({
-            -- Disabled by default
-            source = diff.gen_source.none(),
-          })
-        end,
-      },
-      -- { "echasnovski/mini.pick", config = true },
+      -- {
+      --   "nvim-mini/mini.diff",
+      --   config = function()
+      --     local diff = require("mini.diff")
+      --     diff.setup({
+      --       -- Disabled by default
+      --       source = diff.gen_source.none(),
+      --     })
+      --   end,
+      -- },
+      -- { "nvim-mini/mini.pick", config = true },
       -- { "ibhagwan/fzf-lua", config = true },
     },
     opts = {
@@ -254,7 +254,8 @@ return {
           },
         },
         diff = {
-          provider = "mini_diff",
+          provider = "default",
+          -- provider = "mini_diff",
         },
       },
       opts = {
