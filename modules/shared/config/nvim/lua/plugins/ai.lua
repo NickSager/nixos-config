@@ -71,17 +71,17 @@ return {
       --   build = "pipx upgrade vectorcode",
       --   dependencies = { "nvim-lua/plenary.nvim" },
       -- },
-      {
-        "echasnovski/mini.diff",
-        config = function()
-          local diff = require("mini.diff")
-          diff.setup({
-            -- Disabled by default
-            source = diff.gen_source.none(),
-          })
-        end,
-      },
-      -- { "echasnovski/mini.pick", config = true },
+      -- {
+      --   "nvim-mini/mini.diff",
+      --   config = function()
+      --     local diff = require("mini.diff")
+      --     diff.setup({
+      --       -- Disabled by default
+      --       source = diff.gen_source.none(),
+      --     })
+      --   end,
+      -- },
+      -- { "nvim-mini/mini.pick", config = true },
       -- { "ibhagwan/fzf-lua", config = true },
     },
     opts = {
@@ -89,7 +89,7 @@ return {
       ---@type CodeCompanion.Config
       adapters = {
         anthropic = function()
-          return require("codecompanion.adapters").extend("anthropic", {
+          return require("codecompanion.adapters.http").extend("anthropic", {
             -- env = {
             --   api_key = "cmd:op read op://personal/Anthropic_API/credential --no-newline",
             -- },
@@ -102,10 +102,10 @@ return {
         end,
 
         bedrock = function()
-          local anthropic = require 'codecompanion.adapters.anthropic'
+          local anthropic = require 'codecompanion.adapters.http.anthropic'
 
           ---@class Bedrock.Adapter: CodeCompanion.Adapter
-          return require('codecompanion.adapters').extend('anthropic', {
+          return require('codecompanion.adapters.http').extend('anthropic', {
             name = 'bedrock',
             formatted_name = 'Bedrock',
             url = 'https://bedrock-runtime.${aws_region}.amazonaws.com/model/${model}/${endpoint}',
@@ -177,8 +177,10 @@ return {
             schema = {
               model = {
                 mapping = 'temp',
-                default = 'us.anthropic.claude-3-7-sonnet-20250219-v1:0',
+                default = 'us.anthropic.claude-sonnet-4-5-20250929-v1:0',
                 choices = {
+                  ['us.anthropic.claude-opus-4-1-20250805-v1:0'] = { opts = { can_reason = true, has_vision = true } },
+                  ['us.anthropic.claude-sonnet-4-5-20250929-v1:0'] = { opts = { can_reason = true, has_vision = true } },
                   ['us.anthropic.claude-sonnet-4-20250514-v1:0'] = { opts = { can_reason = true, has_vision = true } },
                   ['us.anthropic.claude-3-7-sonnet-20250219-v1:0'] = { opts = { can_reason = true, has_vision = true } },
                 },
@@ -206,7 +208,7 @@ return {
         end,
 
         ollama = function()
-          return require("codecompanion.adapters").extend("ollama", {
+          return require("codecompanion.adapters.http").extend("ollama", {
             schema = {
               model = {
                 default = "qwen3:latest",
@@ -220,18 +222,18 @@ return {
       },
       strategies = {
         chat = {
-          -- adapter = "anthropic",
-          adapter = {
-            name = "anthropic",
-            model = "claude-sonnet-4-20250514",
-          },
+          adapter = "bedrock",
+          -- adapter = {
+          --   name = "anthropic",
+          --   model = "claude-sonnet-4-20250514",
+          -- },
           -- roles = {
           --   user = "olimorris",
           -- },
         },
         inline = {
           adapter = {
-            name = "anthropic",
+            name = "bedrock",
             -- model = "gpt-4.1",
           },
         },

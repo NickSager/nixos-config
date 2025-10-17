@@ -132,6 +132,9 @@ let name = "Nick Sager";
       # export PATH="$PATH:/Users/nick/.local/bin"
       # eval "$(/opt/homebrew/bin/brew shellenv)"
 
+      # Ruby Path
+      export PATH="/opt/homebrew/opt/ruby/bin:$PATH"
+
       # Nix Path
       export PATH="$HOME/.nix-profile/bin:$PATH"
 
