@@ -256,7 +256,7 @@ return {
           },
         },
         diff = {
-          provider = "mini_diff",
+          provider = "inline",
         },
       },
       opts = {
