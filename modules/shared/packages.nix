@@ -106,6 +106,7 @@ with pkgs; [
   # R
   ripgrep # Fast text search tool
   # R # Stats language
+  rustup
 
   # S
   # slack # Team communication app
