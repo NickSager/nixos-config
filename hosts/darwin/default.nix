@@ -75,7 +75,7 @@ let user = "nick"; in
         show-recents = false;
         launchanim = true;
         mouse-over-hilite-stack = true;
-        orientation = "bottom";
+        orientation = "left";
         tilesize = 36;
       };
       finder = {
