@@ -137,6 +137,9 @@
                 autoMigrate = true;
               };
             }
+            # Symlink app files for dock
+            ./modules/darwin/nix-apps.nix
+
             ./hosts/darwin
           ];
         }
