@@ -4,7 +4,6 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     home-manager.url = "github:nix-community/home-manager";
-    mac-app-util.url = "github:hraban/mac-app-util";
     agenix.url = "github:ryantm/agenix";
     # claude-desktop = {
     #   url = "github:k3d3/claude-desktop-linux-flake";
@@ -45,8 +44,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  # outputs = { self, darwin, claude-desktop, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, flake-utils, disko, agenix, secrets, niri-flake } @inputs:
-  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, flake-utils, disko, agenix, niri-flake, mac-app-util } @inputs:
+  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, flake-utils, disko, agenix, niri-flake } @inputs:
     let
       user = "nick";
       linuxSystems = [ "x86_64-linux" "aarch64-linux" ];
@@ -107,22 +105,7 @@
           inherit system;
           specialArgs = inputs // { inherit user; };
           modules = [
-            mac-app-util.darwinModules.default
             home-manager.darwinModules.home-manager
-            (
-              { pkgs, config, inputs, ... }:
-              {
-                # To enable it for all users:
-                # home-manager.sharedModules = [
-                #   mac-app-util.homeManagerModules.default
-                # ];
-
-                # Or to enable it for a single user only:
-                home-manager.users.${user}.imports = [
-                  mac-app-util.homeManagerModules.default
-                ];
-              }
-            )
             nix-homebrew.darwinModules.nix-homebrew
             {
               nix-homebrew = {
