@@ -39,7 +39,7 @@ with pkgs; [
   # discord # Discord
   # docker
   # docker-compose
-  du-dust # Disk usage analyzer
+  dust # Disk usage analyzer
 
   # E
   eza # Better ls
