@@ -179,10 +179,8 @@ return {
                 mapping = 'temp',
                 default = 'us.anthropic.claude-sonnet-4-5-20250929-v1:0',
                 choices = {
-                  ['us.anthropic.claude-opus-4-1-20250805-v1:0'] = { opts = { can_reason = true, has_vision = true } },
+                  ['us.anthropic.claude-opus-4-5-20251101-v1:0'] = { opts = { can_reason = true, has_vision = true } },
                   ['us.anthropic.claude-sonnet-4-5-20250929-v1:0'] = { opts = { can_reason = true, has_vision = true } },
-                  ['us.anthropic.claude-sonnet-4-20250514-v1:0'] = { opts = { can_reason = true, has_vision = true } },
-                  ['us.anthropic.claude-3-7-sonnet-20250219-v1:0'] = { opts = { can_reason = true, has_vision = true } },
                 },
               },
               region = {
