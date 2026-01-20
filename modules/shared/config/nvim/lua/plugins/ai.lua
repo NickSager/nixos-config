@@ -88,137 +88,139 @@ return {
       ---@module "codecompanion"
       ---@type CodeCompanion.Config
       adapters = {
-        anthropic = function()
-          return require("codecompanion.adapters.http").extend("anthropic", {
-            -- env = {
-            --   api_key = "cmd:op read op://personal/Anthropic_API/credential --no-newline",
-            -- },
-            schema = {
-              extended_thinking = {
-                default = true,
-              },
-            },
-          })
-        end,
-
-        bedrock = function()
-          local anthropic = require 'codecompanion.adapters.http.anthropic'
-
-          ---@class Bedrock.Adapter: CodeCompanion.Adapter
-          return require('codecompanion.adapters.http').extend('anthropic', {
-            name = 'bedrock',
-            formatted_name = 'Bedrock',
-            url = 'https://bedrock-runtime.${aws_region}.amazonaws.com/model/${model}/${endpoint}',
-            env = {
-              aws_access_key_id = function() return get_credentials 'AccessKeyId' end,
-              aws_region = 'schema.region.default',
-              aws_secret_access_key = function() return get_credentials 'SecretAccessKey' end,
-              aws_session_token = function() return get_credentials 'SessionToken' end,
-              endpoint = function(self)
-                if self.opts.stream then
-                  return 'invoke-with-response-stream'
-                else
-                  return 'invoke'
-                end
-              end,
-              model = 'schema.model.default',
-            },
-            headers = {
-              ['x-amz-security-token'] = '${aws_session_token}',
-            },
-            raw = {
-              '--aws-sigv4',
-              'aws:amz:${aws_region}:bedrock',
-              '--user',
-              '${aws_access_key_id}:${aws_secret_access_key}',
-            },
-            handlers = {
-              setup = function(_) return true end,
-              tokens = function(self, data)
-                local total_tokens = 0
-                if self.opts.stream then
-                  for _, message in ipairs(parse_bedrock_stream(data)) do
-                    total_tokens = total_tokens + (anthropic.handlers.tokens(self, message) or 0)
-                  end
-                else
-                  total_tokens = anthropic.handlers.tokens(self, data)
-                end
-                return total_tokens
-              end,
-              chat_output = function(self, data, tools)
-                if not self.opts.stream then return anthropic.handlers.chat_output(self, data, tools) end
-
-                local output = { role = nil, reasoning = nil, content = nil }
-                local chunks = parse_bedrock_stream(data)
-                if not chunks or #chunks == 0 then return { status = STATUS_SUCCESS, output = output } end
-
-                for _, message in ipairs(chunks) do
-                  local part = anthropic.handlers.chat_output(self, message, tools)
-                  if not part then goto continue end
-
-                  -- Handle error status
-                  if part.status ~= STATUS_SUCCESS then return { status = part.status, output = output } end
-
-                  -- Merge successful response data
-                  if part.output then
-                    output.role = output.role or part.output.role
-                    output.reasoning = merge_reasoning(output.reasoning, part.output.reasoning)
-                    output.content = merge_content(output.content, part.output.content)
-                  end
-
-                  ::continue::
-                end
-                return {
-                  status = STATUS_SUCCESS,
-                  output = output,
-                }
-              end,
-            },
-            schema = {
-              model = {
-                mapping = 'temp',
-                default = 'us.anthropic.claude-sonnet-4-5-20250929-v1:0',
-                choices = {
-                  ['us.anthropic.claude-opus-4-5-20251101-v1:0'] = { opts = { can_reason = true, has_vision = true } },
-                  ['us.anthropic.claude-sonnet-4-5-20250929-v1:0'] = { opts = { can_reason = true, has_vision = true } },
+        http = {
+          anthropic = function()
+            return require("codecompanion.adapters.http").extend("anthropic", {
+              -- env = {
+              --   api_key = "cmd:op read op://personal/Anthropic_API/credential --no-newline",
+              -- },
+              schema = {
+                extended_thinking = {
+                  default = true,
                 },
               },
-              region = {
-                type = 'string',
-                default = 'us-west-2',
-                desc = 'AWS region',
-                choices = {
-                  'us-east-1',
-                  'us-east-2',
-                  'us-west-1',
-                  'us-west-2',
+            })
+          end,
+
+          bedrock = function()
+            local anthropic = require 'codecompanion.adapters.http.anthropic'
+
+            ---@class Bedrock.Adapter: CodeCompanion.Adapter
+            return require('codecompanion.adapters.http').extend('anthropic', {
+              name = 'bedrock',
+              formatted_name = 'Bedrock',
+              url = 'https://bedrock-runtime.${aws_region}.amazonaws.com/model/${model}/${endpoint}',
+              env = {
+                aws_access_key_id = function() return get_credentials 'AccessKeyId' end,
+                aws_region = 'schema.region.default',
+                aws_secret_access_key = function() return get_credentials 'SecretAccessKey' end,
+                aws_session_token = function() return get_credentials 'SessionToken' end,
+                endpoint = function(self)
+                  if self.opts.stream then
+                    return 'invoke-with-response-stream'
+                  else
+                    return 'invoke'
+                  end
+                end,
+                model = 'schema.model.default',
+              },
+              headers = {
+                ['x-amz-security-token'] = '${aws_session_token}',
+              },
+              raw = {
+                '--aws-sigv4',
+                'aws:amz:${aws_region}:bedrock',
+                '--user',
+                '${aws_access_key_id}:${aws_secret_access_key}',
+              },
+              handlers = {
+                setup = function(_) return true end,
+                tokens = function(self, data)
+                  local total_tokens = 0
+                  if self.opts.stream then
+                    for _, message in ipairs(parse_bedrock_stream(data)) do
+                      total_tokens = total_tokens + (anthropic.handlers.tokens(self, message) or 0)
+                    end
+                  else
+                    total_tokens = anthropic.handlers.tokens(self, data)
+                  end
+                  return total_tokens
+                end,
+                chat_output = function(self, data, tools)
+                  if not self.opts.stream then return anthropic.handlers.chat_output(self, data, tools) end
+
+                  local output = { role = nil, reasoning = nil, content = nil }
+                  local chunks = parse_bedrock_stream(data)
+                  if not chunks or #chunks == 0 then return { status = STATUS_SUCCESS, output = output } end
+
+                  for _, message in ipairs(chunks) do
+                    local part = anthropic.handlers.chat_output(self, message, tools)
+                    if not part then goto continue end
+
+                    -- Handle error status
+                    if part.status ~= STATUS_SUCCESS then return { status = part.status, output = output } end
+
+                    -- Merge successful response data
+                    if part.output then
+                      output.role = output.role or part.output.role
+                      output.reasoning = merge_reasoning(output.reasoning, part.output.reasoning)
+                      output.content = merge_content(output.content, part.output.content)
+                    end
+
+                    ::continue::
+                  end
+                  return {
+                    status = STATUS_SUCCESS,
+                    output = output,
+                  }
+                end,
+              },
+              schema = {
+                model = {
+                  mapping = 'temp',
+                  default = 'us.anthropic.claude-sonnet-4-5-20250929-v1:0',
+                  choices = {
+                    ['us.anthropic.claude-opus-4-5-20251101-v1:0'] = { opts = { can_reason = true, has_vision = true } },
+                    ['us.anthropic.claude-sonnet-4-5-20250929-v1:0'] = { opts = { can_reason = true, has_vision = true } },
+                  },
+                },
+                region = {
+                  type = 'string',
+                  default = 'us-west-2',
+                  desc = 'AWS region',
+                  choices = {
+                    'us-east-1',
+                    'us-east-2',
+                    'us-west-1',
+                    'us-west-2',
+                  },
+                },
+                anthropic_version = {
+                  mapping = 'parameters',
+                  type = 'string',
+                  optional = false,
+                  default = 'bedrock-2023-05-31',
+                  desc = 'Bedrock anthropic API version',
                 },
               },
-              anthropic_version = {
-                mapping = 'parameters',
-                type = 'string',
-                optional = false,
-                default = 'bedrock-2023-05-31',
-                desc = 'Bedrock anthropic API version',
-              },
-            },
-          })
-        end,
+            })
+          end,
 
-        ollama = function()
-          return require("codecompanion.adapters.http").extend("ollama", {
-            schema = {
-              model = {
-                default = "qwen3:latest",
+          ollama = function()
+            return require("codecompanion.adapters.http").extend("ollama", {
+              schema = {
+                model = {
+                  default = "qwen3:latest",
+                },
+                num_ctx = {
+                  default = 20000,
+                },
               },
-              num_ctx = {
-                default = 20000,
-              },
-            },
-          })
-        end,
+            })
+          end,
+        },
       },
-      strategies = {
+      interactions = {
         chat = {
           adapter = "bedrock",
           -- adapter = {
