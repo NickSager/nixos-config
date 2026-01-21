@@ -31,6 +31,7 @@ with pkgs; [
   btop # System monitor and process viewer
 
   # C
+  claude-code # Claude Code CLI for AI assistance
   # coreutils # Basic file/text/shell utilities
 
   # D
@@ -79,6 +80,7 @@ with pkgs; [
   libfido2 # FIDO2 library
 
   # M
+  mosh # Mobile shell (SSH alternative with roaming support)
   # myPHP # Custom PHP with extensions
   myPython # Custom Python with packages
 
