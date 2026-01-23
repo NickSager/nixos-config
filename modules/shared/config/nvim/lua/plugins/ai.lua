@@ -54,46 +54,74 @@ end
 
 return {
   {
-    "olimorris/codecompanion.nvim", -- The KING of AI programming
+    "olimorris/codecompanion.nvim",
     cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionActions" },
     dependencies = {
       "j-hui/fidget.nvim", -- Display status
-      -- {"ravitemer/mcphub.nvim",
-      --   callback = "mcphub.extensions.codecompanion",
-      --   opts = {
-      --     make_vars = true,
-      --     make_slash_commands = true,
-      --     show_result_in_chat = true
-      -- },
-      -- {
-      --   "Davidyz/VectorCode", -- Index and search code in your repositories
-      --   version = "*",
-      --   build = "pipx upgrade vectorcode",
-      --   dependencies = { "nvim-lua/plenary.nvim" },
-      -- },
-      -- {
-      --   "nvim-mini/mini.diff",
-      --   config = function()
-      --     local diff = require("mini.diff")
-      --     diff.setup({
-      --       -- Disabled by default
-      --       source = diff.gen_source.none(),
-      --     })
-      --   end,
-      -- },
-      -- { "nvim-mini/mini.pick", config = true },
-      -- { "ibhagwan/fzf-lua", config = true },
+      {
+        "nvim-mini/mini.diff",
+        config = function()
+          require("mini.diff").setup({
+            source = require("mini.diff").gen_source.none(),
+          })
+        end,
+      },
     },
     opts = {
       ---@module "codecompanion"
       ---@type CodeCompanion.Config
       adapters = {
+        acp = {
+          claude_code = function()
+            -- Read Claude Code settings.json to get Bedrock config
+            local settings_file = vim.fn.expand("~/.claude/settings.json")
+            local settings = {}
+
+            if vim.fn.filereadable(settings_file) == 1 then
+              local ok, decoded = pcall(vim.fn.json_decode, vim.fn.readfile(settings_file))
+              if ok and decoded.env then
+                settings = decoded.env
+              end
+            end
+
+            return require("codecompanion.adapters.acp").extend("claude_code", {
+              commands = {
+                default = {
+                  "npx",
+                  "--yes",
+                  "@zed-industries/claude-code-acp",
+                },
+              },
+              env = {
+                -- Use AWS Bedrock (from settings.json or default to 1)
+                CLAUDE_CODE_USE_BEDROCK = settings.CLAUDE_CODE_USE_BEDROCK or "1",
+                AWS_PROFILE = settings.AWS_PROFILE or "claude",
+                AWS_REGION = settings.AWS_REGION or "us-west-2",
+                -- Pass through any other settings from settings.json
+                ANTHROPIC_DEFAULT_SONNET_MODEL = settings.ANTHROPIC_DEFAULT_SONNET_MODEL,
+                ANTHROPIC_DEFAULT_OPUS_MODEL = settings.ANTHROPIC_DEFAULT_OPUS_MODEL,
+                ANTHROPIC_DEFAULT_HAIKU_MODEL = settings.ANTHROPIC_DEFAULT_HAIKU_MODEL,
+              },
+              handlers = {
+                setup = function(self)
+                  -- Refresh AWS credentials before starting ACP session
+                  local isengard_acct = os.getenv("ISENGARD_ACCT")
+                  if isengard_acct and isengard_acct ~= "" then
+                    local refresh_cmd = string.format(
+                      "ada credentials update --profile claude --account %s --provider isengard --role Admin --once",
+                      isengard_acct
+                    )
+                    vim.fn.system(refresh_cmd)
+                  end
+                  return true
+                end,
+              },
+            })
+          end,
+        },
         http = {
           anthropic = function()
             return require("codecompanion.adapters.http").extend("anthropic", {
-              -- env = {
-              --   api_key = "cmd:op read op://personal/Anthropic_API/credential --no-newline",
-              -- },
               schema = {
                 extended_thinking = {
                   default = true,
@@ -222,20 +250,10 @@ return {
       },
       interactions = {
         chat = {
-          adapter = "bedrock",
-          -- adapter = {
-          --   name = "anthropic",
-          --   model = "claude-sonnet-4-20250514",
-          -- },
-          -- roles = {
-          --   user = "olimorris",
-          -- },
+          adapter = "claude_code",
         },
         inline = {
-          adapter = {
-            name = "bedrock",
-            -- model = "gpt-4.1",
-          },
+          adapter = "bedrock",
         },
       },
       display = {
@@ -256,11 +274,11 @@ return {
           },
         },
         diff = {
-          provider = "inline",
+          provider = "mini_diff",
         },
       },
       opts = {
-        log_level = "DEBUG",
+        log_level = "INFO",
       },
     },
     keys = {
@@ -281,6 +299,18 @@ return {
         "<cmd>CodeCompanionChat Add<CR>",
         desc = "Add code to a chat buffer",
         mode = { "v" },
+      },
+      {
+        "<Leader>ac",
+        "<cmd>CodeCompanionChat adapter=claude_code<CR>",
+        desc = "Chat with Claude Code (ACP)",
+        mode = { "n", "v" },
+      },
+      {
+        "<Leader>ab",
+        "<cmd>CodeCompanionChat adapter=bedrock<CR>",
+        desc = "Chat with Bedrock (HTTP)",
+        mode = { "n", "v" },
       },
     },
     init = function()
