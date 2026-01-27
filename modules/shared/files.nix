@@ -61,8 +61,6 @@ in
 
     ".config/starship.toml".source = ./config/starship.toml;
 
-    ".config/iterm2.itermexport".source = ./config/iTerm2.itermexport;
-
     # Can copy over public keys as text
     # ".ssh/id_github.pub" = {
     #   text = githubPublicKey;

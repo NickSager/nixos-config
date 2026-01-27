@@ -48,7 +48,7 @@ with pkgs; [
   # F
   fd # Fast find alternative
   ffmpeg # Multimedia framework
-  firefox # Browser
+  # firefox # Browser
   fzf # Fuzzy finder
 
   # G

@@ -15,9 +15,6 @@ let
   additionalFiles = import ./files.nix { inherit user config pkgs; };
 in
 {
-  imports = [
-    ./dock
-  ];
 
   # It me
   system.primaryUser = user;
@@ -71,35 +68,29 @@ in
       backupFileExtension = "backup";
   };
 
-  # Fully declarative dock using the latest from Nix Store
-  local = {
-    dock.enable = true;
-    dock.entries = [
-      # { path = "/System/Applications/Finder.app/"; }
-      { path = "/System/Applications/Launchpad.app/"; }
-      { path = "/Applications/Microsoft Outlook.app/"; }
-      { path = "/System/Applications/Calendar.app/"; }
-      { path = "/System/Applications/Reminders.app/"; }
-      { path = "/System/Applications/Notes.app/"; }
-      { path = "${pkgs.obsidian}/Applications/Obsidian.app/"; }
-      { path = "/Applications/Firefox.app/"; }
-      { path = "${pkgs.iterm2}/Applications/iTerm2.app/"; }
-      { path = "${pkgs.alacritty}/Applications/Alacritty.app/"; }
-      { path = "/Applications/Slack.app/"; }
+  system.defaults.dock = {
+    persistent-apps = [
+      { app = "/System/Applications/Launchpad.app"; }
+      { app = "/Applications/Microsoft Outlook.app"; }
+      { app = "/System/Applications/Calendar.app"; }
+      { app = "/System/Applications/Reminders.app"; }
+      { app = "/System/Applications/Notes.app"; }
+      { app = "${pkgs.obsidian}/Applications/Obsidian.app"; }
+      { app = "/Applications/Firefox.app"; }
+      { app = "${pkgs.alacritty}/Applications/Alacritty.app"; }
+      { app = "/Applications/Slack.app"; }
+    ];
+
+    persistent-others = [
+      { file = toString myEmacsLauncher; }
       {
-        path = toString myEmacsLauncher;
-        section = "others";
+        folder = {
+          path = "${config.users.users.${user}.home}/Downloads";
+          arrangement = "name";
+          displayas = "stack";
+          showas = "grid";
+        };
       }
-      {
-        path = "${config.users.users.${user}.home}/Downloads";
-        section = "others";
-        options = "--sort name --view grid --display stack";
-      }
-      # {
-      #   path = "${config.users.users.${user}.home}/Trash";
-      #   section = "others";
-      #   # options = "--sort name --view grid --display stack";
-      # }
     ];
   };
 
