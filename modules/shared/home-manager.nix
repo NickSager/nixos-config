@@ -250,12 +250,14 @@ let name = "Nick Sager";
   git = {
     enable = true;
     ignores = [ "*.swp" ];
-    userName = name;
-    userEmail = email;
     lfs = {
       enable = true;
     };
-    extraConfig = {
+    settings = {
+      user = {
+        name = name;
+        email = email;
+      };
       init.defaultBranch = "main";
       core = {
 	    editor = "vim";
@@ -459,19 +461,17 @@ let name = "Nick Sager";
         "/Users/${user}/.ssh/config_external"
       )
     ];
-    #matchBlocks = {
-    #  "github.com" = {
-    #    identitiesOnly = true;
-    #    identityFile = [
-    #      (lib.mkIf pkgs.stdenv.hostPlatform.isLinux
-    #        "/home/${user}/.ssh/id_github"
-    #      )
-    #      (lib.mkIf pkgs.stdenv.hostPlatform.isDarwin
-    #        "/Users/${user}/.ssh/id_github"
-    #      )
-    #    ];
-    #  };
-    #};
+    enableDefaultConfig = false;
+    matchBlocks = {
+      "*" = {
+        addKeysToAgent = "yes";
+        compression = true;
+        controlMaster = "auto";
+        controlPath = "~/.ssh/master-%r@%n:%p";
+        controlPersist = "10m";
+        serverAliveInterval = 60;
+      };
+    };
   };
 
   tmux = {
