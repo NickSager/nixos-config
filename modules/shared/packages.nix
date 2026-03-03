@@ -94,7 +94,7 @@ with pkgs; [
   # (hiPrio nodePackages.prettier) # Code formatter
 
   # O
-  obsidian # Knowledge base on local Markdown files
+  # obsidian - managed declaratively via programs.obsidian in modules/shared/obsidian.nix
   openssh # SSH client and server
 
   # P

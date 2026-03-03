@@ -1,6 +1,7 @@
 # Obsidian vault — home-manager module shared across all platforms.
 #
 # Manages:
+#   - programs.obsidian with declarative community plugins
 #   - home.file entries for templates, prompts, README, .gitignore (read-only symlinks)
 #   - home.activation for mutable directories and script copies
 #
@@ -10,64 +11,61 @@
 #       Alternatively, uncomment the obsidian-daily-setup flake input in flake.nix
 #       to fetch updates automatically via `nix flake update obsidian-daily-setup`.
 
-{ lib, ... }:
+{ lib, pkgs, ... }:
 
 let
   obsidianSource = ./config/obsidian;
   obsidianScriptsSource = ./config/obsidian/scripts;
+  obsidianPlugins = import ./obsidian-plugins.nix { inherit pkgs; };
   notesDir = "Documents/Notes";
 in
 
 {
-  # ── Declarative plugin management (not yet active) ────────────────────
-  # To enable:
-  #   1. Add flake input: obsidian-plugins.url = "github:cjavad/nixpille-obsidian-community-plugins";
-  #   2. Add the overlay from that flake to get pkgs.obsidianPlugins
-  #   3. Uncomment the block below
-  #   4. Remove obsidian from modules/shared/packages.nix (the module handles it)
-  #
-  # WARNING: Once enabled, community-plugins.json becomes read-only.
-  #          You can no longer install plugins from within Obsidian.
-  #          All plugins must be declared here and applied via build-switch.
-  #
-  # programs.obsidian = {
-  #   enable = true;
-  #   vaults.${notesDir} = {
-  #     settings = {
-  #       corePlugins = [
-  #         "daily-notes"
-  #         "templates"
-  #         "backlink"
-  #         "global-search"
-  #         "graph"
-  #         "outline"
-  #         "tag-pane"
-  #         "file-explorer"
-  #         "command-palette"
-  #         "bookmarks"
-  #         "editor-status"
-  #         "word-count"
-  #       ];
-  #       # Essential
-  #       communityPlugins = with pkgs.obsidianPlugins; [
-  #         obsidian-tasks            # Advanced task management
-  #         obsidian-day-planner      # Time-blocking and meeting tracking
-  #         dataview                  # SQL-like queries for notes
-  #         templater-obsidian        # Dynamic templates
-  #         nldates-obsidian          # Natural Language Dates
-  #         # Recommended
-  #         table-editor-obsidian     # Advanced Tables
-  #         obsidian-plantuml         # Technical diagrams
-  #         obsidian-emoji-shortcodes # Quick emoji insertion
-  #         # Optional
-  #         # obsidian-style-settings # Custom CSS configuration
-  #         # obsidian-mindmap-nextgen # Auto-generated mindmaps
-  #         # marp-slides             # Presentations from markdown
-  #         # obsidian-image-toolkit  # Enhanced image viewing
-  #       ];
-  #     };
-  #   };
-  # };
+  # ── Declarative plugin management ──────────────────────────────────────
+  # community-plugins.json is read-only once this is active.
+  # To add/remove plugins, edit obsidian-plugins.nix and run build-switch.
+  programs.obsidian = {
+    enable = true;
+    vaults.${notesDir} = {
+      settings = {
+        corePlugins = [
+          "daily-notes"
+          "templates"
+          "backlink"
+          "global-search"
+          "graph"
+          "outline"
+          "tag-pane"
+          "file-explorer"
+          "command-palette"
+          "bookmarks"
+          "editor-status"
+          "word-count"
+        ];
+        communityPlugins = with obsidianPlugins; [
+          # Essential
+          obsidian-tasks-plugin       # Advanced task management
+          obsidian-day-planner        # Time-blocking and meeting tracking
+          dataview                    # SQL-like queries for notes
+          templater-obsidian          # Dynamic templates
+          nldates-obsidian            # Natural Language Dates
+          # Recommended
+          markdown-table-editor       # Advanced Tables
+          obsidian-plantuml           # Technical diagrams
+          emoji-shortcodes            # Quick emoji insertion
+          obsidian-emoji-toolbar      # Emoji picker
+          # Optional
+          obsidian-style-settings     # Custom CSS configuration
+          obsidian-mindmap-nextgen    # Auto-generated mindmaps
+          marp-slides                 # Presentations from markdown
+          obsidian-image-toolkit      # Enhanced image viewing
+          simple-time-tracker         # Detailed time tracking
+          vim-yank-highlight          # Visual feedback for vim users
+        ];
+      };
+    };
+  };
+
   home.file = {
     # Templates: read-only symlinks (Obsidian reads these, never writes)
     "${notesDir}/Main/Templates/Daily_Note.md".source =
