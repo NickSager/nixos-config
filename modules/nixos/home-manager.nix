@@ -13,6 +13,8 @@ let
   ];
 in
 {
+  imports = [ ../shared/obsidian.nix ];
+
   gtk = {
     enable = true;
     cursorTheme = {
@@ -29,7 +31,7 @@ in
     packages = pkgs.callPackage ./packages.nix { inherit inputs; };
     file = shared-files // import ./files.nix { inherit user pkgs; };
     stateVersion = "25.05";
-    
+
     sessionVariables = {
       XCURSOR_SIZE = "12";
       XCURSOR_THEME = "macOS-Monterey";

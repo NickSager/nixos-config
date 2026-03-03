@@ -51,6 +51,7 @@ in
     useGlobalPkgs = true;
     users.${user} = { pkgs, config, lib, ... }:
       {
+        imports = [ ../shared/obsidian.nix ];
         home = {
           enableNixpkgsReleaseCheck = false;
           packages = pkgs.callPackage ./packages.nix {};
@@ -80,6 +81,7 @@ in
       { path = "/System/Applications/Calendar.app/"; }
       { path = "/System/Applications/Reminders.app/"; }
       { path = "/System/Applications/Notes.app/"; }
+      { path = "${pkgs.obsidian}/Applications/Obsidian.app/"; }
       { path = "/Applications/Firefox.app/"; }
       { path = "${pkgs.iterm2}/Applications/iTerm2.app/"; }
       { path = "${pkgs.alacritty}/Applications/Alacritty.app/"; }

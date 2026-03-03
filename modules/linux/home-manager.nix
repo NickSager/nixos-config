@@ -9,6 +9,8 @@ let
   };
   additionalFiles = import ./files.nix { inherit user config pkgs; };
 in {
+  imports = [ ../shared/obsidian.nix ];
+
   home = {
     username = user;
     homeDirectory = "/home/${user}";

@@ -81,4 +81,5 @@ in
       text = claudeStatusline;
       executable = true;
     };
+
 }

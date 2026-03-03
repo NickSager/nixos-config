@@ -41,6 +41,9 @@ let name = "Nick Sager";
       nm="nmap -sC -sV -oN nmap";
       v="nvim";
 
+      # Obsidian daily summary scripts
+      daily-summary="cd ~/Documents/Notes && ./scripts/slack_summary.sh && ./scripts/taskei_daily_summary.sh";
+
       # Eza
       # ls="eza --color=always --long --git --no-filesize --icons=always --no-time --no-user --no-permissions";
       ls="eza --git --icons=always";

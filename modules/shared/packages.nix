@@ -31,7 +31,7 @@ with pkgs; [
   btop # System monitor and process viewer
 
   # C
-  claude-code # Claude Code CLI for AI assistance
+  # claude-code # Claude Code CLI for AI assistance
   # coreutils # Basic file/text/shell utilities
 
   # D
@@ -94,6 +94,7 @@ with pkgs; [
   # (hiPrio nodePackages.prettier) # Code formatter
 
   # O
+  obsidian # Knowledge base on local Markdown files
   openssh # SSH client and server
 
   # P
