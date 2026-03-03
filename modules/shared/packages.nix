@@ -56,8 +56,11 @@ with pkgs; [
   gh # GitHub CLI
   glow # Markdown renderer for terminal
   gnupg # GNU Privacy Guard
-  # go
-  # gopls # Go language server
+  go # Go programming language
+  golangci-lint # Go linter aggregator
+  gotools # Go tools (goimports, godoc, etc.)
+  gopls # Go language server
+  delve # Go debugger
 
   # H
   htop # Interactive process viewer
