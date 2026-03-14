@@ -202,12 +202,12 @@ let name = "Nick Sager";
           export PATH=$PATH:/apollo/env/AmazonAwsCli/bin
       fi
 
-      if [[ ":$PATH:" != *":$HOME/MattsHackyStuffDotCom/bin:"* ]]; then
-          export PATH=$PATH:$HOME/MattsHackyStuffDotCom/bin
+      if [[ ":$PATH:" != *":$HOME/workplace/Ops/src/MattsHackyStuffDotCom/bin:"* ]]; then
+          export PATH=$PATH:$HOME/workplace/Ops/src/MattsHackyStuffDotCom/bin
       fi
 
-      if [[ ":$PATH:" != *":$HOME/MattsHackyStuffDotCom/goku-ops:"* ]]; then
-          export PATH=$PATH:$HOME/MattsHackyStuffDotCom/goku-ops
+      if [[ ":$PATH:" != *":$HOME/workplace/Ops/src/MattsHackyStuffDotCom/goku-ops:"* ]]; then
+          export PATH=$PATH:$HOME/workplace/Ops/src/MattsHackyStuffDotCom/goku-ops
       fi
 
       # Update isengard in the background for different regions - Comment out if excessive
