@@ -1,16 +1,10 @@
 { pkgs, ... }:
 let
   myPython = pkgs.python3.withPackages (ps: with ps; [
-    slpp
     pip
     rich
     virtualenv
-    black
   ]);
-
-  myPHP = pkgs.php82.withExtensions ({ enabled, all }: enabled ++ (with all; [
-    xdebug
-  ]));
 
   myFonts = import ./fonts.nix { inherit pkgs; };
 in
@@ -88,7 +82,7 @@ with pkgs; [
   myPython # Custom Python with packages
 
   # N
-  ncurses # Terminal control library with terminfo database
+  ncurses # Required: terminfo database for tmux/alacritty TERM resolution
   # neofetch removed (unmaintained); use fastfetch if needed
   # ngrok # Secure tunneling service
   # nodePackages.live-server # Development server with live reload
@@ -98,7 +92,6 @@ with pkgs; [
 
   # O
   # obsidian - managed declaratively via programs.obsidian in modules/shared/obsidian.nix
-  openssh # SSH client and server
 
   # P
   pandoc # Document converter
@@ -116,7 +109,6 @@ with pkgs; [
 
   # S
   # slack # Team communication app
-  sqlite # SQL database engine
   starship # Prompt in Rust
   # syncthing # Syncing directories
 
