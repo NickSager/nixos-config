@@ -5,7 +5,6 @@ let
   # Can put github public keys here to be copied
   nvimSource = ./config/nvim;
 
-  # Claude Code settings - uses $ISENGARD_ACCT env var at runtime
   claudeSettings = builtins.toJSON {
     awsAuthRefresh = "ada credentials update --profile claude --account $ISENGARD_ACCT --provider isengard --role Admin --once";
     env = {
@@ -71,10 +70,7 @@ in
     # };
 
     # Claude Code configuration
-    ".claude/settings.json" = {
-      text = claudeSettings;
-    };
-
+    ".claude/settings.json".text = claudeSettings;
     ".claude/statusline.sh" = {
       text = claudeStatusline;
       executable = true;

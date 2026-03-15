@@ -56,6 +56,7 @@
   outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, flake-utils, disko, agenix, niri-flake } @inputs:
     let
       user = "nsager";
+      profile = "work"; # "work" or "personal"
       linuxSystems = [ "x86_64-linux" "aarch64-linux" ];
       darwinSystems = [ "aarch64-darwin" "x86_64-darwin" ];
       forAllSystems = f: nixpkgs.lib.genAttrs (linuxSystems ++ darwinSystems) f;
@@ -112,7 +113,7 @@
       darwinConfigurations = nixpkgs.lib.genAttrs darwinSystems (system:
         darwin.lib.darwinSystem {
           inherit system;
-          specialArgs = inputs // { inherit user; };
+          specialArgs = inputs // { inherit user profile; };
           modules = [
             home-manager.darwinModules.home-manager
             nix-homebrew.darwinModules.nix-homebrew
@@ -139,7 +140,7 @@
       nixosConfigurations = nixpkgs.lib.genAttrs linuxSystems (system:
         nixpkgs.lib.nixosSystem {
           inherit system;
-          specialArgs = inputs // { inherit user; };
+          specialArgs = inputs // { inherit user profile; };
           modules = [
             disko.nixosModules.disko
             niri-flake.nixosModules.niri
@@ -147,6 +148,7 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
+                extraSpecialArgs = { inherit profile; };
                 users.${user} = { config, pkgs, lib, ... }:
                   import ./modules/nixos/home-manager.nix { inherit config pkgs lib inputs; };
               };
@@ -161,7 +163,7 @@
       in
         home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.${system};
-          extraSpecialArgs = inputs;
+          extraSpecialArgs = inputs // { inherit profile; };
           modules = [
             ./hosts/linux
           ];

@@ -9,7 +9,10 @@ let
   };
   additionalFiles = import ./files.nix { inherit user config pkgs; };
 in {
-  imports = [ ../shared/obsidian.nix ];
+  imports = [
+    ../shared/obsidian.nix
+    ../shared/work.nix
+  ];
 
   home = {
     username = user;

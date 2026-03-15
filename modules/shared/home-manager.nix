@@ -41,9 +41,6 @@ let name = "Nick Sager";
       nm="nmap -sC -sV -oN nmap";
       v="nvim";
 
-      # Obsidian daily summary scripts
-      daily-summary="cd ~/Documents/Notes && ./scripts/slack_summary.sh && ./scripts/taskei_daily_summary.sh";
-
       # Eza
       # ls="eza --color=always --long --git --no-filesize --icons=always --no-time --no-user --no-permissions";
       ls="eza --git --icons=always";
@@ -143,107 +140,6 @@ let name = "Nick Sager";
 
       # Remove history data we don't want to see
       export HISTIGNORE="pwd:ls:cd"
-
-      # --- Amazon things -------
-      export PATH=$PATH:$HOME/.toolbox/bin
-      eval "$(mise activate zsh)"
-      source /Users/nsager/.brazil_completion/zsh_completion
-
-      # Enable autocompletion for mechanic.
-      [ -f "$HOME/.local/share/mechanic/complete.zsh" ] && source "$HOME/.local/share/mechanic/complete.zsh"
-
-      # Function to refresh AWS credentials
-
-      export ISENGARD_ACCT=230312711150
-
-      refresh_aws_credentials() {
-          echo "Refreshing AWS credentials..."
-
-          # Check if ISENGARD_ACCT is set, if not, prompt the user
-          if [[ -z "$ISENGARD_ACCT" ]]; then
-              echo "ISENGARD_ACCT is not set."
-              read "ISENGARD_ACCT?Please enter your Isengard account number: "
-              # Optionally, you can export this so it's available for future use in the same session
-              export ISENGARD_ACCT
-          fi
-
-          # Populate Isengard Credentials
-          if eval $(isengardcli creds $ISENGARD_ACCT); then
-              echo "Credentials successfully obtained from Isengard."
-
-              # Compose bedrock keys
-              BEDROCK_KEYS="$AWS_ACCESS_KEY_ID,$AWS_SECRET_ACCESS_KEY,us-west-2"
-              if [[ -n "$AWS_SESSION_TOKEN" ]]; then
-                  BEDROCK_KEYS="$BEDROCK_KEYS,$AWS_SESSION_TOKEN"
-              fi
-              export BEDROCK_KEYS
-
-              echo "AWS credentials refreshed and BEDROCK_KEYS updated."
-          else
-              echo "Failed to obtain credentials from Isengard. Please check your account number and try again."
-          fi
-      }
-
-      # Alias to call the function
-      alias refresh_aws='refresh_aws_credentials'
-
-      # Matts Hacky Stuff 
-
-      # Add necessary paths to PATH if they're not already present
-      if [[ ":$PATH:" != *":/apollo/env/GokuDevTools/bin:"* ]]; then
-          export PATH=$PATH:/apollo/env/GokuDevTools/bin
-      fi
-
-      if [[ ":$PATH:" != *":/apollo/env/envImprovement/bin:"* ]]; then
-          export PATH=$PATH:/apollo/env/envImprovement/bin
-      fi
-
-      if [[ ":$PATH:" != *":/apollo/env/AmazonAwsCli/bin:"* ]]; then
-          export PATH=$PATH:/apollo/env/AmazonAwsCli/bin
-      fi
-
-      if [[ ":$PATH:" != *":$HOME/workplace/Ops/src/MattsHackyStuffDotCom/bin:"* ]]; then
-          export PATH=$PATH:$HOME/workplace/Ops/src/MattsHackyStuffDotCom/bin
-      fi
-
-      if [[ ":$PATH:" != *":$HOME/workplace/Ops/src/MattsHackyStuffDotCom/goku-ops:"* ]]; then
-          export PATH=$PATH:$HOME/workplace/Ops/src/MattsHackyStuffDotCom/goku-ops
-      fi
-
-      # Update isengard in the background for different regions - Comment out if excessive
-      # (isengard update &> /dev/null &)
-      # (isengard -r us-gov-west-1 update &> /dev/null &)
-      # (isengard -r cn-north-1 update &> /dev/null &)
-
-      # trust things in mechanic - NOT done in zshrc. Saving for future use
-      # mechanic configure execution trust-aws-tools -a aws -a goku -a host
-      # mechanic configure execution trust-ssh-tools -a aws -a goku -a host
-      # mechanic --stack china configure execution trust-aws-tools -a aws -a goku -a host
-      # mechanic --stack china configure execution trust-ssh-tools -a aws -a goku -a host
-      # mechanic --stack us-gov configure execution trust-aws-tools -a aws -a goku -a host
-      # mechanic --stack us-gov configure execution trust-ssh-tools -a aws -a goku -a host
-      # mechanic configure execution default-op-group aws goku 
-      # mechanic configure execution default-op-group aws goku --stack us-gov
-      # mechanic configure execution default-op-group aws goku --stack china
-
-      # refresh mechanic and auto-refresh mechanic in the background in your rc
-      # (mechanic refresh &> /dev/null &)
-
-      # ---- Amazon Aliases -------------------------
-      alias auth='kinit && mwinit -f && refresh_aws_credentials'
-      alias bb=brazil-build
-
-      alias bba='brazil-build apollo-pkg'
-      alias bre='brazil-runtime-exec'
-      alias brc='brazil-recursive-cmd'
-      alias bws='brazil ws'
-      alias bwsuse='bws use -p'
-      alias bwscreate='bws create -n'
-      alias brc=brazil-recursive-cmd
-      alias bbr='brc brazil-build'
-      alias bball='brc --allPackages'
-      alias bbb='brc --allPackages brazil-build'
-      alias bbra='bbr apollo-pkg'
     '';
   };
 

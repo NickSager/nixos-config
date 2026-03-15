@@ -13,7 +13,10 @@ let
   ];
 in
 {
-  imports = [ ../shared/obsidian.nix ];
+  imports = [
+    ../shared/obsidian.nix
+    ../shared/work.nix
+  ];
 
   gtk = {
     enable = true;

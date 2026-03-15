@@ -1,4 +1,4 @@
-{ config, pkgs, lib, home-manager, ... }:
+{ config, pkgs, lib, home-manager, profile, ... }:
 
 let
   user = "nsager";
@@ -46,9 +46,13 @@ in
 
   home-manager = {
     useGlobalPkgs = true;
+    extraSpecialArgs = { inherit profile; };
     users.${user} = { pkgs, config, lib, ... }:
       {
-        imports = [ ../shared/obsidian.nix ];
+        imports = [
+          ../shared/obsidian.nix
+          ../shared/work.nix
+        ];
         home = {
           enableNixpkgsReleaseCheck = false;
           packages = pkgs.callPackage ./packages.nix {};
