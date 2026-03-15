@@ -48,12 +48,16 @@
     #  url = "git+ssh://git@code.amazon.com/packages/Thsvaugh-ObsidianDailySetup";
     #  flake = false;
     #};
+    emacs-overlay = {
+      url = "github:nix-community/emacs-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     niri-flake = {
       url = "github:sodiboo/niri-flake";
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, flake-utils, disko, agenix, niri-flake } @inputs:
+  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, flake-utils, disko, agenix, emacs-overlay, niri-flake } @inputs:
     let
       user = "nsager";
       profile = "work"; # "work" or "personal"

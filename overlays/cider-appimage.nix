@@ -16,8 +16,7 @@ self: super: with super; {
       in
       ''
         wrapProgram $out/bin/${pname} \
-           --add-flags "--ozone-platform=wayland --enable-features=UseOzonePlatform,WaylandWindowDecorations" \
-           --add-flags "--no-sandbox --disable-gpu-sandbox"
+           --add-flags "--ozone-platform=wayland --enable-features=UseOzonePlatform,WaylandWindowDecorations"
 
         if [ -f ${contents}/Cider.desktop ]; then
           install -m 444 -D ${contents}/Cider.desktop $out/share/applications/${pname}.desktop

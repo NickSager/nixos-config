@@ -19,7 +19,7 @@ let user = "nick"; in
 
       "syncthing-key" = {
         symlink = true;
-        path = "/home/{$user}/.config/syncthing/key.pem";
+        path = "/home/${user}/.config/syncthing/key.pem";
         file =  "${secrets}/felix-syncthing-key.age";
         mode = "600";
         owner = "${user}";
@@ -32,7 +32,7 @@ let user = "nick"; in
         file =  "${secrets}/github-ssh-key.age";
         mode = "600";
         owner = "${user}";
-        group = "wheel";
+        group = "users";
       };
 
       "github-signing-key" = {
@@ -41,7 +41,7 @@ let user = "nick"; in
         file =  "${secrets}/github-signing-key.age";
         mode = "600";
         owner = "${user}";
-        group = "wheel";
+        group = "users";
       };
     };
   };

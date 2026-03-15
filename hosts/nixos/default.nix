@@ -56,7 +56,10 @@ let user = "nick";
     useDHCP         = lib.mkDefault true;
     # networking.interfaces.eno1.useDHCP = lib.mkDefault true;
     networkmanager.enable = true;
-    firewall.enable       = false;
+    firewall = {
+      enable = true;
+      allowedTCPPorts = [ 22 ]; # SSH
+    };
   };
 
   # Set your time zone.
@@ -124,13 +127,19 @@ let user = "nick";
     # xserver.libinput.enable = true;
 
     # Enable the OpenSSH daemon.
-    openssh.enable = true;
+    openssh = {
+      enable = true;
+      settings = {
+        PasswordAuthentication = false;
+        PermitRootLogin = "no";
+      };
+    };
   };
 
   # Define a user account. Don't forget to set a password with 'passwd'.
   users.users.${user} = {
     isNormalUser = true;
-    description  = "Dustin Lyons";
+    description  = "Nick Sager";
     extraGroups  = [ "networkmanager" "wheel" ];
     shell = pkgs.zsh;
   };
@@ -163,7 +172,6 @@ let user = "nick";
           }
           {
             command = "/run/current-system/sw/bin/nixos-rebuild";
-            options = [ "NOPASSWD" ];
           }
         ];
         groups = [ "wheel" ];
