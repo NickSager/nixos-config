@@ -48,6 +48,13 @@ let user = "nsager"; in
   #  };
   #};
 
+  # Clean up broken symlinks in Homebrew's zsh site-functions (nix-homebrew#77)
+  system.activationScripts.postActivation.text = ''
+    if [ -d /opt/homebrew/share/zsh/site-functions ]; then
+      find /opt/homebrew/share/zsh/site-functions -maxdepth 1 -type l ! -exec test -e {} \; -delete
+    fi
+  '';
+
   system = {
     # Turn off NIX_PATH warnings now that we're using flakes
     checks.verifyNixPath = false;
