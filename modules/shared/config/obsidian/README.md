@@ -1,78 +1,3 @@
-# First-Run Setup (Nix-Managed Vault)
-
-These steps are only needed once after `nix run .#build-switch` on a fresh machine.
-Everything else (vault structure, templates, prompts, scripts) is handled by nix.
-
-## 1. Open the vault
-
-1. Launch Obsidian
-2. Select "Open folder as vault"
-3. Navigate to `~/Documents/Notes/`
-4. Trust the vault when prompted
-
-## 2. Enable community plugins
-
-1. Settings -> Community Plugins -> Turn on community plugins
-
-## 3. Install plugins
-
-Browse and install each of these (Settings -> Community Plugins -> Browse):
-
-**Essential:**
-- Tasks
-- Day Planner
-- Dataview
-- Templater
-- Natural Language Dates
-
-**Recommended:**
-- Advanced Tables
-- PlantUML
-- Emoji Shortcodes
-
-**Optional (Amazon-specific):**
-- PhoneTool
-- Quip
-
-## 4. Configure Daily Notes
-
-1. Settings -> Core Plugins -> enable "Daily Notes"
-2. Set daily notes folder: `Main/Daily_Notes/YYYY/YYYY-MM`
-3. Set date format: `YYYY-MM-DD`
-4. Set template location: `Main/Templates/Daily_Note.md`
-
-## 5. Configure Templater
-
-1. Settings -> Templater
-2. Set template folder: `Main/Templates`
-3. Enable "Automatic jump to cursor"
-
-## 6. Install slack-cli
-
-The Slack summary scripts require [Thsvaugh-SlackCLI](https://code.amazon.com/packages/Thsvaugh-SlackCLI/trees/mainline):
-
-1. Clone and install following the package README
-2. Configure with your Slack workspace credentials
-3. Test: `slack-cli search "from:@$USER on:$(date +%Y-%m-%d)"`
-
-Optionally set `SLACK_USERNAME` in your shell env if your Slack handle differs
-from `$USER`.
-
-## 7. Configure scripts
-
-Edit `~/Documents/Notes/scripts/taskei_daily_summary.sh` and set `ROOM_ID` to
-your team's Taskei room ID. Find it with `taskei rooms list`.
-
-## 8. Test
-
-```bash
-# Create a daily note in Obsidian first, then:
-~/Documents/Notes/scripts/slack_summary.sh $(date +%Y-%m-%d)
-~/Documents/Notes/scripts/taskei_daily_summary.sh $(date +%Y-%m-%d)
-```
-
----
-
 # Obsidian Daily Work Tracking System
 
 A complete system for tracking daily work activities using Obsidian, with AI-powered automation for aggregating Slack messages, task updates, and generating monthly summaries.
@@ -106,46 +31,17 @@ This repository contains all the necessary scripts, templates, and prompts to se
 
 This vault is bootstrapped automatically by `nix run .#build-switch`. The nix config:
 - Creates the vault directory at `~/Documents/Notes/`
+- Installs and configures all community plugins declaratively
+- Configures core plugins (Daily Notes, Templates) with correct settings
+- Configures Templater (auto-jump to cursor, folder templates)
+- Sets hotkeys (Cmd+N opens today's daily note)
 - Symlinks templates and prompts (read-only, managed by nix)
 - Copies scripts as mutable files (so relative paths work)
 - Creates mutable directories for daily notes, meeting notes, etc.
 - Places this README in the vault root
 
-After building, open `~/Documents/Notes/` as a vault in Obsidian.
-
-### Install Required Plugins
-
-Go to Settings -> Community Plugins -> Browse and install:
-
-**Essential:**
-- Tasks
-- Day Planner
-- Dataview
-- Templater
-- Natural Language Dates
-
-**Optional but Recommended:**
-- PhoneTool (Amazon-specific)
-- PlantUML
-- Mindmap NextGen
-- Marp Slides
-- Emoji Shortcodes
-- Advanced Tables
-
-See [Plugin List](#complete-plugin-list) for full details.
-
-### Configure Obsidian
-
-**Daily Notes Setup:**
-1. Settings -> Core Plugins -> Daily Notes (enable)
-2. Daily notes folder: `Main/Daily_Notes/YYYY/YYYY-MM`
-3. Date format: `YYYY-MM-DD`
-4. Template location: `Main/Templates/Daily_Note.md`
-
-**Templater Setup:**
-1. Settings -> Templater
-2. Enable "Automatic jump to cursor"
-3. Template folder: `Main/Templates`
+After building, open `~/Documents/Notes/` as a vault in Obsidian and enable
+community plugins (one-time toggle in Settings -> Community Plugins).
 
 ### Test the System
 
@@ -162,11 +58,8 @@ Create a daily note and run the scripts manually:
 ```
 ~/Documents/Notes/
 ├── Main/
-│   ├── Daily_Notes/           # Daily notes organized by year/month (mutable)
-│   │   └── YYYY/
-│   │       └── YYYY-MM/
-│   │           ├── YYYY-MM-DD.md
-│   │           └── monthly_summary.md
+│   ├── Daily_Notes/           # Daily notes (mutable)
+│   │   └── YYYY-MM-DD.md
 │   ├── Templates/             # Obsidian templates (nix-managed symlinks)
 │   │   ├── Daily_Note.md
 │   │   └── PhoneTool Template.md
@@ -175,6 +68,7 @@ Create a daily note and run the scripts manually:
 ├── scripts/                  # Automation scripts (copied by nix, mutable)
 │   ├── common_summary_functions.sh
 │   ├── slack_summary.sh
+│   ├── code_summary.sh
 │   ├── taskei_daily_summary.sh
 │   └── monthly_summary_generator.sh
 ├── prompts/                  # AI prompts for processing (nix-managed symlinks)
@@ -219,6 +113,31 @@ Generates daily Slack message summaries.
 - Amazon Q CLI with file read/write permissions
 - Daily note must already exist for the target date
 
+**Installing slack-cli:**
+
+The Slack summary scripts require [Thsvaugh-SlackCLI](https://code.amazon.com/packages/Thsvaugh-SlackCLI/trees/mainline):
+
+1. Clone and install following the package README
+2. Configure with your Slack workspace credentials
+3. Test: `slack-cli search "from:@$USER on:$(date +%Y-%m-%d)"`
+
+Optionally set `SLACK_USERNAME` in your shell env if your Slack handle differs
+from `$USER`.
+
+### code_summary.sh
+
+Generates daily code activity summaries from code.amazon.com (work profile only).
+
+**Usage:**
+```bash
+./scripts/code_summary.sh YYYY-MM-DD
+```
+
+**What it does:**
+1. Fetches commit and code review data from code.amazon.com API
+2. Uses kiro-cli to process and summarize activity
+3. Updates daily note with Code Summary section
+
 ### taskei_daily_summary.sh
 
 Generates daily task management summaries.
@@ -229,7 +148,7 @@ Generates daily task management summaries.
 ```
 
 **Configuration:**
-- Edit `ROOM_ID` in the script for your Taskei room
+- Edit `ROOM_ID` in the script for your Taskei room (find it with `taskei rooms list`)
 - Username automatically detected from `$USER`
 - Default timezone: `America/New_York`
 
@@ -247,7 +166,6 @@ Generates comprehensive monthly summaries.
 ### Daily_Note.md
 
 Structured template for daily notes with:
-- Frontmatter (tags, confidentiality markers)
 - Task query sections (overdue, due this week, no due date)
 - Day planner sections (Work, Ad-Hoc, Meetings, Issues, Notes)
 - Automatic time tracking integration
@@ -288,7 +206,7 @@ daily-summary
 ## Daily Workflow
 
 ### Morning
-1. Open Obsidian and create today's daily note (Ctrl+T or Cmd+T)
+1. Open Obsidian and press Cmd+N to open today's daily note
 2. Review task queries (overdue, due this week)
 3. Add planned work to the "Ad-Hoc" section
 4. Link to relevant people and projects using `[[Name]]`

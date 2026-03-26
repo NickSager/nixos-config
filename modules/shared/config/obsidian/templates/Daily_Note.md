@@ -1,11 +1,7 @@
 ---
 tags:
-  - amazon_confidential
 ---
-<p style="text-align:center;">🛑 AMAZON CONFIDENTIAL 🛑</p>
-
----
-# ✅ Tasks
+# Tasks
 > [!danger]+  Overdue
 > ```tasks
 > not done
@@ -25,7 +21,7 @@ tags:
 > [!info]+  No Due Date
 > ```tasks
 > not done
-   scheduled after 4 weeks ago
+>   scheduled after 4 weeks ago
 > is not blocked
 > short mode
 > ```
@@ -41,7 +37,3 @@ tags:
 ## Issues
 
 ## Notes
-
----
-
-<p style="text-align:center;">🛑 AMAZON CONFIDENTIAL 🛑</p>

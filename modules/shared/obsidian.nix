@@ -11,13 +11,20 @@
 #       Alternatively, uncomment the obsidian-daily-setup flake input in flake.nix
 #       to fetch updates automatically via `nix flake update obsidian-daily-setup`.
 
-{ lib, pkgs, ... }:
+{ lib, pkgs, profile ? "personal", ... }:
 
 let
   obsidianSource = ./config/obsidian;
   obsidianScriptsSource = ./config/obsidian/scripts;
   obsidianPlugins = import ./obsidian-plugins.nix { inherit pkgs; };
   notesDir = "Documents/Notes";
+  isWork = profile == "work";
+
+  # Hotkeys must be a writable copy — Obsidian ignores read-only symlinks.
+  hotkeysJson = (pkgs.formats.json { }).generate "hotkeys.json" {
+    "file-explorer:new-file" = [];
+    "daily-notes" = [{ modifiers = ["Mod"]; key = "N"; }];
+  };
 in
 
 {
@@ -29,7 +36,14 @@ in
     vaults.${notesDir} = {
       settings = {
         corePlugins = [
-          "daily-notes"
+          {
+            name = "daily-notes";
+            settings = {
+              folder = "Main/Daily_Notes";
+              format = "YYYY-MM-DD";
+              template = "Main/Templates/Daily_Note";
+            };
+          }
           "templates"
           "backlink"
           "global-search"
@@ -42,12 +56,38 @@ in
           "editor-status"
           "word-count"
         ];
+        appearance = { cssTheme = "Soft Paper"; };
+        extraFiles."themes/Soft Paper".source = obsidianSource + "/themes/soft-paper";
         communityPlugins = with obsidianPlugins; [
           # Essential
           obsidian-tasks-plugin       # Advanced task management
           obsidian-day-planner        # Time-blocking and meeting tracking
           dataview                    # SQL-like queries for notes
-          templater-obsidian          # Dynamic templates
+          {
+            pkg = templater-obsidian;
+            settings = {
+              command_timeout = 5;
+              templates_folder = "Main/Templates";
+              templates_pairs = [["" ""]];
+              trigger_on_file_creation = true;
+              auto_jump_to_cursor = true;
+              enable_system_commands = false;
+              shell_path = "";
+              user_scripts_folder = "";
+              enable_folder_templates = true;
+              folder_templates = [{
+                folder = "Main/Daily_Notes";
+                template = "Main/Templates/Daily_Note.md";
+              }];
+              enable_file_templates = false;
+              file_templates = [{ regex = ".*"; template = ""; }];
+              syntax_highlighting = true;
+              syntax_highlighting_mobile = false;
+              enabled_templates_hotkeys = [""];
+              startup_templates = [""];
+              intellisense_render = 1;
+            };
+          }
           nldates-obsidian            # Natural Language Dates
           # Recommended
           markdown-table-editor       # Advanced Tables
@@ -55,7 +95,17 @@ in
           emoji-shortcodes            # Quick emoji insertion
           obsidian-emoji-toolbar      # Emoji picker
           # Optional
-          obsidian-style-settings     # Custom CSS configuration
+          {
+            pkg = obsidian-style-settings;
+            settings = {
+              "soft-paper-settings@@sp-hide-scrollbars" = true;
+              "soft-paper-settings@@sp-compact-bases" = false;
+              "soft-paper-settings@@sp-compact-explorer" = false;
+              "soft-paper-settings@@sp-hide-add-property" = false;
+              "soft-paper-settings@@sp-status-bar-blue" = false;
+              "soft-paper-settings@@sp-settings-transparent" = false;
+            };
+          }
           obsidian-mindmap-nextgen    # Auto-generated mindmaps
           marp-slides                 # Presentations from markdown
           obsidian-image-toolkit      # Enhanced image viewing
@@ -91,6 +141,9 @@ in
   home.activation.obsidianVault = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     NOTES_DIR="$HOME/Documents/Notes"
 
+    # Hotkeys: copy as writable file (Obsidian ignores read-only symlinks)
+    install -m644 ${hotkeysJson} "$NOTES_DIR/.obsidian/hotkeys.json"
+
     # Mutable vault directories (created once, never overwritten)
     mkdir -p "$NOTES_DIR/Main/Daily_Notes"
     mkdir -p "$NOTES_DIR/Main/Phonetool"
@@ -102,5 +155,9 @@ in
     install -m755 ${obsidianScriptsSource}/slack_summary.sh            "$NOTES_DIR/scripts/slack_summary.sh"
     install -m755 ${obsidianScriptsSource}/taskei_daily_summary.sh     "$NOTES_DIR/scripts/taskei_daily_summary.sh"
     install -m755 ${obsidianScriptsSource}/monthly_summary_generator.sh "$NOTES_DIR/scripts/monthly_summary_generator.sh"
+    ${lib.optionalString isWork ''
+    # Work-only: code_summary.sh requires code.amazon.com API + kiro-cli
+    install -m755 ${obsidianScriptsSource}/code_summary.sh             "$NOTES_DIR/scripts/code_summary.sh"
+    ''}
   '';
 }
