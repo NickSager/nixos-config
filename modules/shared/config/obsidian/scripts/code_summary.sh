@@ -31,8 +31,8 @@ echo "Code activity URL: $CODE_URL"
 # Fetch and summarize
 {
   cat << PROMPT_EOF
-Use ReadInternalWebsites tool to fetch $CODE_URL. Summarize the code activity and update "${DAILY_LOG}" with a Level 2 (##) "Code Summary" section containing a factual summary of development work. Use inline markdown links for relevant items. Ensure that the "Code Summary" section is placed before the footer.
+Use the ReadInternalWebsites tool to fetch $CODE_URL. Summarize the code activity and update "${DAILY_LOG}" with a Level 2 (##) "Code Summary" section containing a factual summary of development work. Use inline markdown links for relevant items. Ensure that the "Code Summary" section is placed before the footer.
 PROMPT_EOF
-} | kiro-cli chat --no-interactive --trust-tools="fs_read,fs_write,@builder-mcp/ReadInternalWebsites"
+} | claude --print --allowedTools "Read,Write,Edit,Bash,mcp__builder-mcp__ReadInternalWebsites"
 
 echo "Code summary complete. Check $DAILY_LOG"

@@ -40,6 +40,7 @@ let name = "Nick Sager";
       lg="lazygit";
       nm="nmap -sC -sV -oN nmap";
       v="nvim";
+      c="claude";
 
       # Eza
       # ls="eza --color=always --long --git --no-filesize --icons=always --no-time --no-user --no-permissions";

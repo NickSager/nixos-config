@@ -16,12 +16,52 @@ let
       DISABLE_ERROR_REPORTING = "1";
       DISABLE_TELEMETRY = "1";
     };
-    model = "global.anthropic.claude-opus-4-6-v1[1m]";
+    model = "global.anthropic.claude-opus-4-6-v1";
     alwaysThinkingEnabled = true;
     includeCoAuthoredBy = true;
+    autoMemoryDirectory = "~/Documents/Notes/AI/memory";
     statusLine = {
       type = "command";
       command = "~/.claude/statusline.sh";
+    };
+    hooks = {
+      SessionStart = [{
+        matcher = "startup|resume|clear|compact";
+        hooks = [{
+          type = "command";
+          command = "bash ~/Documents/Notes/.claude/scripts/session-start.sh";
+          timeout = 30;
+        }];
+      }];
+      UserPromptSubmit = [{
+        hooks = [{
+          type = "command";
+          command = "bash ~/Documents/Notes/.claude/scripts/find-python.sh ~/Documents/Notes/.claude/scripts/classify-message.py";
+          timeout = 15;
+        }];
+      }];
+      PostToolUse = [{
+        matcher = "Write|Edit";
+        hooks = [{
+          type = "command";
+          command = "bash ~/Documents/Notes/.claude/scripts/find-python.sh ~/Documents/Notes/.claude/scripts/validate-write.py";
+          timeout = 15;
+        }];
+      }];
+      PreCompact = [{
+        hooks = [{
+          type = "command";
+          command = "bash ~/Documents/Notes/.claude/scripts/pre-compact.sh";
+          timeout = 30;
+        }];
+      }];
+      Stop = [{
+        hooks = [{
+          type = "command";
+          command = "echo 'Session end checklist:\n- Archive completed projects? (AI/work/active/ -> AI/work/archive/YYYY/)\n- Update indexes? (AI/work/Index.md, AI/brain/Memories.md, AI/org/People & Context.md, AI/perf/Brag Doc.md)\n- New notes linked? (orphans are bugs)\n- Run /om-vault-audit if many notes were created/modified'";
+          timeout = 5;
+        }];
+      }];
     };
   };
 

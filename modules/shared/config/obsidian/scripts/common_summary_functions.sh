@@ -6,8 +6,18 @@
 # Initialize script environment
 init_script_env() {
     set -e
-    shopt -s expand_aliases
-    source "$HOME/.bash/aliases.conf"
+}
+
+# Cross-platform date: uses gdate (nix coreutils) if available, falls back to GNU date
+portable_date() {
+    if command -v gdate &>/dev/null; then
+        gdate "$@"
+    elif date --version &>/dev/null 2>&1; then
+        date "$@"
+    else
+        echo "ERROR: GNU date (gdate) required. Install coreutils via nix." >&2
+        exit 1
+    fi
 }
 
 # Setup common directory paths

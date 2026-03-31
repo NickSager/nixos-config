@@ -33,6 +33,12 @@ tags:
 ### Ad-Hoc
 
 ### Meetings
+```dataview
+LIST
+FROM "Main/Meeting_Notes"
+WHERE date = this.file.name
+SORT file.name ASC
+```
 
 ## Issues
 

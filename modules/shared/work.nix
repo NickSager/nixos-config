@@ -104,7 +104,7 @@ in
 
     # ── Amazon shell aliases ────────────────────────────────────────────
     programs.zsh.shellAliases = {
-      daily-summary = "cd ~/Documents/Notes && ./scripts/slack_summary.sh && ./scripts/taskei_daily_summary.sh";
+      daily-summary = "cd ~/Documents/Notes && ./scripts/slack_summary.sh && ./scripts/asana_daily_summary.sh";
     };
 
     # ── Neovim Amazon plugins ───────────────────────────────────────────

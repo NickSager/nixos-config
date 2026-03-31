@@ -9,7 +9,7 @@ set -euo pipefail
 source "$(dirname "$(realpath "${BASH_SOURCE[0]}")")/common_summary_functions.sh"
 
 # Check dependencies
-for cmd in slack-cli jq date; do
+for cmd in slack-cli jq date claude; do
     command -v "$cmd" >/dev/null 2>&1 || { echo "Error: $cmd is required but not installed" >&2; exit 1; }
 done
 
@@ -78,47 +78,44 @@ for CHANNEL_DIR in "$SLACK_DATA_DIR/channels"/*; do
     fi
 done
 
-TRUSTED_TOOLS="fs_read,fs_write,execute_bash,@builder_mcp/WorkspaceSearch"
+CLAUDE_TOOLS="Read,Write,Edit,Bash"
 
 if [[ "$NEEDS_ROLLING" == "true" ]]; then
     echo "Multi-part files detected, using rolling summary..."
     mkdir -p "$SUMMARIES_DIR"
-    
+
     for CHANNEL_DIR in "$SLACK_DATA_DIR/channels"/*; do
         [[ ! -d "$CHANNEL_DIR" ]] && continue
         CHANNEL_NAME=$(basename "$CHANNEL_DIR")
         SUMMARY_FILE="$WORK_DIR/summary_accumulator.txt"
         : > "$SUMMARY_FILE"
-        
+
         for PART in "$CHANNEL_DIR"/messages*.txt; do
             [[ ! -f "$PART" ]] && continue
             echo "  Processing $(basename "$PART") for $CHANNEL_NAME..."
-            
-            PROMPT_FILE_TMP="$WORK_DIR/rolling_prompt.txt"
-            cat > "$PROMPT_FILE_TMP" << EOF
-Execute the instructions in '$ROLLING_PROMPT'.
+
+            ROLLING_PROMPT_TEXT="Execute the instructions in '$ROLLING_PROMPT'.
 Current part file: '$PART'
 Previous summary file: '$SUMMARY_FILE'
-Output only the summary text.
-EOF
-            
-            OUTPUT_FILE="$WORK_DIR/q_output.txt"
-            if q chat --no-interactive --trust-tools="$TRUSTED_TOOLS" "$(cat "$PROMPT_FILE_TMP")" > "$OUTPUT_FILE" 2>&1; then
+Output only the summary text."
+
+            OUTPUT_FILE="$WORK_DIR/claude_output.txt"
+            if claude --print --allowedTools "$CLAUDE_TOOLS" "$ROLLING_PROMPT_TEXT" > "$OUTPUT_FILE" 2>&1; then
                 tail -1 "$OUTPUT_FILE" > "$SUMMARY_FILE"
             else
                 echo "Warning: Failed to process $PART" >&2
                 cat "$OUTPUT_FILE" >&2
             fi
         done
-        
+
         cp "$SUMMARY_FILE" "$SUMMARIES_DIR/${CHANNEL_NAME}.txt"
     done
-    
+
     if [[ ! "$(ls -A "$SUMMARIES_DIR" 2>/dev/null)" ]]; then
         echo "Error: No summaries generated" >&2
         exit 1
     fi
-    
+
     # Use summaries for aggregate
     DATA_SOURCE="$SUMMARIES_DIR"
 else
@@ -128,17 +125,14 @@ fi
 
 # Generate comprehensive summary and update daily log
 echo "Generating summary and updating daily log..."
-AGGREGATE_PROMPT="$WORK_DIR/aggregate_prompt.txt"
-cat > "$AGGREGATE_PROMPT" << EOF
-Execute the instructions in '$PROMPT_FILE'.
+AGGREGATE_PROMPT_TEXT="Execute the instructions in '$PROMPT_FILE'.
 TARGET DATE: $DATE
 Read Slack data from directory: '$DATA_SOURCE'
 DAILY_LOG: $DAILY_LOG
-Update the daily log with the Slack Summary section.
-EOF
+Update the daily log with the Slack Summary section."
 
-OUTPUT_FILE="$WORK_DIR/q_aggregate_output.txt"
-if ! q chat --no-interactive --trust-tools="$TRUSTED_TOOLS" "$(cat "$AGGREGATE_PROMPT")" > "$OUTPUT_FILE" 2>&1; then
+OUTPUT_FILE="$WORK_DIR/claude_aggregate_output.txt"
+if ! claude --print --allowedTools "$CLAUDE_TOOLS" "$AGGREGATE_PROMPT_TEXT" > "$OUTPUT_FILE" 2>&1; then
     echo "Error: Failed to generate summary" >&2
     cat "$OUTPUT_FILE" >&2
     exit 1

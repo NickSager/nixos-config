@@ -65,9 +65,9 @@ Generate a comprehensive monthly summary of daily logs while maintaining confide
 - Take your time and reason through the problem
 
 ## Process
-1. Run the meeting analysis script first
-   - Prefer shell commands over other methods
-   - When extracting line numbers use `cat -n` to read files
+1. Extract meeting time data directly from day-planner sections in daily notes
+   - Look for time entries (e.g., `- 10:00 Meeting Name`) in the Meetings sections
+   - Calculate total meeting time, count, and average length
 2. Review all daily logs chronologically
 3. Categorize information into required sections
 4. Generate the summary maintaining all formatting requirements
@@ -75,12 +75,4 @@ Generate a comprehensive monthly summary of daily logs while maintaining confide
 6. Ensure all links use proper Obsidian syntax
 7. Make sure the summary section provides a comprehensive overview
 8. Create the file in the target directory as 'monthly_summary.md'
-
-## Script Usage
-To run the meeting analysis script:
-```bash
-$HOME/Documents/Obsidian/bin/extract_meetings.sh
-```
-
-Update the DIR variable in the script to point to the correct month's directory before running.
 

@@ -23,7 +23,8 @@ let
   # Hotkeys must be a writable copy — Obsidian ignores read-only symlinks.
   hotkeysJson = (pkgs.formats.json { }).generate "hotkeys.json" {
     "file-explorer:new-file" = [];
-    "daily-notes" = [{ modifiers = ["Mod"]; key = "N"; }];
+    "daily-notes" = [{ modifiers = ["Mod"]; key = "D"; }];
+    "templater-obsidian:create-new-note-from-template" = [{ modifiers = ["Mod"]; key = "N"; }];
   };
 in
 
@@ -40,7 +41,7 @@ in
             name = "daily-notes";
             settings = {
               folder = "Main/Daily_Notes";
-              format = "YYYY-MM-DD";
+              format = "YYYY/YYYY-MM/YYYY-MM-DD";
               template = "Main/Templates/Daily_Note";
             };
           }
@@ -75,10 +76,12 @@ in
               shell_path = "";
               user_scripts_folder = "";
               enable_folder_templates = true;
-              folder_templates = [{
-                folder = "Main/Daily_Notes";
-                template = "Main/Templates/Daily_Note.md";
-              }];
+              folder_templates = [
+                { folder = "Main/Daily_Notes"; template = "Main/Templates/Daily_Note.md"; }
+                { folder = "Main/Meeting_Notes"; template = "Main/Templates/Meeting_Note.md"; }
+                { folder = "Projects"; template = "Main/Templates/Project.md"; }
+                { folder = "Tasks"; template = "Main/Templates/Task.md"; }
+              ];
               enable_file_templates = false;
               file_templates = [{ regex = ".*"; template = ""; }];
               syntax_highlighting = true;
@@ -122,6 +125,12 @@ in
       obsidianSource + "/templates/Daily_Note.md";
     "${notesDir}/Main/Templates/PhoneTool Template.md".source =
       obsidianSource + "/templates/PhoneTool Template.md";
+    "${notesDir}/Main/Templates/Meeting_Note.md".source =
+      obsidianSource + "/templates/Meeting_Note.md";
+    "${notesDir}/Main/Templates/Project.md".source =
+      obsidianSource + "/templates/Project.md";
+    "${notesDir}/Main/Templates/Task.md".source =
+      obsidianSource + "/templates/Task.md";
 
     # Prompts: read-only symlinks (scripts read these, never write)
     "${notesDir}/prompts" = {
@@ -148,15 +157,25 @@ in
     mkdir -p "$NOTES_DIR/Main/Daily_Notes"
     mkdir -p "$NOTES_DIR/Main/Phonetool"
     mkdir -p "$NOTES_DIR/Main/Meeting_Notes"
+    mkdir -p "$NOTES_DIR/Inbox"
+    mkdir -p "$NOTES_DIR/Projects"
+    mkdir -p "$NOTES_DIR/Tasks"
+    mkdir -p "$NOTES_DIR/AI/Context"
+    mkdir -p "$NOTES_DIR/AI/Agents"
+    mkdir -p "$NOTES_DIR/AI/Skills"
+
+    # AI context: seed files (copy only if absent, never overwrite user edits)
+    [ -f "$NOTES_DIR/CLAUDE.md" ] || install -m644 ${obsidianSource + "/CLAUDE.md"} "$NOTES_DIR/CLAUDE.md"
+    [ -f "$NOTES_DIR/AI/Context/README.md" ] || install -m644 ${obsidianSource + "/ai-context/README.md"} "$NOTES_DIR/AI/Context/README.md"
 
     # Copy scripts (always overwrite to pick up nix config changes)
     mkdir -p "$NOTES_DIR/scripts"
     install -m755 ${obsidianScriptsSource}/common_summary_functions.sh "$NOTES_DIR/scripts/common_summary_functions.sh"
     install -m755 ${obsidianScriptsSource}/slack_summary.sh            "$NOTES_DIR/scripts/slack_summary.sh"
-    install -m755 ${obsidianScriptsSource}/taskei_daily_summary.sh     "$NOTES_DIR/scripts/taskei_daily_summary.sh"
+    install -m755 ${obsidianScriptsSource}/asana_daily_summary.sh      "$NOTES_DIR/scripts/asana_daily_summary.sh"
     install -m755 ${obsidianScriptsSource}/monthly_summary_generator.sh "$NOTES_DIR/scripts/monthly_summary_generator.sh"
     ${lib.optionalString isWork ''
-    # Work-only: code_summary.sh requires code.amazon.com API + kiro-cli
+    # Work-only: code_summary.sh requires code.amazon.com API + builder-mcp
     install -m755 ${obsidianScriptsSource}/code_summary.sh             "$NOTES_DIR/scripts/code_summary.sh"
     ''}
   '';

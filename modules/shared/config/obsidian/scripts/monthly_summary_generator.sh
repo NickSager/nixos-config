@@ -88,8 +88,8 @@ echo "$DAILY_NOTES_CONTENT" > "$WORK_DIR/aggregated_daily_notes.md"
     echo ""
     cat "$PROMPT_FILE"
     echo ""
-    echo "## Daily Notes for $TARGET_MONTH" below:
+    echo "## Daily Notes for $TARGET_MONTH below:"
     echo ""
     echo "$DAILY_NOTES_CONTENT"
-} | q chat --no-interactive --trust-tools="@task-manager/TodoRead,@task-manager/TodoWrite,execute_bash,fs_read,fs_write"
+} | claude --print --allowedTools "Read,Write,Edit,Bash"
 
