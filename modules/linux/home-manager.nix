@@ -1,7 +1,6 @@
-{ config, osConfig, pkgs, lib, home-manager, ... }:
+{ config, osConfig, pkgs, lib, home-manager, user, ... }:
 
 let
-  user = "nick";
   # sharedFiles = import ../shared/files.nix { inherit config pkgs; };
   sharedFiles = import ../shared/files.nix {
     inherit pkgs config;
@@ -32,6 +31,6 @@ in {
   fonts.fontconfig.enable = true;
 
   programs = { } // import ../shared/home-manager.nix {
-    inherit config osConfig pkgs lib;
+    inherit config osConfig pkgs lib user;
   };
 }

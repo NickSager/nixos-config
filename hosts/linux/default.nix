@@ -1,6 +1,4 @@
-{ config, osConfig, pkgs, ... }:
-
-let user = "nick"; in
+{ config, osConfig, pkgs, user, ... }:
 
 {
   imports = [

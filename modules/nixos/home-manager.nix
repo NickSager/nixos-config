@@ -1,9 +1,8 @@
-{ config, pkgs, lib, inputs, ... }:
+{ config, pkgs, lib, inputs, user ? "nick", ... }:
 
 let
-  user = "dustin";
   xdg_configHome  = "/home/${user}/.config";
-  shared-programs = import ../shared/home-manager.nix { inherit config pkgs lib; };
+  shared-programs = import ../shared/home-manager.nix { inherit config pkgs lib user; };
   shared-files = import ../shared/files.nix { inherit config pkgs; };
 
   # These files are generated when secrets are decrypted at build time
@@ -70,7 +69,7 @@ in
         // Custom keybindings
         Ctrl+Alt+T { spawn "${pkgs.alacritty}/bin/alacritty"; }
         Mod+B { spawn "google-chrome-stable" "--ozone-platform=wayland"; }
-        Mod+E { spawn "/home/dustin/.local/bin/emacsclient-gui"; }
+        Mod+E { spawn "/home/${user}/.local/bin/emacsclient-gui"; }
         
         // Essential bindings
         Mod+Return { spawn "${pkgs.alacritty}/bin/alacritty" "--class" "floating-terminal"; }

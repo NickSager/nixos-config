@@ -1,7 +1,6 @@
-{ config, pkgs, lib, home-manager, profile, ... }:
+{ config, pkgs, lib, home-manager, user, profile, ... }:
 
 let
-  user = "nsager";
   # Define the content of your file as a derivation
   myEmacsLauncher = pkgs.writeScript "emacs-launcher.command" ''
     #!/bin/sh
@@ -56,6 +55,7 @@ in
         home = {
           enableNixpkgsReleaseCheck = false;
           packages = pkgs.callPackage ./packages.nix {};
+          sessionPath = [ "$HOME/.local/bin" ];
           file = lib.mkMerge [
             sharedFiles
             additionalFiles
@@ -63,7 +63,7 @@ in
           ];
           stateVersion = "23.11";
         };
-        programs = {} // import ../shared/home-manager.nix { inherit config pkgs lib; };
+        programs = {} // import ../shared/home-manager.nix { inherit config pkgs lib user; };
         manual.manpages.enable = false;
         # backupFileExtension = "backup";
       };

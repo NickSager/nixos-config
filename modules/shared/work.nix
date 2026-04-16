@@ -23,7 +23,7 @@ in
       # --- Amazon things -------
       export PATH=$PATH:$HOME/.toolbox/bin
       eval "$(mise activate zsh)"
-      source /Users/nsager/.brazil_completion/zsh_completion
+      source $HOME/.brazil_completion/zsh_completion
 
       # Enable autocompletion for mechanic.
       [ -f "$HOME/.local/share/mechanic/complete.zsh" ] && source "$HOME/.local/share/mechanic/complete.zsh"

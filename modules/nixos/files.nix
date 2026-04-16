@@ -8,7 +8,7 @@ let
 {
   "${home}/.npmrc" = {
     text = ''
-      prefix=/home/dustin/.npm-packages
+      prefix=/home/${user}/.npm-packages
     '';
   };
 

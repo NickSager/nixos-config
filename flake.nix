@@ -59,8 +59,8 @@
   };
   outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, flake-utils, disko, agenix, emacs-overlay, niri-flake } @inputs:
     let
-      user = "nsager";
       profile = "work"; # "work" or "personal"
+      user = if profile == "work" then "nsager" else "nick";
       linuxSystems = [ "x86_64-linux" "aarch64-linux" ];
       darwinSystems = [ "aarch64-darwin" "x86_64-darwin" ];
       forAllSystems = f: nixpkgs.lib.genAttrs (linuxSystems ++ darwinSystems) f;
@@ -154,7 +154,7 @@
                 useUserPackages = true;
                 extraSpecialArgs = { inherit profile; };
                 users.${user} = { config, pkgs, lib, ... }:
-                  import ./modules/nixos/home-manager.nix { inherit config pkgs lib inputs; };
+                  import ./modules/nixos/home-manager.nix { inherit config pkgs lib inputs user; };
               };
             }
             ./hosts/nixos
@@ -162,12 +162,10 @@
         }
       );
       # Linux (non-NixOS) configs.
-      homeConfigurations = nixpkgs.lib.genAttrs linuxSystems (system: let
-        user = "nick";
-      in
+      homeConfigurations = nixpkgs.lib.genAttrs linuxSystems (system:
         home-manager.lib.homeManagerConfiguration {
           pkgs = nixpkgs.legacyPackages.${system};
-          extraSpecialArgs = inputs // { inherit profile; };
+          extraSpecialArgs = inputs // { inherit user profile; };
           modules = [
             ./hosts/linux
           ];
