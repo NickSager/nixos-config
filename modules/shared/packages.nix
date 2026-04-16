@@ -6,6 +6,12 @@ let
     virtualenv
   ]);
 
+  myTexlive = pkgs.texlive.combine {
+    inherit (pkgs.texlive)
+      scheme-full
+      latexmk;
+  };
+
   myFonts = import ./fonts.nix { inherit pkgs; };
 in
 with pkgs; [
@@ -116,6 +122,7 @@ with pkgs; [
   # terraform # Infrastructure as code tool
   # terraform-ls # Terraform language server
   # tflint # Terraform linter
+  # myTexlive # TeX Live, 3+ Gb
   tmux # Terminal multiplexer
   tree # Directory tree viewer
 
