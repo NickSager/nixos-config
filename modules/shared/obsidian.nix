@@ -16,6 +16,7 @@
 let
   obsidianSource = ./config/obsidian;
   obsidianScriptsSource = ./config/obsidian/scripts;
+  claudeMindSource = ./config/obsidian/claude-mind;
   obsidianPlugins = import ./obsidian-plugins.nix { inherit pkgs; };
   notesDir = "Documents/Notes";
   isWork = profile == "work";
@@ -160,15 +161,168 @@ in
     mkdir -p "$NOTES_DIR/Inbox"
     mkdir -p "$NOTES_DIR/Projects"
     mkdir -p "$NOTES_DIR/Tasks"
-    mkdir -p "$NOTES_DIR/AI/Context"
-    mkdir -p "$NOTES_DIR/AI/Agents"
-    mkdir -p "$NOTES_DIR/AI/Skills"
+    # ── obsidian-mind vault structure ──────────────────────────────────────
+    # User content directories (created once, never overwritten)
+    mkdir -p "$NOTES_DIR/AI/brain"
+    mkdir -p "$NOTES_DIR/AI/work/active"
+    mkdir -p "$NOTES_DIR/AI/work/archive"
+    mkdir -p "$NOTES_DIR/AI/work/incidents"
+    mkdir -p "$NOTES_DIR/AI/work/1-1"
+    mkdir -p "$NOTES_DIR/AI/work/meetings"
+    mkdir -p "$NOTES_DIR/AI/perf/brag"
+    mkdir -p "$NOTES_DIR/AI/perf/evidence"
+    mkdir -p "$NOTES_DIR/AI/perf/competencies"
+    mkdir -p "$NOTES_DIR/AI/org/people"
+    mkdir -p "$NOTES_DIR/AI/org/teams"
+    mkdir -p "$NOTES_DIR/AI/thinking/session-logs"
+    mkdir -p "$NOTES_DIR/AI/reference"
+    mkdir -p "$NOTES_DIR/AI/memory"
 
-    # AI context: seed files (copy only if absent, never overwrite user edits)
+    # Claude Code directories in vault
+    mkdir -p "$NOTES_DIR/.claude/commands"
+    mkdir -p "$NOTES_DIR/.claude/agents"
+    mkdir -p "$NOTES_DIR/.claude/scripts"
+    mkdir -p "$NOTES_DIR/.claude/skills/defuddle"
+    mkdir -p "$NOTES_DIR/.claude/skills/qmd"
+    mkdir -p "$NOTES_DIR/.claude/skills/obsidian-markdown/references"
+    mkdir -p "$NOTES_DIR/.claude/skills/obsidian-bases/references"
+    mkdir -p "$NOTES_DIR/.claude/skills/obsidian-cli"
+    mkdir -p "$NOTES_DIR/.claude/skills/json-canvas/references"
+
+    # ── Nix-managed files (always overwrite to pick up config changes) ────
+
+    # Hook scripts
+    install -m755 ${claudeMindSource}/scripts/session-start.sh     "$NOTES_DIR/.claude/scripts/session-start.sh"
+    install -m755 ${claudeMindSource}/scripts/classify-message.py  "$NOTES_DIR/.claude/scripts/classify-message.py"
+    install -m755 ${claudeMindSource}/scripts/validate-write.py    "$NOTES_DIR/.claude/scripts/validate-write.py"
+    install -m755 ${claudeMindSource}/scripts/pre-compact.sh       "$NOTES_DIR/.claude/scripts/pre-compact.sh"
+    install -m755 ${claudeMindSource}/scripts/find-python.sh       "$NOTES_DIR/.claude/scripts/find-python.sh"
+    install -m755 ${claudeMindSource}/scripts/charcount.sh         "$NOTES_DIR/.claude/scripts/charcount.sh"
+    install -m755 ${claudeMindSource}/scripts/test_hooks.py        "$NOTES_DIR/.claude/scripts/test_hooks.py"
+
+    # Slash commands
+    install -m644 ${claudeMindSource}/commands/om-standup.md           "$NOTES_DIR/.claude/commands/om-standup.md"
+    install -m644 ${claudeMindSource}/commands/om-dump.md              "$NOTES_DIR/.claude/commands/om-dump.md"
+    install -m644 ${claudeMindSource}/commands/om-wrap-up.md           "$NOTES_DIR/.claude/commands/om-wrap-up.md"
+    install -m644 ${claudeMindSource}/commands/om-meeting.md           "$NOTES_DIR/.claude/commands/om-meeting.md"
+    install -m644 ${claudeMindSource}/commands/om-intake.md            "$NOTES_DIR/.claude/commands/om-intake.md"
+    install -m644 ${claudeMindSource}/commands/om-weekly.md            "$NOTES_DIR/.claude/commands/om-weekly.md"
+    install -m644 ${claudeMindSource}/commands/om-prep-1on1.md         "$NOTES_DIR/.claude/commands/om-prep-1on1.md"
+    install -m644 ${claudeMindSource}/commands/om-capture-1on1.md      "$NOTES_DIR/.claude/commands/om-capture-1on1.md"
+    install -m644 ${claudeMindSource}/commands/om-incident-capture.md  "$NOTES_DIR/.claude/commands/om-incident-capture.md"
+    install -m644 ${claudeMindSource}/commands/om-project-archive.md   "$NOTES_DIR/.claude/commands/om-project-archive.md"
+    install -m644 ${claudeMindSource}/commands/om-self-review.md       "$NOTES_DIR/.claude/commands/om-self-review.md"
+    install -m644 ${claudeMindSource}/commands/om-review-brief.md      "$NOTES_DIR/.claude/commands/om-review-brief.md"
+    install -m644 ${claudeMindSource}/commands/om-review-peer.md       "$NOTES_DIR/.claude/commands/om-review-peer.md"
+    install -m644 ${claudeMindSource}/commands/om-peer-scan.md         "$NOTES_DIR/.claude/commands/om-peer-scan.md"
+    install -m644 ${claudeMindSource}/commands/om-slack-scan.md        "$NOTES_DIR/.claude/commands/om-slack-scan.md"
+    install -m644 ${claudeMindSource}/commands/om-humanize.md          "$NOTES_DIR/.claude/commands/om-humanize.md"
+    install -m644 ${claudeMindSource}/commands/om-vault-audit.md       "$NOTES_DIR/.claude/commands/om-vault-audit.md"
+    install -m644 ${claudeMindSource}/commands/om-vault-upgrade.md     "$NOTES_DIR/.claude/commands/om-vault-upgrade.md"
+
+    # Subagents
+    install -m644 ${claudeMindSource}/agents/vault-librarian.md      "$NOTES_DIR/.claude/agents/vault-librarian.md"
+    install -m644 ${claudeMindSource}/agents/context-loader.md       "$NOTES_DIR/.claude/agents/context-loader.md"
+    install -m644 ${claudeMindSource}/agents/cross-linker.md         "$NOTES_DIR/.claude/agents/cross-linker.md"
+    install -m644 ${claudeMindSource}/agents/brag-spotter.md         "$NOTES_DIR/.claude/agents/brag-spotter.md"
+    install -m644 ${claudeMindSource}/agents/people-profiler.md      "$NOTES_DIR/.claude/agents/people-profiler.md"
+    install -m644 ${claudeMindSource}/agents/review-prep.md          "$NOTES_DIR/.claude/agents/review-prep.md"
+    install -m644 ${claudeMindSource}/agents/slack-archaeologist.md  "$NOTES_DIR/.claude/agents/slack-archaeologist.md"
+    install -m644 ${claudeMindSource}/agents/review-fact-checker.md  "$NOTES_DIR/.claude/agents/review-fact-checker.md"
+    install -m644 ${claudeMindSource}/agents/vault-migrator.md       "$NOTES_DIR/.claude/agents/vault-migrator.md"
+
+    # Skills
+    install -m644 ${claudeMindSource}/skills/defuddle/SKILL.md                                  "$NOTES_DIR/.claude/skills/defuddle/SKILL.md"
+    install -m644 ${claudeMindSource}/skills/qmd/SKILL.md                                       "$NOTES_DIR/.claude/skills/qmd/SKILL.md"
+    install -m644 ${claudeMindSource}/skills/obsidian-markdown/SKILL.md                          "$NOTES_DIR/.claude/skills/obsidian-markdown/SKILL.md"
+    install -m644 ${claudeMindSource}/skills/obsidian-markdown/references/CALLOUTS.md            "$NOTES_DIR/.claude/skills/obsidian-markdown/references/CALLOUTS.md"
+    install -m644 ${claudeMindSource}/skills/obsidian-markdown/references/EMBEDS.md              "$NOTES_DIR/.claude/skills/obsidian-markdown/references/EMBEDS.md"
+    install -m644 ${claudeMindSource}/skills/obsidian-markdown/references/PROPERTIES.md          "$NOTES_DIR/.claude/skills/obsidian-markdown/references/PROPERTIES.md"
+    install -m644 ${claudeMindSource}/skills/obsidian-bases/SKILL.md                             "$NOTES_DIR/.claude/skills/obsidian-bases/SKILL.md"
+    install -m644 ${claudeMindSource}/skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md    "$NOTES_DIR/.claude/skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md"
+    install -m644 ${claudeMindSource}/skills/obsidian-cli/SKILL.md                               "$NOTES_DIR/.claude/skills/obsidian-cli/SKILL.md"
+    install -m644 ${claudeMindSource}/skills/json-canvas/SKILL.md                                "$NOTES_DIR/.claude/skills/json-canvas/SKILL.md"
+    install -m644 ${claudeMindSource}/skills/json-canvas/references/EXAMPLES.md                  "$NOTES_DIR/.claude/skills/json-canvas/references/EXAMPLES.md"
+
+    # Bases (Obsidian Bases query views)
+    mkdir -p "$NOTES_DIR/AI/bases"
+    install -m644 "${claudeMindSource}/bases/1-1 History.base"        "$NOTES_DIR/AI/bases/1-1 History.base"
+    install -m644 "${claudeMindSource}/bases/Competency Map.base"     "$NOTES_DIR/AI/bases/Competency Map.base"
+    install -m644 "${claudeMindSource}/bases/Incidents.base"          "$NOTES_DIR/AI/bases/Incidents.base"
+    install -m644 "${claudeMindSource}/bases/People Directory.base"   "$NOTES_DIR/AI/bases/People Directory.base"
+    install -m644 "${claudeMindSource}/bases/Review Evidence.base"    "$NOTES_DIR/AI/bases/Review Evidence.base"
+    install -m644 "${claudeMindSource}/bases/Templates.base"          "$NOTES_DIR/AI/bases/Templates.base"
+    install -m644 "${claudeMindSource}/bases/Work Dashboard.base"     "$NOTES_DIR/AI/bases/Work Dashboard.base"
+
+    # Templates (obsidian-mind note templates)
+    mkdir -p "$NOTES_DIR/AI/templates"
+    install -m644 "${claudeMindSource}/templates/Work Note.md"        "$NOTES_DIR/AI/templates/Work Note.md"
+    install -m644 "${claudeMindSource}/templates/Review Template.md"  "$NOTES_DIR/AI/templates/Review Template.md"
+    install -m644 "${claudeMindSource}/templates/Thinking Note.md"    "$NOTES_DIR/AI/templates/Thinking Note.md"
+    install -m644 "${claudeMindSource}/templates/Decision Record.md"  "$NOTES_DIR/AI/templates/Decision Record.md"
+    install -m644 "${claudeMindSource}/templates/Competency Note.md"  "$NOTES_DIR/AI/templates/Competency Note.md"
+
+    # Root-level AI files
+    install -m644 ${claudeMindSource}/Home.md             "$NOTES_DIR/AI/Home.md"
+    install -m644 ${claudeMindSource}/AGENTS.md            "$NOTES_DIR/AI/AGENTS.md"
+    install -m644 ${claudeMindSource}/vault-manifest.json  "$NOTES_DIR/AI/vault-manifest.json"
+    install -m644 ${claudeMindSource}/memory-template.md   "$NOTES_DIR/AI/memory-template.md"
+
+    # ── Seed files (create once, never overwrite user edits) ──────────────
+
+    # Vault-root CLAUDE.md
     [ -f "$NOTES_DIR/CLAUDE.md" ] || install -m644 ${obsidianSource + "/CLAUDE.md"} "$NOTES_DIR/CLAUDE.md"
-    [ -f "$NOTES_DIR/AI/Context/README.md" ] || install -m644 ${obsidianSource + "/ai-context/README.md"} "$NOTES_DIR/AI/Context/README.md"
 
-    # Copy scripts (always overwrite to pick up nix config changes)
+    # Global CLAUDE.md (symlinked to ~/.claude/CLAUDE.md)
+    [ -f "$NOTES_DIR/AI/brain/CLAUDE-global.md" ] || \
+      install -m644 ${claudeMindSource}/CLAUDE-global.md "$NOTES_DIR/AI/brain/CLAUDE-global.md"
+
+    # Brain seeds
+    [ -f "$NOTES_DIR/AI/brain/North Star.md" ] || \
+      install -m644 "${claudeMindSource}/brain/North Star.md" "$NOTES_DIR/AI/brain/North Star.md"
+    [ -f "$NOTES_DIR/AI/brain/Memories.md" ] || \
+      install -m644 ${claudeMindSource}/brain/Memories.md "$NOTES_DIR/AI/brain/Memories.md"
+    [ -f "$NOTES_DIR/AI/brain/Key Decisions.md" ] || \
+      install -m644 "${claudeMindSource}/brain/Key Decisions.md" "$NOTES_DIR/AI/brain/Key Decisions.md"
+    [ -f "$NOTES_DIR/AI/brain/Patterns.md" ] || \
+      install -m644 ${claudeMindSource}/brain/Patterns.md "$NOTES_DIR/AI/brain/Patterns.md"
+    [ -f "$NOTES_DIR/AI/brain/Gotchas.md" ] || \
+      install -m644 ${claudeMindSource}/brain/Gotchas.md "$NOTES_DIR/AI/brain/Gotchas.md"
+    [ -f "$NOTES_DIR/AI/brain/Skills.md" ] || \
+      install -m644 ${claudeMindSource}/brain/Skills.md "$NOTES_DIR/AI/brain/Skills.md"
+
+    # Work seeds
+    [ -f "$NOTES_DIR/AI/work/Index.md" ] || \
+      install -m644 ${claudeMindSource}/work/Index.md "$NOTES_DIR/AI/work/Index.md"
+    [ -f "$NOTES_DIR/AI/work/meetings/README.md" ] || \
+      install -m644 ${claudeMindSource}/work/meetings/README.md "$NOTES_DIR/AI/work/meetings/README.md"
+
+    # Org seeds
+    [ -f "$NOTES_DIR/AI/org/People & Context.md" ] || \
+      install -m644 "${claudeMindSource}/org/People & Context.md" "$NOTES_DIR/AI/org/People & Context.md"
+
+    # Perf seeds
+    [ -f "$NOTES_DIR/AI/perf/Brag Doc.md" ] || \
+      install -m644 "${claudeMindSource}/perf/Brag Doc.md" "$NOTES_DIR/AI/perf/Brag Doc.md"
+    [ -f "$NOTES_DIR/AI/perf/competencies/README.md" ] || \
+      install -m644 ${claudeMindSource}/perf/competencies/README.md "$NOTES_DIR/AI/perf/competencies/README.md"
+
+    # Thinking seed
+    [ -f "$NOTES_DIR/AI/thinking/README.md" ] || \
+      install -m644 ${claudeMindSource}/thinking/README.md "$NOTES_DIR/AI/thinking/README.md"
+
+    # ── Symlinks from ~/.claude/ to vault ─────────────────────────────────
+    ln -sfn "$NOTES_DIR/.claude/commands" "$HOME/.claude/commands"
+    ln -sfn "$NOTES_DIR/.claude/agents"   "$HOME/.claude/agents"
+    ln -sfn "$NOTES_DIR/.claude/skills"   "$HOME/.claude/skills"
+    ln -sf  "$NOTES_DIR/AI/brain/CLAUDE-global.md" "$HOME/.claude/CLAUDE.md"
+
+    # ── Cleanup ───────────────────────────────────────────────────────────
+    # Remove cole's memory-compiler local config if present
+    rm -f "$NOTES_DIR/AI/.claude/settings.json" 2>/dev/null || true
+    rmdir "$NOTES_DIR/AI/.claude" 2>/dev/null || true
+
+    # Copy Obsidian daily scripts (always overwrite to pick up nix config changes)
     mkdir -p "$NOTES_DIR/scripts"
     install -m755 ${obsidianScriptsSource}/common_summary_functions.sh "$NOTES_DIR/scripts/common_summary_functions.sh"
     install -m755 ${obsidianScriptsSource}/slack_summary.sh            "$NOTES_DIR/scripts/slack_summary.sh"
