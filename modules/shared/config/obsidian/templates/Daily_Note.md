@@ -43,3 +43,5 @@ SORT file.name ASC
 ## Issues
 
 ## Notes
+
+### Prompts for Today
