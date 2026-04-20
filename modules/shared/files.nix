@@ -16,7 +16,7 @@ let
       DISABLE_ERROR_REPORTING = "1";
       DISABLE_TELEMETRY = "1";
     };
-    model = "global.anthropic.claude-opus-4-6-v1";
+    model = "global.anthropic.claude-opus-4-7";
     alwaysThinkingEnabled = true;
     includeCoAuthoredBy = true;
     autoMemoryDirectory = "~/Documents/Notes/AI/memory";
