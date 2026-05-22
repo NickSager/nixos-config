@@ -2,11 +2,23 @@
 description: "Fan out today's daily note prompts into parallel Claude Code sessions — one tmux window per prompt, with conflict awareness and monitoring."
 ---
 
-Read today's daily note, extract the numbered prompts from `### Prompts for Today`, and launch each as a separate interactive Claude Code session in a local tmux session. Monitor all sessions until complete.
+Read today's daily note, extract the numbered prompts from `### Prompts for Today`, and launch each as a separate interactive Claude Code session as new windows in the existing `Work` tmux session. Monitor all sessions until complete.
+
+The `Work` tmux session is the user's primary local session — always attached, always running. Adding batch prompts as windows there means zero-friction switching (Ctrl-b n/p, Ctrl-b <number>) instead of detach/attach between sessions.
 
 ## 1. Read & Parse
 
 Read today's daily note at `Main/Daily_Notes/YYYY/YYYY-MM/YYYY-MM-DD.md`. Find the `### Prompts for Today` section. Extract each numbered prompt (lines starting with `N.`; all indented sub-bullets and continuation lines belong to the same prompt until the next top-level number or heading). Sub-bullets within a prompt are serial sub-tasks — the spawned Claude works through them in order. Stop with a clear message if: no daily note exists, no `### Prompts for Today` section, or no numbered prompts.
+
+### Prompt expansion rules
+
+Some prompts describe work across multiple discrete items (e.g. "review the two CRs from X"). A single window that juggles multiple items confuses the batched Claude — sessions should be sharply scoped. Expand these into one window per item:
+
+- **CR review prompts** — one window per CR. Scope each window to a single CR ID and direct it to use the `/om-cr` skill (not free-form review). The `/om-cr` skill already handles clone, diff, draft, and routing to `AI/work/reviews/CR-<ID>.md`.
+- **Multi-ticket prompts** — one window per ticket.
+- **Multi-package prompts that don't share code** — one window per package.
+
+Keep it expanded: a "review 3 CRs" prompt becomes 3 windows, not 1. The orchestrator already manages concurrency; sharp scope per window produces better output.
 
 ## 2. Analyze Each Prompt
 
@@ -63,23 +75,27 @@ cd "<working-directory>"
 exec claude -n "batch-<window-name>"
 ```
 
-## 5. Launch Tmux Session
+## 5. Launch Windows in the `Work` Session
+
+All batch windows go into the existing `Work` tmux session (the user's primary attached session). Do NOT create a separate session — session switching is unnecessary friction.
 
 ```bash
-tmux has-session -t batch-prompts 2>/dev/null || tmux new-session -d -s batch-prompts -n control
+tmux has-session -t Work 2>/dev/null || tmux new-session -d -s Work
 ```
 
-Never kill an existing `batch-prompts` session — the user may have prior windows open. Just add new windows to it.
+If `Work` doesn't exist for some reason, create it, but under normal operation it's already running. Never kill existing windows in `Work` — the user has a working setup there (Utils, Devdesk, Vim, etc.).
+
+Prefix every batch window name with `batch-` so they're easy to spot and bulk-clean later: `batch-<task-name>`.
 
 For each prompt N, sequentially:
 
 ```bash
-tmux new-window -t batch-prompts: -n "<window-name>"
-tmux send-keys -t "batch-prompts:<window-name>" "bash /tmp/batch-prompt-N.sh" Enter
+tmux new-window -t Work: -n "batch-<window-name>"
+tmux send-keys -t "Work:batch-<window-name>" "bash /tmp/batch-prompt-N.sh" Enter
 sleep 8
 tmux load-buffer -b "prompt-N" /tmp/batch-prompt-N-task.txt
-tmux paste-buffer -b "prompt-N" -t "batch-prompts:<window-name>"
-tmux send-keys -t "batch-prompts:<window-name>" Enter
+tmux paste-buffer -b "prompt-N" -t "Work:batch-<window-name>"
+tmux send-keys -t "Work:batch-<window-name>" Enter
 ```
 
 Key details:
@@ -95,13 +111,13 @@ After all windows launch, report:
 ```
 ### Batch Prompts Launched
 
-Session: `batch-prompts`
+Session: `Work` (already attached)
 
 | Window | Prompt | Dir | Status |
 |--------|--------|-----|--------|
 
-Attach: `tmux attach -t batch-prompts`
 Switch windows: Ctrl-b n/p or Ctrl-b <number>
+List windows: `tmux list-windows -t Work`
 
 Monitoring active — I'll alert you when sessions need attention.
 ```
@@ -111,7 +127,7 @@ Monitoring active — I'll alert you when sessions need attention.
 Enter a monitoring loop. Every 30 seconds, capture each window:
 
 ```bash
-tmux capture-pane -t "batch-prompts:<window-name>" -p -S -30
+tmux capture-pane -t "Work:batch-<window-name>" -p -S -200
 ```
 
 Parse for signals:
@@ -149,7 +165,7 @@ When a window completes (or when all are done), capture and route the work into 
 
 **Capture the full scrollback:**
 ```bash
-tmux capture-pane -t "batch-prompts:<window-name>" -p -S - > /tmp/batch-result-N.txt
+tmux capture-pane -t "Work:batch-<window-name>" -p -S - > /tmp/batch-result-N.txt
 ```
 
 The scrollback buffer is large (1M lines), so don't load the whole thing into context. Instead, extract the key outcomes:
@@ -180,15 +196,18 @@ The scrollback buffer is large (1M lines), so don't load the whole thing into co
 
 After harvest, close the tmux window and clean up temp files:
 ```bash
-tmux kill-window -t "batch-prompts:<window-name>"
+tmux kill-window -t "Work:batch-<window-name>"
 rm /tmp/batch-prompt-N-task.txt /tmp/batch-prompt-N.sh /tmp/batch-result-N.txt
 ```
+
+Important: only kill windows whose names start with `batch-` (our prefix). Never kill user-created windows like `Utils`, `Devdesk`, `Vim`, or `Build`.
 
 ## Edge Cases
 
 - No daily note / no section / no prompts → stop with message
 - Single prompt → launch normally, still useful for session management
-- Existing `batch-prompts` session → reuse it, add new windows (never kill — user may have prior windows)
+- `Work` session already has windows (normal case) → add new `batch-*` windows alongside them; never kill the user's existing windows
+- `Work` session doesn't exist → create it detached, then add windows
 - Prompts targeting different repos → use appropriate repo root as working directory
 
 ## Guidelines

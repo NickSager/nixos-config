@@ -13,19 +13,6 @@ fi
 # Incremental QMD re-index (fast, non-blocking if qmd not installed)
 (cd "$VAULT_DIR" && qmd update 2>/dev/null) || true
 
-# Helper: run a command with a timeout, fall back to alternative
-run_with_timeout() {
-  local timeout_sec=$1; shift
-  local fallback_cmd=$1; shift
-  if command -v gtimeout &>/dev/null; then
-    gtimeout "$timeout_sec" "$@" 2>/dev/null || eval "$fallback_cmd"
-  elif command -v timeout &>/dev/null; then
-    timeout "$timeout_sec" "$@" 2>/dev/null || eval "$fallback_cmd"
-  else
-    "$@" 2>/dev/null || eval "$fallback_cmd"
-  fi
-}
-
 # Build context summary
 echo "## Session Context"
 echo ""
@@ -34,23 +21,19 @@ echo "$(date +%Y-%m-%d) ($(date +%A))"
 echo ""
 
 echo "### North Star (current goals)"
-if command -v obsidian &>/dev/null; then
-  run_with_timeout 5 "cat '$AI_DIR/brain/North Star.md' 2>/dev/null | head -30" obsidian read file="North Star" | head -30
-else
-  cat "$AI_DIR/brain/North Star.md" 2>/dev/null | head -30 || echo "(not found)"
-fi
+cat "$AI_DIR/brain/North Star.md" 2>/dev/null | head -30 || echo "(not found)"
 echo ""
 
 echo "### Recent Changes (last 48h)"
 (cd "$VAULT_DIR" && git log --oneline --since="48 hours ago" --no-merges 2>/dev/null | head -15) || echo "(no git history)"
 echo ""
 
-echo "### Open Tasks"
-if command -v obsidian &>/dev/null; then
-  run_with_timeout 5 'echo "(CLI timed out)"' obsidian tasks daily todo | head -10
-else
-  echo "(Obsidian CLI not available)"
-fi
+echo "### Open Tasks (scheduled/due today, from vault markdown)"
+TODAY="$(date +%Y-%m-%d)"
+grep -rhE --include="*.md" "(📅|⏳) ${TODAY}" "$VAULT_DIR" 2>/dev/null \
+  | grep -E "^\s*([-*]|[0-9]+\.) \[ \]" \
+  | head -20 \
+  || echo "(none)"
 echo ""
 
 echo "### Active Work"

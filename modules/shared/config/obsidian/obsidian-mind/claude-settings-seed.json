@@ -1,0 +1,41 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(done)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(rg:*)",
+      "Bash(wc:*)",
+      "Bash(echo:*)",
+      "Bash(xargs ls:*)",
+      "Bash(xargs grep:*)",
+      "Bash(xargs find:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git diff:*)",
+      "Bash(git status:*)",
+      "Bash(~/Documents/Notes/.claude/scripts/ws-git-log.sh:*)",
+      "Bash(tmux capture-pane:*)",
+      "Bash(tmux list-windows:*)",
+      "Bash(tmux list-sessions:*)",
+      "Bash(tmux send-keys:*)",
+      "Bash(tmux display-message:*)",
+      "Bash(tmux new-window:*)",
+      "Bash(tmux load-buffer:*)",
+      "Bash(tmux paste-buffer:*)",
+      "Bash(tmux kill-window:*)",
+      "Bash(tmux has-session:*)",
+      "Bash(tmux new-session:*)",
+      "Read(~/.claude/**)",
+      "Read(~/Documents/Notes/**)",
+      "Edit(~/Documents/Notes/AI/**)",
+      "Write(~/Documents/Notes/AI/**)",
+      "Edit(~/Documents/Notes/Main/Daily_Notes/**)",
+      "Write(~/Documents/Notes/Main/Daily_Notes/**)"
+    ]
+  }
+}

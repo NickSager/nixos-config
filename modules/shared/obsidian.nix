@@ -57,6 +57,7 @@ in
           "bookmarks"
           "editor-status"
           "word-count"
+          "bases"
         ];
         appearance = { cssTheme = "Soft Paper"; };
         extraFiles."themes/Soft Paper".source = obsidianSource + "/themes/soft-paper";
@@ -82,6 +83,9 @@ in
                 { folder = "Main/Meeting_Notes"; template = "Main/Templates/Meeting_Note.md"; }
                 { folder = "Projects"; template = "Main/Templates/Project.md"; }
                 { folder = "Tasks"; template = "Main/Templates/Task.md"; }
+                # obsidian-mind per-task notes under artifacts/<project>/tasks/
+                # Templater applies folder_templates recursively to child folders.
+                { folder = "AI/work/artifacts"; template = "AI/templates/Task.md"; }
               ];
               enable_file_templates = false;
               file_templates = [{ regex = ".*"; template = ""; }];
@@ -218,6 +222,7 @@ in
     install -m755 ${obsidianMindSource}/scripts/find-python.sh       "$NOTES_DIR/.claude/scripts/find-python.sh"
     install -m755 ${obsidianMindSource}/scripts/charcount.sh         "$NOTES_DIR/.claude/scripts/charcount.sh"
     install -m755 ${obsidianMindSource}/scripts/test_hooks.py        "$NOTES_DIR/.claude/scripts/test_hooks.py"
+    install -m755 ${obsidianMindSource}/scripts/ws-git-log.sh        "$NOTES_DIR/.claude/scripts/ws-git-log.sh"
 
     # Slash commands
     install -m644 ${obsidianMindSource}/commands/om-standup.md           "$NOTES_DIR/.claude/commands/om-standup.md"
@@ -238,7 +243,7 @@ in
     install -m644 ${obsidianMindSource}/commands/om-humanize.md          "$NOTES_DIR/.claude/commands/om-humanize.md"
     install -m644 ${obsidianMindSource}/commands/om-vault-audit.md       "$NOTES_DIR/.claude/commands/om-vault-audit.md"
     install -m644 ${obsidianMindSource}/commands/om-vault-upgrade.md     "$NOTES_DIR/.claude/commands/om-vault-upgrade.md"
-    install -m644 ${obsidianMindSource}/commands/om-cr-review.md         "$NOTES_DIR/.claude/commands/om-cr-review.md"
+    install -m644 ${obsidianMindSource}/commands/om-cr.md                "$NOTES_DIR/.claude/commands/om-cr.md"
     install -m644 ${obsidianMindSource}/commands/om-investigate-ticket.md "$NOTES_DIR/.claude/commands/om-investigate-ticket.md"
     install -m644 ${obsidianMindSource}/commands/om-batch-prompts.md    "$NOTES_DIR/.claude/commands/om-batch-prompts.md"
 
@@ -283,6 +288,7 @@ in
     install -m644 "${obsidianMindSource}/templates/Thinking Note.md"    "$NOTES_DIR/AI/templates/Thinking Note.md"
     install -m644 "${obsidianMindSource}/templates/Decision Record.md"  "$NOTES_DIR/AI/templates/Decision Record.md"
     install -m644 "${obsidianMindSource}/templates/Competency Note.md"  "$NOTES_DIR/AI/templates/Competency Note.md"
+    install -m644 "${obsidianMindSource}/templates/Task.md"             "$NOTES_DIR/AI/templates/Task.md"
 
     # Root-level AI files
     install -m644 ${obsidianMindSource}/Home.md             "$NOTES_DIR/AI/Home.md"
@@ -333,11 +339,21 @@ in
     [ -f "$NOTES_DIR/AI/thinking/README.md" ] || \
       install -m644 ${obsidianMindSource}/thinking/README.md "$NOTES_DIR/AI/thinking/README.md"
 
+    # ── Vault-level Claude Code settings ──────────────────────────────────
+    # Seed vault permissions file on first install; never overwrite user edits.
+    # Permissions are hand-editable throughout a session so Claude can add new
+    # allow-list entries without requiring a nix rebuild.
+    [ -f "$NOTES_DIR/.claude/settings.json" ] || \
+      install -m644 ${obsidianMindSource}/claude-settings-seed.json "$NOTES_DIR/.claude/settings.json"
+
     # ── Symlinks from ~/.claude/ to vault ─────────────────────────────────
     ln -sfn "$NOTES_DIR/.claude/commands" "$HOME/.claude/commands"
     ln -sfn "$NOTES_DIR/.claude/agents"   "$HOME/.claude/agents"
     ln -sfn "$NOTES_DIR/.claude/skills"   "$HOME/.claude/skills"
     ln -sf  "$NOTES_DIR/AI/brain/CLAUDE-global.md" "$HOME/.claude/CLAUDE.md"
+    # Expose vault permissions as Claude's user-level settings.local.json so
+    # they apply globally (not just when CWD is inside the vault).
+    ln -sfn "$NOTES_DIR/.claude/settings.json" "$HOME/.claude/settings.local.json"
 
     # ── Cleanup ───────────────────────────────────────────────────────────
     # Remove cole's memory-compiler local config if present

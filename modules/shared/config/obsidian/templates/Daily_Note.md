@@ -2,28 +2,72 @@
 tags:
 ---
 # Tasks
-> [!danger]+  Overdue
+> [!danger]+ Overdue
 > ```tasks
 > not done
-> due before today and not due this week
+> due before today
 > is not blocked
-> short mode
+> sort by due
+> group by function task.file.folder.replace("Projects/active/", "").replace("Projects/artifacts/", "").replace("AI/work/", "").replace(/\/$/, "")
+> show due date
+> show scheduled date
+> show priority
+> show backlink
 > ```
 
-> [!warning]+  Due This Week
+> [!warning]+ Due / Scheduled Today
 > ```tasks
 > not done
-> due this week
+> (due on today) OR (scheduled on today)
 > is not blocked
-> short mode
+> sort by priority, due
+> group by function task.file.folder.replace("Projects/active/", "").replace("Projects/artifacts/", "").replace("AI/work/", "").replace(/\/$/, "")
+> show due date
+> show scheduled date
+> show priority
+> show backlink
 > ```
 
-> [!info]+  No Due Date
+> [!tip]- Due This Week (excl. today)
 > ```tasks
 > not done
->   scheduled after 4 weeks ago
+> due after today
+> due before in 8 days
 > is not blocked
-> short mode
+> sort by due
+> group by function task.due?.format("ddd MMM D") ?? "No date"
+> show due date
+> show priority
+> show backlink
+> ```
+
+> [!info]- Scheduled This Week (excl. today)
+> ```tasks
+> not done
+> scheduled after today
+> scheduled before in 8 days
+> is not blocked
+> sort by scheduled
+> group by function task.scheduled?.format("ddd MMM D") ?? "No date"
+> show scheduled date
+> show priority
+> show backlink
+> ```
+
+> [!warning]+ Task-note tracker (scheduled/due today or overdue)
+> ```dataview
+> TABLE WITHOUT ID
+>   file.link AS "Task",
+>   priority AS "P",
+>   scheduled AS "Sched",
+>   due AS "Due",
+>   status AS "Status"
+> FROM "Projects/artifacts"
+> WHERE ((scheduled AND scheduled <= date(today))
+>     OR (due AND due <= date(today)))
+>   AND status != "done"
+>   AND status != "cancelled"
+> SORT due ASC, priority ASC
 > ```
 
 # Day planner

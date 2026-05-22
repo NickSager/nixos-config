@@ -15,6 +15,7 @@ Run the morning standup:
    - Fetch CRs awaiting user's review: `https://code.amazon.com/reviews/to-user/nsager`
    - Use `mcp__builder-mcp__ReadInternalWebsites` for both (load via ToolSearch first)
    - Summarize each CR: ID, package, status (OPEN/SHIPPED/MERGED), approver if any
+   - Suppression check: for each CR with a review note at `AI/work/reviews/CR-<ID>.md`, read the frontmatter. If `standup: suppress` is set, move that CR out of the main table into a collapsed `<details>` block at the end of the CR section, showing `standup_reason`. Re-surface automatically if the CR has a new revision since `standup_suppressed_on` (compare `Revision` column from the CR list against the date).
 8. Read yesterday's `## Work` section. Identify unfinished items (unchecked `[]` tasks).
    - Cross-reference with project notes in `AI/work/active/` — items that belong to a project backlog should NOT be carried forward (they live in the project note).
    - Only carry forward items that are concrete today-intentions, not backlog.
