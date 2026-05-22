@@ -58,14 +58,7 @@ return {
     cmd = { "CodeCompanion", "CodeCompanionChat", "CodeCompanionActions" },
     dependencies = {
       "j-hui/fidget.nvim", -- Display status
-      {
-        "nvim-mini/mini.diff",
-        config = function()
-          require("mini.diff").setup({
-            source = require("mini.diff").gen_source.none(),
-          })
-        end,
-      },
+      "nvim-mini/mini.diff",
     },
     opts = {
       ---@module "codecompanion"
