@@ -73,17 +73,33 @@ in
   };
 
   system.defaults.dock = {
-    persistent-apps = [
-      { app = "/System/Applications/Launchpad.app"; }
-      { app = "/Applications/Microsoft Outlook.app"; }
-      { app = "/System/Applications/Calendar.app"; }
-      { app = "/System/Applications/Reminders.app"; }
-      { app = "/System/Applications/Notes.app"; }
-      { app = "${pkgs.obsidian}/Applications/Obsidian.app"; }
-      { app = "/Applications/Firefox.app"; }
-      { app = "${pkgs.alacritty}/Applications/Alacritty.app"; }
-      { app = "/Applications/Slack.app"; }
-    ];
+    persistent-apps =
+      if profile == "work" then [
+        { app = "/System/Applications/Launchpad.app"; }
+        { app = "/Applications/Microsoft Outlook.app"; }
+        { app = "/System/Applications/Calendar.app"; }
+        { app = "/System/Applications/Reminders.app"; }
+        { app = "/System/Applications/Notes.app"; }
+        { app = "${pkgs.obsidian}/Applications/Obsidian.app"; }
+        { app = "/Applications/Firefox.app"; }
+        { app = "${pkgs.alacritty}/Applications/Alacritty.app"; }
+        { app = "/Applications/Slack.app"; }
+      ] else [
+        { app = "/System/Applications/Launchpad.app"; }
+        { app = "/System/Applications/Mail.app"; }
+        { app = "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app"; }
+        { app = "/System/Applications/Messages.app"; }
+        { app = "/System/Applications/Calendar.app"; }
+        { app = "/System/Applications/Reminders.app"; }
+        { app = "/System/Applications/Notes.app"; }
+        { app = "/System/Applications/Photos.app"; }
+        { app = "/System/Applications/Maps.app"; }
+        { app = "/System/Applications/FaceTime.app"; }
+        { app = "/System/Applications/Music.app"; }
+        { app = "/System/Applications/Books.app"; }
+        { app = "${pkgs.obsidian}/Applications/Obsidian.app"; }
+        { app = "${pkgs.alacritty}/Applications/Alacritty.app"; }
+      ];
 
     persistent-others = [
       { file = toString myEmacsLauncher; }
