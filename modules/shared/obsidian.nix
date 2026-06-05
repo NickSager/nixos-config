@@ -211,6 +211,8 @@ in
     mkdir -p "$NOTES_DIR/.claude/skills/obsidian-bases/references"
     mkdir -p "$NOTES_DIR/.claude/skills/obsidian-cli"
     mkdir -p "$NOTES_DIR/.claude/skills/json-canvas/references"
+    mkdir -p "$NOTES_DIR/.claude/skills/om-triage"
+    mkdir -p "$NOTES_DIR/.claude/skills/om-triage-learn"
 
     # ── Nix-managed files (always overwrite to pick up config changes) ────
 
@@ -246,6 +248,8 @@ in
     install -m644 ${obsidianMindSource}/commands/om-cr.md                "$NOTES_DIR/.claude/commands/om-cr.md"
     install -m644 ${obsidianMindSource}/commands/om-investigate-ticket.md "$NOTES_DIR/.claude/commands/om-investigate-ticket.md"
     install -m644 ${obsidianMindSource}/commands/om-batch-prompts.md    "$NOTES_DIR/.claude/commands/om-batch-prompts.md"
+    install -m644 ${obsidianMindSource}/commands/om-triage.md           "$NOTES_DIR/.claude/commands/om-triage.md"
+    install -m644 ${obsidianMindSource}/commands/om-triage-learn.md      "$NOTES_DIR/.claude/commands/om-triage-learn.md"
 
     # Subagents
     install -m644 ${obsidianMindSource}/agents/vault-librarian.md      "$NOTES_DIR/.claude/agents/vault-librarian.md"
@@ -257,6 +261,15 @@ in
     install -m644 ${obsidianMindSource}/agents/slack-archaeologist.md  "$NOTES_DIR/.claude/agents/slack-archaeologist.md"
     install -m644 ${obsidianMindSource}/agents/review-fact-checker.md  "$NOTES_DIR/.claude/agents/review-fact-checker.md"
     install -m644 ${obsidianMindSource}/agents/vault-migrator.md       "$NOTES_DIR/.claude/agents/vault-migrator.md"
+
+    # Triage specialist subagents (om-triage)
+    install -m644 ${obsidianMindSource}/agents/triage-failopen.md      "$NOTES_DIR/.claude/agents/triage-failopen.md"
+    install -m644 ${obsidianMindSource}/agents/triage-failclosed.md    "$NOTES_DIR/.claude/agents/triage-failclosed.md"
+    install -m644 ${obsidianMindSource}/agents/triage-host.md          "$NOTES_DIR/.claude/agents/triage-host.md"
+    install -m644 ${obsidianMindSource}/agents/triage-deploy.md        "$NOTES_DIR/.claude/agents/triage-deploy.md"
+    install -m644 ${obsidianMindSource}/agents/triage-rbr.md           "$NOTES_DIR/.claude/agents/triage-rbr.md"
+    install -m644 ${obsidianMindSource}/agents/triage-log-diver.md     "$NOTES_DIR/.claude/agents/triage-log-diver.md"
+    install -m644 ${obsidianMindSource}/agents/triage-metric-diver.md  "$NOTES_DIR/.claude/agents/triage-metric-diver.md"
 
     # Skills
     install -m644 ${obsidianMindSource}/skills/defuddle/SKILL.md                                  "$NOTES_DIR/.claude/skills/defuddle/SKILL.md"
@@ -270,6 +283,8 @@ in
     install -m644 ${obsidianMindSource}/skills/obsidian-cli/SKILL.md                               "$NOTES_DIR/.claude/skills/obsidian-cli/SKILL.md"
     install -m644 ${obsidianMindSource}/skills/json-canvas/SKILL.md                                "$NOTES_DIR/.claude/skills/json-canvas/SKILL.md"
     install -m644 ${obsidianMindSource}/skills/json-canvas/references/EXAMPLES.md                  "$NOTES_DIR/.claude/skills/json-canvas/references/EXAMPLES.md"
+    install -m644 ${obsidianMindSource}/skills/om-triage/SKILL.md                                  "$NOTES_DIR/.claude/skills/om-triage/SKILL.md"
+    install -m644 ${obsidianMindSource}/skills/om-triage-learn/SKILL.md                            "$NOTES_DIR/.claude/skills/om-triage-learn/SKILL.md"
 
     # Bases (Obsidian Bases query views)
     mkdir -p "$NOTES_DIR/AI/bases"
