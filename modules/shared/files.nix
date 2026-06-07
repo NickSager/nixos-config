@@ -5,65 +5,10 @@ let
   # Can put github public keys here to be copied
   nvimSource = ./config/nvim;
 
-  claudeSettings = builtins.toJSON {
-    awsAuthRefresh = "ada credentials update --profile claude --account $ISENGARD_ACCT --provider isengard --role Admin --once";
-    env = {
-      AWS_PROFILE = "claude";
-      AWS_REGION = "us-west-2";
-      ANTHROPIC_SMALL_FAST_MODEL_AWS_REGION = "us-west-2";
-      CLAUDE_CODE_USE_BEDROCK = "1";
-      DISABLE_BUG_COMMAND = "1";
-      DISABLE_ERROR_REPORTING = "1";
-      DISABLE_TELEMETRY = "1";
-    };
-    model = "global.anthropic.claude-opus-4-8";
-    alwaysThinkingEnabled = true;
-    includeCoAuthoredBy = true;
-    autoMemoryDirectory = "~/Documents/Notes/AI/memory";
-    statusLine = {
-      type = "command";
-      command = "~/.claude/statusline.sh";
-    };
-    hooks = {
-      SessionStart = [{
-        matcher = "startup|resume|clear|compact";
-        hooks = [{
-          type = "command";
-          command = "bash ~/Documents/Notes/.claude/scripts/session-start.sh";
-          timeout = 30;
-        }];
-      }];
-      UserPromptSubmit = [{
-        hooks = [{
-          type = "command";
-          command = "bash ~/Documents/Notes/.claude/scripts/find-python.sh ~/Documents/Notes/.claude/scripts/classify-message.py";
-          timeout = 15;
-        }];
-      }];
-      PostToolUse = [{
-        matcher = "Write|Edit";
-        hooks = [{
-          type = "command";
-          command = "bash ~/Documents/Notes/.claude/scripts/find-python.sh ~/Documents/Notes/.claude/scripts/validate-write.py";
-          timeout = 15;
-        }];
-      }];
-      PreCompact = [{
-        hooks = [{
-          type = "command";
-          command = "bash ~/Documents/Notes/.claude/scripts/pre-compact.sh";
-          timeout = 30;
-        }];
-      }];
-      Stop = [{
-        hooks = [{
-          type = "command";
-          command = "echo 'Session end checklist:\n- Archive completed projects? (AI/work/active/ -> AI/work/archive/YYYY/)\n- Update indexes? (AI/work/Index.md, AI/brain/Memories.md, AI/org/People & Context.md, AI/perf/Brag Doc.md)\n- New notes linked? (orphans are bugs)\n- Run /om-vault-audit if many notes were created/modified'";
-          timeout = 5;
-        }];
-      }];
-    };
-  };
+  # NOTE: Claude Code's ~/.claude/settings.json (env, model, hooks, permissions)
+  # is no longer Nix-generated. It lives in the vault at .claude/settings.json
+  # and is symlinked into ~/.claude/ by modules/shared/obsidian.nix, making the
+  # vault the single source of truth and keeping it hand-editable without a rebuild.
 
   claudeStatusline = ''
     #!/bin/bash
@@ -109,8 +54,11 @@ in
     #   text = githubPublicSigningKey;
     # };
 
-    # Claude Code configuration
-    ".claude/settings.json".text = claudeSettings;
+    # Claude Code configuration.
+    # NOTE: ~/.claude/settings.json is intentionally NOT managed here. It is
+    # symlinked to the vault's .claude/settings.json by modules/shared/obsidian.nix
+    # so the settings are the global source of truth AND remain hand-editable
+    # mid-session without a nix rebuild. Only the statusline is Nix-generated.
     ".claude/statusline.sh" = {
       text = claudeStatusline;
       executable = true;

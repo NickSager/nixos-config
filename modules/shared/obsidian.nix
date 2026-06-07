@@ -355,9 +355,13 @@ in
       install -m644 ${obsidianMindSource}/thinking/README.md "$NOTES_DIR/AI/thinking/README.md"
 
     # ── Vault-level Claude Code settings ──────────────────────────────────
-    # Seed vault permissions file on first install; never overwrite user edits.
-    # Permissions are hand-editable throughout a session so Claude can add new
-    # allow-list entries without requiring a nix rebuild.
+    # The vault's .claude/settings.json is the SINGLE SOURCE OF TRUTH for
+    # Claude's user-level settings (env, model, hooks, permissions); it is
+    # symlinked to ~/.claude/settings.json below and is hand-editable mid-session
+    # without a nix rebuild. The seed here is only a frozen bootstrap snapshot,
+    # installed iff the vault file is absent (fresh machine) — it never overwrites
+    # user edits, so it WILL drift from the live file over time. Re-sync it from
+    # the live vault file occasionally if you want fresh installs to stay current.
     [ -f "$NOTES_DIR/.claude/settings.json" ] || \
       install -m644 ${obsidianMindSource}/claude-settings-seed.json "$NOTES_DIR/.claude/settings.json"
 
@@ -366,9 +370,13 @@ in
     ln -sfn "$NOTES_DIR/.claude/agents"   "$HOME/.claude/agents"
     ln -sfn "$NOTES_DIR/.claude/skills"   "$HOME/.claude/skills"
     ln -sf  "$NOTES_DIR/AI/brain/CLAUDE-global.md" "$HOME/.claude/CLAUDE.md"
-    # Expose vault permissions as Claude's user-level settings.local.json so
-    # they apply globally (not just when CWD is inside the vault).
-    ln -sfn "$NOTES_DIR/.claude/settings.json" "$HOME/.claude/settings.local.json"
+    # Vault settings.json IS Claude's user-level settings.json, so it applies
+    # globally (not just when CWD is inside the vault) and stays hand-editable
+    # mid-session without a rebuild. Claude has no user-level settings.local.json
+    # (that filename is project-scope only), so the vault file must land here.
+    ln -sfn "$NOTES_DIR/.claude/settings.json" "$HOME/.claude/settings.json"
+    # Drop the stale settings.local.json symlink from prior installs (unread by Claude).
+    rm -f "$HOME/.claude/settings.local.json" 2>/dev/null || true
 
     # ── Cleanup ───────────────────────────────────────────────────────────
     # Remove cole's memory-compiler local config if present
