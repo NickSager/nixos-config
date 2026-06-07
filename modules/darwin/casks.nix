@@ -1,6 +1,9 @@
 _:
 
 [
+  # Utility Tools
+  "caffeine" # Menu-bar utility to keep the Mac awake (no lid-closed support)
+
 #   # Development Tools
 #   "claude"
 #   "insomnia"

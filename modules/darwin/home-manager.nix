@@ -38,6 +38,7 @@ in
     enable = true;
     casks  = pkgs.callPackage ./casks.nix {};
     masApps = {
+      # "Amphetamine" = 937984704; # Keep-awake w/ triggers + closed-display mode (App Store only)
       # "hidden-bar" = 1452453066;
       # "wireguard" = 1451685025;
     };
