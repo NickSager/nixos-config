@@ -28,9 +28,9 @@ Read `~/Documents/Notes/AI/work/reviews/CR-<ID>.md`. If it exists, treat it as a
 
 ### 2. Clone the CR
 
-Use `mcp__builder-mcp__CrCheckout` with the CR ID. SOP per [[feedback_cr_review_workflow]] — always clone locally.
+Use `mcp__builder-mcp__CrCheckout` with the CR ID, **always passing `workingDirectory: /Volumes/workplace`**. SOP per [[feedback_cr_review_workflow]] — clone to the workspace, never the OS temp dir. Without `workingDirectory` the tool defaults to `/var/folders/.../cr-checkout-*/`, which the user has rejected — don't rely on the default.
 
-Checkout lands in either `/Volumes/workplace/CR-<ID>/` or `/var/folders/.../cr-checkout-*/`. Record path.
+Checkout lands in `/Volumes/workplace/CR-<ID>/`. Record path.
 
 ### 3. Fetch CR metadata
 
