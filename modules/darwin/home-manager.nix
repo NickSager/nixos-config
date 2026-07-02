@@ -36,6 +36,11 @@ in
     # $ mas search <app name>
     #
     enable = true;
+    onActivation = {
+      upgrade = true;     # `brew upgrade` installed casks on every build-switch
+      autoUpdate = false; # `brew update` fails under mutableTaps = false
+      cleanup = "none";   # don't uninstall undeclared casks
+    };
     casks  = pkgs.callPackage ./casks.nix {};
     masApps = {
       # "Amphetamine" = 937984704; # Keep-awake w/ triggers + closed-display mode (App Store only)
@@ -52,6 +57,7 @@ in
         imports = [
           ../shared/obsidian.nix
           ../shared/work.nix
+          ../shared/ai-agents.nix
         ];
         home = {
           enableNixpkgsReleaseCheck = false;

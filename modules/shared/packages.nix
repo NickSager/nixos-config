@@ -31,7 +31,8 @@ with pkgs; [
   btop # System monitor and process viewer
 
   # C
-  # claude-code # Claude Code CLI for AI assistance
+  # claude-code # Installed natively via ../shared/ai-agents.nix (self-updates)
+  # codex # Installed natively via ../shared/ai-agents.nix (self-updates)
   # coreutils # Basic file/text/shell utilities
 
   # D
@@ -91,6 +92,7 @@ with pkgs; [
   ncurses # Required: terminfo database for tmux/alacritty TERM resolution
   # neofetch removed (unmaintained); use fastfetch if needed
   # ngrok # Secure tunneling service
+  nodejs # Node.js runtime + npm/npx
   # nodePackages.live-server # Development server with live reload
   # nodePackages.nodemon # Node.js file watcher
   # nodePackages.npm # Node package manager
