@@ -140,6 +140,22 @@
         "type": "github"
       }
     },
+    "gammons-tap": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786826942,
+        "narHash": "sha256-r8jiWhUmV5oxbCE5csan2CLpdXmehGwSeDzOl3BNDX4=",
+        "owner": "gammons",
+        "repo": "homebrew-tap",
+        "rev": "1bc70f4f81b95a7d6c9259e85932da207dcf3929",
+        "type": "github"
+      },
+      "original": {
+        "owner": "gammons",
+        "repo": "homebrew-tap",
+        "type": "github"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -390,6 +406,7 @@
         "disko": "disko",
         "emacs-overlay": "emacs-overlay",
         "flake-utils": "flake-utils",
+        "gammons-tap": "gammons-tap",
         "home-manager": "home-manager_2",
         "homebrew-bundle": "homebrew-bundle",
         "homebrew-cask": "homebrew-cask",

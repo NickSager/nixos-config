@@ -4,6 +4,9 @@ _:
   # Utility Tools
   "caffeine" # Menu-bar utility to keep the Mac awake (no lid-closed support)
 
+  # Communication Tools
+  "gammons/tap/slk" # Keyboard-driven terminal UI client for Slack
+
 #   # Development Tools
 #   "claude"
 #   "insomnia"

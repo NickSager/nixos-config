@@ -31,6 +31,10 @@
       url = "github:homebrew/homebrew-cask";
       flake = false;
     };
+    gammons-tap = {
+      url = "github:gammons/homebrew-tap";
+      flake = false;
+    };
     disko = {
       url = "github:nix-community/disko";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -57,7 +61,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, home-manager, nixpkgs, flake-utils, disko, agenix, emacs-overlay, niri-flake } @inputs:
+  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, gammons-tap, home-manager, nixpkgs, flake-utils, disko, agenix, emacs-overlay, niri-flake } @inputs:
     let
       profile = "work"; # "work" or "personal"
       user = if profile == "work" then "nsager" else "nick";
@@ -129,6 +133,7 @@
                   "homebrew/homebrew-core" = homebrew-core;
                   "homebrew/homebrew-cask" = homebrew-cask;
                   "homebrew/homebrew-bundle" = homebrew-bundle;
+                  "gammons/tap" = gammons-tap;
                 };
                 mutableTaps = false;
                 autoMigrate = true;
