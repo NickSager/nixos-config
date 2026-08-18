@@ -37,6 +37,7 @@ Before implementing:
 - No "flexibility" or "configurability" that wasn't requested.
 - No error handling for impossible scenarios.
 - If you write 200 lines and it could be 50, rewrite it.
+- Comments too: default to none. Comment the non-obvious "why", never the "what"; if the code says it, delete it. When one earns its place, one line — collapse multi-line rationale, no citations, no drift-prone specifics (exact counts, line numbers). A comment must stand alone to a code reviewer: no private design-doc shorthand (decision/ticket codes like D4/T7), no describing an approach you did NOT take. When editing, trim only comments you wrote.
 
 Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
 

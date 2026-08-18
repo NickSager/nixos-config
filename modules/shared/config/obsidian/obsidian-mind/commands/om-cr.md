@@ -1,5 +1,5 @@
 ---
-description: "CR review — works on an existing CR (peer review) OR a project/package (self-review pre-raise). Drafts to AI/work/reviews/. Never posts comments."
+description: "CR review — works on an existing CR (peer review) OR a project/package (self-review pre-raise). Writes to AI/work/reviews/ and drafts comments onto the CR unpublished. Never publishes."
 ---
 
 Review code. Two modes, detected from the argument:
@@ -57,11 +57,22 @@ In the checkout:
 
 ### 6. Draft the review (see output format below)
 
-### 7. TL;DR to user
+### 7. Draft the comments onto the CR
+
+Peer review mode always ends here — this is a step, not an optional extra. Post the findings as **unpublished drafts** on the current revision (`publish=false`), written per the Comment style section below. The user reviews them in CRUX and publishes manually.
+
+- Reply inside an existing analyzer thread when a finding overlaps one (AutoSDE, Coverlay) instead of opening a parallel comment — one thread per issue.
+- Inline on the exact `file:line` for line-specific findings; `TOP` for the recommendation and for rolled-up minors.
+- Record the post-number-to-topic map in the vault file so the next revision can find them.
+
+Never `publish=true` — see [[feedback_cr_comments_as_drafts]].
+
+### 8. TL;DR to user
 
 ```
 Draft saved to AI/work/reviews/CR-<ID>.md
 Recommendation: <Approve / Approve with Comments / Request Changes> (<key-reason>)
+N draft comments on rev <R>, unpublished — review and publish in CRUX
 CR: https://code.amazon.com/reviews/CR-<ID>
 ```
 
@@ -175,16 +186,45 @@ OR
 
 Reference the pattern in `~/Documents/Notes/AI/work/reviews/CR-269809509.md`.
 
+## Comment style (for the comments drafted onto the CR)
+
+The vault review is written for the user. A CR comment is written for the **author** — a different reader, with different context. Rewrite for that reader; do not paste vault prose into CRUX.
+
+**Use the minimum number of words the finding needs.** Most comments are 2-6 short sentences. A one-line finding gets one line. Clarity beats density: several short sentences beat one packed sentence. Drop secondary detail (mechanism internals, edge-case enumeration) unless it changes what the author does next.
+
+Every comment is: finding, where, why it matters, fix. Usually one sentence each, often fewer. If a sentence doesn't change what the author does next, delete it.
+
+**Delete on sight:**
+
+- Preambles and framing — "Worth adding scope before you act on this", "The finding is right but", "Here's what I checked". Open with the finding.
+- Restated conclusions — no summarizing the paragraph you just wrote.
+- Reproduction method and review-process narration — keep the result, drop the harness, the lens, and the agent count.
+- Teaching the author their own codebase or language. Explain a mechanism only when it IS the finding.
+- Cheap-fix-versus-real-fix menus. Name the fix you'd take. Mention an alternative only if the choice is genuinely the author's.
+- Hedging and softeners — "it may be worth considering", "I'm not claiming". Say it or cut it.
+
+**Keep:** exact counts and file:line, the specific bad outcome, and a not-finding when it stops the author fixing something that isn't broken (one sentence).
+
+**STE (Simplified Technical English).** One idea per sentence, under 20 words. Active voice, present tense, plain words. Use the same word for the same thing every time. Numerals for counts. No semicolon chains, no stacked em-dash asides, no arrow shorthand, no load-bearing parentheticals. Put the fix on its own line, starting "Suggested fix:" followed by a verb.
+
+**Each comment stands alone** — no "see the sibling thread" or "as I noted above". Restate a dependency in one clause and point at the `file:line`. Define a domain term only if the author plausibly doesn't know it, in as few words as possible.
+
+**Credit goes in the TOP comment only**, one or two specifics, not a section. Don't open each inline comment with praise.
+
+No bold or italic in CR comment bodies per [[feedback_no_bold_ticket_comments]]; markdown for structure (lists, code, links) is fine.
+
 ## Hard constraints
 
-- **NEVER post comments to a CR.** No `CRAddComment`, no `Ticketing` writes, no `CRRevisionCreator` comment posts. Draft lives only in the local vault file. User posts manually after editing. See [[feedback_ticket_comment_edits]].
+- **DO draft comments onto the CR; NEVER publish them.** `publish=false` on every `CRAddComment` / `CodeReviewWriteActions` call. Drafting is part of peer review — don't ask first, and don't stop at the vault file. The user reviews the drafts in CRUX and publishes manually. Only `publish=true` if they explicitly say "publish"; "post it" and "go ahead" mean draft. No `Ticketing` writes, no `CRRevisionCreator` comment posts. See [[feedback_cr_comments_as_drafts]].
+- **Keep the vault file and the drafts in sync.** When drafts change on the CR, update the vault review in the same pass and record the post-number-to-topic map, so the next revision can find them. Edit existing drafts in place with `update-comment` rather than deleting and reposting — it preserves post numbers and thread parents. See [[feedback_ticket_comment_edits]].
 - **NEVER commit or push in self-review mode.** Review only — the user decides what to commit and when. See [[feedback_never_commit_unless_asked]] and [[feedback_never_git_push]].
 - **Approval/Status line goes at the TOP** of the review, not the end — see [[feedback_cr_review_workflow]].
-- **Vault markdown may use bold** for scannability, but when the user later pastes into a CR comment, strip bold first — see [[feedback_no_bold_ticket_comments]].
+- **Vault markdown may use bold** for scannability; strip it from anything posted to CRUX — see [[feedback_no_bold_ticket_comments]].
 
 ## Related
 
 - [[feedback_cr_review_workflow]] — SOP for CR reviews
+- [[feedback_cr_comments_as_drafts]] — CR comments are always drafts; user publishes
 - [[feedback_ticket_comment_edits]] — don't repost; user edits locally
 - [[feedback_no_bold_ticket_comments]] — ticket comment text is plain
 - [[feedback_never_commit_unless_asked]] — self-review never commits

@@ -213,6 +213,7 @@ in
     mkdir -p "$NOTES_DIR/.claude/skills/json-canvas/references"
     mkdir -p "$NOTES_DIR/.claude/skills/om-triage"
     mkdir -p "$NOTES_DIR/.claude/skills/om-triage-learn"
+    mkdir -p "$NOTES_DIR/.claude/output-styles"
 
     # ── Nix-managed files (always overwrite to pick up config changes) ────
 
@@ -285,6 +286,9 @@ in
     install -m644 ${obsidianMindSource}/skills/json-canvas/references/EXAMPLES.md                  "$NOTES_DIR/.claude/skills/json-canvas/references/EXAMPLES.md"
     install -m644 ${obsidianMindSource}/skills/om-triage/SKILL.md                                  "$NOTES_DIR/.claude/skills/om-triage/SKILL.md"
     install -m644 ${obsidianMindSource}/skills/om-triage-learn/SKILL.md                            "$NOTES_DIR/.claude/skills/om-triage-learn/SKILL.md"
+
+    # Output styles
+    install -m644 ${obsidianMindSource}/output-styles/ste.md                                       "$NOTES_DIR/.claude/output-styles/ste.md"
 
     # Bases (Obsidian Bases query views)
     mkdir -p "$NOTES_DIR/AI/bases"
@@ -369,6 +373,15 @@ in
     ln -sfn "$NOTES_DIR/.claude/commands" "$HOME/.claude/commands"
     ln -sfn "$NOTES_DIR/.claude/agents"   "$HOME/.claude/agents"
     ln -sfn "$NOTES_DIR/.claude/skills"   "$HOME/.claude/skills"
+    # One-time migration: output-styles was a real directory before it was
+    # nix-managed. ln -sfn does NOT replace a real directory (it would create a
+    # link INSIDE it), so remove it first. Guarded on -d && ! -L so this is a
+    # no-op once the symlink exists. The install above already copied ste.md
+    # into the vault, so nothing is lost.
+    if [ -d "$HOME/.claude/output-styles" ] && [ ! -L "$HOME/.claude/output-styles" ]; then
+      rm -rf "$HOME/.claude/output-styles"
+    fi
+    ln -sfn "$NOTES_DIR/.claude/output-styles" "$HOME/.claude/output-styles"
     ln -sf  "$NOTES_DIR/AI/brain/CLAUDE-global.md" "$HOME/.claude/CLAUDE.md"
     # Vault settings.json IS Claude's user-level settings.json, so it applies
     # globally (not just when CWD is inside the vault) and stays hand-editable
