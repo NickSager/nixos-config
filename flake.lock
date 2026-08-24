@@ -416,6 +416,23 @@
         "type": "github"
       }
     },
+    "pstack": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1787281804,
+        "narHash": "sha256-rTkT/2dliMzvwDkza2+JNhSIzcTr9fXjvK2zwi/lRl8=",
+        "owner": "cursor",
+        "repo": "plugins",
+        "rev": "46125561306434d8a1d7745d540d8932ab0cd2a2",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cursor",
+        "repo": "plugins",
+        "rev": "46125561306434d8a1d7745d540d8932ab0cd2a2",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "agenix": "agenix",
@@ -431,7 +448,8 @@
         "niri-flake": "niri-flake",
         "nix-homebrew": "nix-homebrew",
         "nixpkgs": "nixpkgs_3",
-        "obsidian-mind": "obsidian-mind"
+        "obsidian-mind": "obsidian-mind",
+        "pstack": "pstack"
       }
     },
     "systems": {

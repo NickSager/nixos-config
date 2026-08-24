@@ -61,6 +61,14 @@
       url = "github:breferrari/obsidian-mind/v8.3.6";
       flake = false;
     };
+
+    # pstack skill set (Lauren Tan / poteto) from Cursor's plugins repo,
+    # pinned to a commit. Copied into the shared skills root by
+    # modules/shared/skills.nix behind the potetoSkills switch.
+    pstack = {
+      url = "github:cursor/plugins/46125561306434d8a1d7745d540d8932ab0cd2a2";
+      flake = false;
+    };
     emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -70,7 +78,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, gammons-tap, home-manager, nixpkgs, flake-utils, disko, agenix, emacs-overlay, niri-flake, obsidian-mind } @inputs:
+  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, gammons-tap, home-manager, nixpkgs, flake-utils, disko, agenix, emacs-overlay, niri-flake, obsidian-mind, pstack } @inputs:
     let
       profile = "work"; # "work" or "personal"
       user = if profile == "work" then "nsager" else "nick";
