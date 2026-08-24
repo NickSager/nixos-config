@@ -52,6 +52,15 @@
     #  url = "git+ssh://git@code.amazon.com/packages/Thsvaugh-ObsidianDailySetup";
     #  flake = false;
     #};
+
+    # obsidian-mind agent vault, pinned to an upstream release tag.
+    # Copied into ~/Documents/Mind by modules/shared/obsidian.nix.
+    # Upgrade: bump the tag, `nix flake update obsidian-mind`, read the
+    # upstream CHANGELOG, rebuild.
+    obsidian-mind = {
+      url = "github:breferrari/obsidian-mind/v8.3.6";
+      flake = false;
+    };
     emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -61,7 +70,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, gammons-tap, home-manager, nixpkgs, flake-utils, disko, agenix, emacs-overlay, niri-flake } @inputs:
+  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, gammons-tap, home-manager, nixpkgs, flake-utils, disko, agenix, emacs-overlay, niri-flake, obsidian-mind } @inputs:
     let
       profile = "work"; # "work" or "personal"
       user = if profile == "work" then "nsager" else "nick";

@@ -399,6 +399,23 @@
         "type": "github"
       }
     },
+    "obsidian-mind": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1787527305,
+        "narHash": "sha256-5rwETs8pOxc4/TV7H5WsyCOjaHuYWetR+LDJML1rJP4=",
+        "owner": "breferrari",
+        "repo": "obsidian-mind",
+        "rev": "9c28d20d3e07e5a0df73f0b4dc7ee250d6f74702",
+        "type": "github"
+      },
+      "original": {
+        "owner": "breferrari",
+        "ref": "v8.3.6",
+        "repo": "obsidian-mind",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "agenix": "agenix",
@@ -413,7 +430,8 @@
         "homebrew-core": "homebrew-core",
         "niri-flake": "niri-flake",
         "nix-homebrew": "nix-homebrew",
-        "nixpkgs": "nixpkgs_3"
+        "nixpkgs": "nixpkgs_3",
+        "obsidian-mind": "obsidian-mind"
       }
     },
     "systems": {

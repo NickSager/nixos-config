@@ -1,22 +1,22 @@
-# Obsidian vault — home-manager module shared across all platforms.
+# Obsidian vaults — home-manager module shared across all platforms.
 #
-# Manages:
-#   - programs.obsidian with declarative community plugins
-#   - home.file entries for templates, prompts, README, .gitignore (read-only symlinks)
-#   - home.activation for mutable directories and script copies
+# Two vaults with a hard boundary:
+#   - ~/Documents/Notes (human): daily notes, templates, personal notes.
+#   - ~/Documents/Mind (agent): upstream obsidian-mind, copied from the
+#     pinned flake input. Custom toolkit files live in it as plain vault
+#     files nix never touches.
 #
-# Based on https://code.amazon.com/packages/Thsvaugh-ObsidianDailySetup/trees/mainline
+# Human side based on https://code.amazon.com/packages/Thsvaugh-ObsidianDailySetup/trees/mainline
 # TODO: Periodically check for updates from Thsvaugh's repo and sync changes
 #       to templates, scripts, and prompts under modules/shared/config/obsidian/
 #       Alternatively, uncomment the obsidian-daily-setup flake input in flake.nix
 #       to fetch updates automatically via `nix flake update obsidian-daily-setup`.
 
-{ lib, pkgs, profile ? "personal", ... }:
+{ lib, pkgs, profile ? "personal", obsidian-mind ? null, ... }:
 
 let
   obsidianSource = ./config/obsidian;
   obsidianScriptsSource = ./config/obsidian/scripts;
-  obsidianMindSource = ./config/obsidian/obsidian-mind;
   obsidianPlugins = import ./obsidian-plugins.nix { inherit pkgs; };
   notesDir = "Documents/Notes";
   isWork = profile == "work";
@@ -83,9 +83,6 @@ in
                 { folder = "Main/Meeting_Notes"; template = "Main/Templates/Meeting_Note.md"; }
                 { folder = "Projects"; template = "Main/Templates/Project.md"; }
                 { folder = "Tasks"; template = "Main/Templates/Task.md"; }
-                # obsidian-mind per-task notes under artifacts/<project>/tasks/
-                # Templater applies folder_templates recursively to child folders.
-                { folder = "AI/work/artifacts"; template = "AI/templates/Task.md"; }
               ];
               enable_file_templates = false;
               file_templates = [{ regex = ".*"; template = ""; }];
@@ -148,266 +145,93 @@ in
     "${notesDir}/.gitignore".source = obsidianSource + "/vault-gitignore";
   };
 
-  # Create mutable vault directories and copy scripts.
-  # Scripts are copied (not symlinked) so their relative paths
-  # (e.g. ../prompts/, ../Main/Daily_Notes/) resolve inside the vault
-  # rather than into the Nix store.
-  home.activation.obsidianVault = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    NOTES_DIR="$HOME/Documents/Notes"
+  home.activation = {
+    # ── Human vault (~/Documents/Notes) ────────────────────────────────────
+    # Mutable directories and script copies. Scripts are copied (not
+    # symlinked) so their relative paths (e.g. ../prompts/) resolve inside
+    # the vault rather than into the Nix store.
+    obsidianVault = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      NOTES_DIR="$HOME/Documents/Notes"
 
-    # Hotkeys: copy as writable file (Obsidian ignores read-only symlinks)
-    install -m644 ${hotkeysJson} "$NOTES_DIR/.obsidian/hotkeys.json"
+      # Hotkeys: copy as writable file (Obsidian ignores read-only symlinks)
+      install -m644 ${hotkeysJson} "$NOTES_DIR/.obsidian/hotkeys.json"
 
-    # Mutable vault directories (created once, never overwritten)
-    mkdir -p "$NOTES_DIR/Main/Daily_Notes"
-    mkdir -p "$NOTES_DIR/Main/Phonetool"
-    mkdir -p "$NOTES_DIR/Main/Meeting_Notes"
-    mkdir -p "$NOTES_DIR/Inbox"
-    mkdir -p "$NOTES_DIR/Projects"
-    mkdir -p "$NOTES_DIR/Tasks"
-    # ── obsidian-mind vault structure ──────────────────────────────────────
-    # User content directories (created once, never overwritten)
-    mkdir -p "$NOTES_DIR/AI/brain"
-    mkdir -p "$NOTES_DIR/AI/work/incidents"
-    mkdir -p "$NOTES_DIR/AI/work/1-1"
-    mkdir -p "$NOTES_DIR/AI/work/meetings"
+      # Mutable vault directories (created once, never overwritten)
+      mkdir -p "$NOTES_DIR/Main/Daily_Notes"
+      mkdir -p "$NOTES_DIR/Main/Phonetool"
+      mkdir -p "$NOTES_DIR/Main/Meeting_Notes"
+      mkdir -p "$NOTES_DIR/Inbox"
+      mkdir -p "$NOTES_DIR/Projects/active"
+      mkdir -p "$NOTES_DIR/Projects/plans"
+      mkdir -p "$NOTES_DIR/Projects/archive"
+      mkdir -p "$NOTES_DIR/Tasks"
 
-    # Projects directories (real files live here, visible in Obsidian)
-    mkdir -p "$NOTES_DIR/Projects/active"
-    mkdir -p "$NOTES_DIR/Projects/plans"
-    mkdir -p "$NOTES_DIR/Projects/archive"
+      # Copy Obsidian daily scripts (always overwrite to pick up nix config changes)
+      mkdir -p "$NOTES_DIR/scripts"
+      install -m755 ${obsidianScriptsSource}/common_summary_functions.sh "$NOTES_DIR/scripts/common_summary_functions.sh"
+      install -m755 ${obsidianScriptsSource}/slack_summary.sh            "$NOTES_DIR/scripts/slack_summary.sh"
+      install -m755 ${obsidianScriptsSource}/asana_daily_summary.sh      "$NOTES_DIR/scripts/asana_daily_summary.sh"
+      install -m755 ${obsidianScriptsSource}/monthly_summary_generator.sh "$NOTES_DIR/scripts/monthly_summary_generator.sh"
+      ${lib.optionalString isWork ''
+      # Work-only: code_summary.sh requires code.amazon.com API + builder-mcp
+      install -m755 ${obsidianScriptsSource}/code_summary.sh             "$NOTES_DIR/scripts/code_summary.sh"
+      ''}
+    '';
+  } // lib.optionalAttrs (obsidian-mind != null) {
+    # ── Agent vault (~/Documents/Mind) ─────────────────────────────────────
+    # Upstream obsidian-mind lands here from the pinned flake input.
+    # An upgrade is: bump the tag in flake.nix, `nix flake update
+    # obsidian-mind`, read the upstream CHANGELOG, rebuild.
+    agentVault = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+      MIND_DIR="$HOME/Documents/Mind"
+      mkdir -p "$MIND_DIR/memories"
 
-    # Symlink AI/work/{active,plans,archive} -> Projects/ so both
-    # Claude (AI/ convention) and the user (Projects/ in Obsidian) see the same files.
-    # Obsidian doesn't follow symlinks, so real files must be in Projects/.
-    # Migration: if a real directory exists, move its contents to Projects/ first.
-    for subdir in active plans archive; do
-      target="$NOTES_DIR/AI/work/$subdir"
-      if [ -d "$target" ] && [ ! -L "$target" ]; then
-        # Real directory exists — move contents to Projects/, then replace with symlink
-        cp -rn "$target"/* "$NOTES_DIR/Projects/$subdir/" 2>/dev/null || true
-        rm -rf "$target"
+      # Machinery: always overwritten so a release-tag bump lands on the
+      # next rebuild. cp -Rf replaces same-named files but leaves the
+      # custom toolkit (plain sibling files in the same directories) alone.
+      # A new upstream top-level directory needs one entry here.
+      for dir in .claude/agents .claude/commands .claude/scripts .claude/skills \
+                 .claude-plugin .codex .gemini .scripts .shardmind bases templates; do
+        mkdir -p "$MIND_DIR/$dir"
+        cp -Rf ${obsidian-mind}/$dir/. "$MIND_DIR/$dir/"
+      done
+      for f in .claude/memory-template.md .claude/update-skills.ts .mcp.json \
+               .shardmindignore AGENTS.md CLAUDE.md GEMINI.md Home.md vault-manifest.json; do
+        install -m644 ${obsidian-mind}/$f "$MIND_DIR/$f"
+      done
+
+      # Content: seeded once, never overwritten (user-owned notes and
+      # Obsidian state). cp -Rn adds files a new release ships without
+      # touching existing ones. .claude/settings.json is deliberately not
+      # copied here; the settings split owns it.
+      for dir in .obsidian brain org perf reference thinking work; do
+        mkdir -p "$MIND_DIR/$dir"
+        cp -Rn ${obsidian-mind}/$dir/. "$MIND_DIR/$dir/" 2>/dev/null || true
+      done
+
+      # Store copies arrive read-only; the vault must stay editable.
+      chmod -R u+w "$MIND_DIR"
+
+      # Bridge: keep the global CLAUDE.md resolvable until the content
+      # migration moves it into the agent vault for real.
+      if [ ! -f "$MIND_DIR/brain/CLAUDE-global.md" ] && [ -f "$HOME/Documents/Notes/AI/brain/CLAUDE-global.md" ]; then
+        install -m644 "$HOME/Documents/Notes/AI/brain/CLAUDE-global.md" "$MIND_DIR/brain/CLAUDE-global.md"
       fi
-      if [ ! -L "$target" ]; then
-        ln -sfn "../../Projects/$subdir" "$target"
-      fi
-    done
-    mkdir -p "$NOTES_DIR/AI/perf/brag"
-    mkdir -p "$NOTES_DIR/AI/perf/evidence"
-    mkdir -p "$NOTES_DIR/AI/perf/competencies"
-    mkdir -p "$NOTES_DIR/AI/org/people"
-    mkdir -p "$NOTES_DIR/AI/org/teams"
-    mkdir -p "$NOTES_DIR/AI/thinking/session-logs"
-    mkdir -p "$NOTES_DIR/AI/reference"
-    mkdir -p "$NOTES_DIR/AI/memory"
 
-    # Claude Code directories in vault
-    mkdir -p "$NOTES_DIR/.claude/commands"
-    mkdir -p "$NOTES_DIR/.claude/agents"
-    mkdir -p "$NOTES_DIR/.claude/scripts"
-    mkdir -p "$NOTES_DIR/.claude/output-styles"
-
-    # Vault-workflow skills install into the shared agent-agnostic skills
-    # root; skills.nix links each agent's skills dir to it.
-    mkdir -p "$NOTES_DIR/.agents/skills/defuddle"
-    mkdir -p "$NOTES_DIR/.agents/skills/qmd"
-    mkdir -p "$NOTES_DIR/.agents/skills/obsidian-markdown/references"
-    mkdir -p "$NOTES_DIR/.agents/skills/obsidian-bases/references"
-    mkdir -p "$NOTES_DIR/.agents/skills/obsidian-cli"
-    mkdir -p "$NOTES_DIR/.agents/skills/json-canvas/references"
-    mkdir -p "$NOTES_DIR/.agents/skills/om-triage"
-    mkdir -p "$NOTES_DIR/.agents/skills/om-triage-learn"
-
-    # ── Nix-managed files (always overwrite to pick up config changes) ────
-
-    # Hook scripts
-    install -m755 ${obsidianMindSource}/scripts/session-start.sh     "$NOTES_DIR/.claude/scripts/session-start.sh"
-    install -m755 ${obsidianMindSource}/scripts/classify-message.py  "$NOTES_DIR/.claude/scripts/classify-message.py"
-    install -m755 ${obsidianMindSource}/scripts/validate-write.py    "$NOTES_DIR/.claude/scripts/validate-write.py"
-    install -m755 ${obsidianMindSource}/scripts/pre-compact.sh       "$NOTES_DIR/.claude/scripts/pre-compact.sh"
-    install -m755 ${obsidianMindSource}/scripts/find-python.sh       "$NOTES_DIR/.claude/scripts/find-python.sh"
-    install -m755 ${obsidianMindSource}/scripts/charcount.sh         "$NOTES_DIR/.claude/scripts/charcount.sh"
-    install -m755 ${obsidianMindSource}/scripts/test_hooks.py        "$NOTES_DIR/.claude/scripts/test_hooks.py"
-    install -m755 ${obsidianMindSource}/scripts/ws-git-log.sh        "$NOTES_DIR/.claude/scripts/ws-git-log.sh"
-
-    # Slash commands
-    install -m644 ${obsidianMindSource}/commands/om-standup.md           "$NOTES_DIR/.claude/commands/om-standup.md"
-    install -m644 ${obsidianMindSource}/commands/om-dump.md              "$NOTES_DIR/.claude/commands/om-dump.md"
-    install -m644 ${obsidianMindSource}/commands/om-wrap-up.md           "$NOTES_DIR/.claude/commands/om-wrap-up.md"
-    install -m644 ${obsidianMindSource}/commands/om-meeting.md           "$NOTES_DIR/.claude/commands/om-meeting.md"
-    install -m644 ${obsidianMindSource}/commands/om-intake.md            "$NOTES_DIR/.claude/commands/om-intake.md"
-    install -m644 ${obsidianMindSource}/commands/om-weekly.md            "$NOTES_DIR/.claude/commands/om-weekly.md"
-    install -m644 ${obsidianMindSource}/commands/om-prep-1on1.md         "$NOTES_DIR/.claude/commands/om-prep-1on1.md"
-    install -m644 ${obsidianMindSource}/commands/om-capture-1on1.md      "$NOTES_DIR/.claude/commands/om-capture-1on1.md"
-    install -m644 ${obsidianMindSource}/commands/om-incident-capture.md  "$NOTES_DIR/.claude/commands/om-incident-capture.md"
-    install -m644 ${obsidianMindSource}/commands/om-project-archive.md   "$NOTES_DIR/.claude/commands/om-project-archive.md"
-    install -m644 ${obsidianMindSource}/commands/om-self-review.md       "$NOTES_DIR/.claude/commands/om-self-review.md"
-    install -m644 ${obsidianMindSource}/commands/om-review-brief.md      "$NOTES_DIR/.claude/commands/om-review-brief.md"
-    install -m644 ${obsidianMindSource}/commands/om-review-peer.md       "$NOTES_DIR/.claude/commands/om-review-peer.md"
-    install -m644 ${obsidianMindSource}/commands/om-peer-scan.md         "$NOTES_DIR/.claude/commands/om-peer-scan.md"
-    install -m644 ${obsidianMindSource}/commands/om-slack-scan.md        "$NOTES_DIR/.claude/commands/om-slack-scan.md"
-    install -m644 ${obsidianMindSource}/commands/om-humanize.md          "$NOTES_DIR/.claude/commands/om-humanize.md"
-    install -m644 ${obsidianMindSource}/commands/om-vault-audit.md       "$NOTES_DIR/.claude/commands/om-vault-audit.md"
-    install -m644 ${obsidianMindSource}/commands/om-vault-upgrade.md     "$NOTES_DIR/.claude/commands/om-vault-upgrade.md"
-    install -m644 ${obsidianMindSource}/commands/om-cr.md                "$NOTES_DIR/.claude/commands/om-cr.md"
-    install -m644 ${obsidianMindSource}/commands/om-investigate-ticket.md "$NOTES_DIR/.claude/commands/om-investigate-ticket.md"
-    install -m644 ${obsidianMindSource}/commands/om-batch-prompts.md    "$NOTES_DIR/.claude/commands/om-batch-prompts.md"
-    install -m644 ${obsidianMindSource}/commands/om-triage.md           "$NOTES_DIR/.claude/commands/om-triage.md"
-    install -m644 ${obsidianMindSource}/commands/om-triage-learn.md      "$NOTES_DIR/.claude/commands/om-triage-learn.md"
-
-    # Subagents
-    install -m644 ${obsidianMindSource}/agents/vault-librarian.md      "$NOTES_DIR/.claude/agents/vault-librarian.md"
-    install -m644 ${obsidianMindSource}/agents/context-loader.md       "$NOTES_DIR/.claude/agents/context-loader.md"
-    install -m644 ${obsidianMindSource}/agents/cross-linker.md         "$NOTES_DIR/.claude/agents/cross-linker.md"
-    install -m644 ${obsidianMindSource}/agents/brag-spotter.md         "$NOTES_DIR/.claude/agents/brag-spotter.md"
-    install -m644 ${obsidianMindSource}/agents/people-profiler.md      "$NOTES_DIR/.claude/agents/people-profiler.md"
-    install -m644 ${obsidianMindSource}/agents/review-prep.md          "$NOTES_DIR/.claude/agents/review-prep.md"
-    install -m644 ${obsidianMindSource}/agents/slack-archaeologist.md  "$NOTES_DIR/.claude/agents/slack-archaeologist.md"
-    install -m644 ${obsidianMindSource}/agents/review-fact-checker.md  "$NOTES_DIR/.claude/agents/review-fact-checker.md"
-    install -m644 ${obsidianMindSource}/agents/vault-migrator.md       "$NOTES_DIR/.claude/agents/vault-migrator.md"
-
-    # Triage specialist subagents (om-triage)
-    install -m644 ${obsidianMindSource}/agents/triage-failopen.md      "$NOTES_DIR/.claude/agents/triage-failopen.md"
-    install -m644 ${obsidianMindSource}/agents/triage-failclosed.md    "$NOTES_DIR/.claude/agents/triage-failclosed.md"
-    install -m644 ${obsidianMindSource}/agents/triage-host.md          "$NOTES_DIR/.claude/agents/triage-host.md"
-    install -m644 ${obsidianMindSource}/agents/triage-deploy.md        "$NOTES_DIR/.claude/agents/triage-deploy.md"
-    install -m644 ${obsidianMindSource}/agents/triage-rbr.md           "$NOTES_DIR/.claude/agents/triage-rbr.md"
-    install -m644 ${obsidianMindSource}/agents/triage-log-diver.md     "$NOTES_DIR/.claude/agents/triage-log-diver.md"
-    install -m644 ${obsidianMindSource}/agents/triage-metric-diver.md  "$NOTES_DIR/.claude/agents/triage-metric-diver.md"
-
-    # Skills (installed into the shared agent-agnostic skills root)
-    install -m644 ${obsidianMindSource}/skills/defuddle/SKILL.md                                  "$NOTES_DIR/.agents/skills/defuddle/SKILL.md"
-    install -m644 ${obsidianMindSource}/skills/qmd/SKILL.md                                       "$NOTES_DIR/.agents/skills/qmd/SKILL.md"
-    install -m644 ${obsidianMindSource}/skills/obsidian-markdown/SKILL.md                          "$NOTES_DIR/.agents/skills/obsidian-markdown/SKILL.md"
-    install -m644 ${obsidianMindSource}/skills/obsidian-markdown/references/CALLOUTS.md            "$NOTES_DIR/.agents/skills/obsidian-markdown/references/CALLOUTS.md"
-    install -m644 ${obsidianMindSource}/skills/obsidian-markdown/references/EMBEDS.md              "$NOTES_DIR/.agents/skills/obsidian-markdown/references/EMBEDS.md"
-    install -m644 ${obsidianMindSource}/skills/obsidian-markdown/references/PROPERTIES.md          "$NOTES_DIR/.agents/skills/obsidian-markdown/references/PROPERTIES.md"
-    install -m644 ${obsidianMindSource}/skills/obsidian-bases/SKILL.md                             "$NOTES_DIR/.agents/skills/obsidian-bases/SKILL.md"
-    install -m644 ${obsidianMindSource}/skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md    "$NOTES_DIR/.agents/skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md"
-    install -m644 ${obsidianMindSource}/skills/obsidian-cli/SKILL.md                               "$NOTES_DIR/.agents/skills/obsidian-cli/SKILL.md"
-    install -m644 ${obsidianMindSource}/skills/json-canvas/SKILL.md                                "$NOTES_DIR/.agents/skills/json-canvas/SKILL.md"
-    install -m644 ${obsidianMindSource}/skills/json-canvas/references/EXAMPLES.md                  "$NOTES_DIR/.agents/skills/json-canvas/references/EXAMPLES.md"
-    install -m644 ${obsidianMindSource}/skills/om-triage/SKILL.md                                  "$NOTES_DIR/.agents/skills/om-triage/SKILL.md"
-    install -m644 ${obsidianMindSource}/skills/om-triage-learn/SKILL.md                            "$NOTES_DIR/.agents/skills/om-triage-learn/SKILL.md"
-
-    # Output styles
-    install -m644 ${obsidianMindSource}/output-styles/ste.md                                       "$NOTES_DIR/.claude/output-styles/ste.md"
-
-    # Bases (Obsidian Bases query views)
-    mkdir -p "$NOTES_DIR/AI/bases"
-    install -m644 "${obsidianMindSource}/bases/1-1 History.base"        "$NOTES_DIR/AI/bases/1-1 History.base"
-    install -m644 "${obsidianMindSource}/bases/Competency Map.base"     "$NOTES_DIR/AI/bases/Competency Map.base"
-    install -m644 "${obsidianMindSource}/bases/Incidents.base"          "$NOTES_DIR/AI/bases/Incidents.base"
-    install -m644 "${obsidianMindSource}/bases/People Directory.base"   "$NOTES_DIR/AI/bases/People Directory.base"
-    install -m644 "${obsidianMindSource}/bases/Review Evidence.base"    "$NOTES_DIR/AI/bases/Review Evidence.base"
-    install -m644 "${obsidianMindSource}/bases/Templates.base"          "$NOTES_DIR/AI/bases/Templates.base"
-    install -m644 "${obsidianMindSource}/bases/Work Dashboard.base"     "$NOTES_DIR/AI/bases/Work Dashboard.base"
-
-    # Templates (obsidian-mind note templates)
-    mkdir -p "$NOTES_DIR/AI/templates"
-    install -m644 "${obsidianMindSource}/templates/Work Note.md"        "$NOTES_DIR/AI/templates/Work Note.md"
-    install -m644 "${obsidianMindSource}/templates/Review Template.md"  "$NOTES_DIR/AI/templates/Review Template.md"
-    install -m644 "${obsidianMindSource}/templates/Thinking Note.md"    "$NOTES_DIR/AI/templates/Thinking Note.md"
-    install -m644 "${obsidianMindSource}/templates/Decision Record.md"  "$NOTES_DIR/AI/templates/Decision Record.md"
-    install -m644 "${obsidianMindSource}/templates/Competency Note.md"  "$NOTES_DIR/AI/templates/Competency Note.md"
-    install -m644 "${obsidianMindSource}/templates/Task.md"             "$NOTES_DIR/AI/templates/Task.md"
-
-    # Root-level AI files
-    install -m644 ${obsidianMindSource}/Home.md             "$NOTES_DIR/AI/Home.md"
-    install -m644 ${obsidianMindSource}/AGENTS.md            "$NOTES_DIR/AI/AGENTS.md"
-    install -m644 ${obsidianMindSource}/vault-manifest.json  "$NOTES_DIR/AI/vault-manifest.json"
-    install -m644 ${obsidianMindSource}/memory-template.md   "$NOTES_DIR/AI/memory-template.md"
-
-    # ── Seed files (create once, never overwrite user edits) ──────────────
-
-    # Vault-root CLAUDE.md
-    [ -f "$NOTES_DIR/CLAUDE.md" ] || install -m644 ${obsidianSource + "/CLAUDE.md"} "$NOTES_DIR/CLAUDE.md"
-
-    # Global CLAUDE.md (symlinked to ~/.claude/CLAUDE.md)
-    [ -f "$NOTES_DIR/AI/brain/CLAUDE-global.md" ] || \
-      install -m644 ${obsidianMindSource}/CLAUDE-global.md "$NOTES_DIR/AI/brain/CLAUDE-global.md"
-
-    # Brain seeds
-    [ -f "$NOTES_DIR/AI/brain/North Star.md" ] || \
-      install -m644 "${obsidianMindSource}/brain/North Star.md" "$NOTES_DIR/AI/brain/North Star.md"
-    [ -f "$NOTES_DIR/AI/brain/Memories.md" ] || \
-      install -m644 ${obsidianMindSource}/brain/Memories.md "$NOTES_DIR/AI/brain/Memories.md"
-    [ -f "$NOTES_DIR/AI/brain/Key Decisions.md" ] || \
-      install -m644 "${obsidianMindSource}/brain/Key Decisions.md" "$NOTES_DIR/AI/brain/Key Decisions.md"
-    [ -f "$NOTES_DIR/AI/brain/Patterns.md" ] || \
-      install -m644 ${obsidianMindSource}/brain/Patterns.md "$NOTES_DIR/AI/brain/Patterns.md"
-    [ -f "$NOTES_DIR/AI/brain/Gotchas.md" ] || \
-      install -m644 ${obsidianMindSource}/brain/Gotchas.md "$NOTES_DIR/AI/brain/Gotchas.md"
-    [ -f "$NOTES_DIR/AI/brain/Skills.md" ] || \
-      install -m644 ${obsidianMindSource}/brain/Skills.md "$NOTES_DIR/AI/brain/Skills.md"
-
-    # Work seeds
-    [ -f "$NOTES_DIR/AI/work/Index.md" ] || \
-      install -m644 ${obsidianMindSource}/work/Index.md "$NOTES_DIR/AI/work/Index.md"
-    [ -f "$NOTES_DIR/AI/work/meetings/README.md" ] || \
-      install -m644 ${obsidianMindSource}/work/meetings/README.md "$NOTES_DIR/AI/work/meetings/README.md"
-
-    # Org seeds
-    [ -f "$NOTES_DIR/AI/org/People & Context.md" ] || \
-      install -m644 "${obsidianMindSource}/org/People & Context.md" "$NOTES_DIR/AI/org/People & Context.md"
-
-    # Perf seeds
-    [ -f "$NOTES_DIR/AI/perf/Brag Doc.md" ] || \
-      install -m644 "${obsidianMindSource}/perf/Brag Doc.md" "$NOTES_DIR/AI/perf/Brag Doc.md"
-    [ -f "$NOTES_DIR/AI/perf/competencies/README.md" ] || \
-      install -m644 ${obsidianMindSource}/perf/competencies/README.md "$NOTES_DIR/AI/perf/competencies/README.md"
-
-    # Thinking seed
-    [ -f "$NOTES_DIR/AI/thinking/README.md" ] || \
-      install -m644 ${obsidianMindSource}/thinking/README.md "$NOTES_DIR/AI/thinking/README.md"
-
-    # ── Vault-level Claude Code settings ──────────────────────────────────
-    # The vault's .claude/settings.json is the SINGLE SOURCE OF TRUTH for
-    # Claude's user-level settings (env, model, hooks, permissions); it is
-    # symlinked to ~/.claude/settings.json below and is hand-editable mid-session
-    # without a nix rebuild. The seed here is only a frozen bootstrap snapshot,
-    # installed iff the vault file is absent (fresh machine) — it never overwrites
-    # user edits, so it WILL drift from the live file over time. Re-sync it from
-    # the live vault file occasionally if you want fresh installs to stay current.
-    [ -f "$NOTES_DIR/.claude/settings.json" ] || \
-      install -m644 ${obsidianMindSource}/claude-settings-seed.json "$NOTES_DIR/.claude/settings.json"
-
-    # ── Symlinks from ~/.claude/ to vault ─────────────────────────────────
-    ln -sfn "$NOTES_DIR/.claude/commands" "$HOME/.claude/commands"
-    ln -sfn "$NOTES_DIR/.claude/agents"   "$HOME/.claude/agents"
-    # ~/.claude/skills is linked by skills.nix to the shared agent skills root.
-    # One-time migration: output-styles was a real directory before it was
-    # nix-managed. ln -sfn does NOT replace a real directory (it would create a
-    # link INSIDE it), so remove it first. Guarded on -d && ! -L so this is a
-    # no-op once the symlink exists. The install above already copied ste.md
-    # into the vault, so nothing is lost.
-    if [ -d "$HOME/.claude/output-styles" ] && [ ! -L "$HOME/.claude/output-styles" ]; then
-      rm -rf "$HOME/.claude/output-styles"
-    fi
-    ln -sfn "$NOTES_DIR/.claude/output-styles" "$HOME/.claude/output-styles"
-    ln -sf  "$NOTES_DIR/AI/brain/CLAUDE-global.md" "$HOME/.claude/CLAUDE.md"
-    # Vault settings.json IS Claude's user-level settings.json, so it applies
-    # globally (not just when CWD is inside the vault) and stays hand-editable
-    # mid-session without a rebuild. Claude has no user-level settings.local.json
-    # (that filename is project-scope only), so the vault file must land here.
-    ln -sfn "$NOTES_DIR/.claude/settings.json" "$HOME/.claude/settings.json"
-    # Drop the stale settings.local.json symlink from prior installs (unread by Claude).
-    rm -f "$HOME/.claude/settings.local.json" 2>/dev/null || true
-
-    # ── Cleanup ───────────────────────────────────────────────────────────
-    # Remove cole's memory-compiler local config if present
-    rm -f "$NOTES_DIR/AI/.claude/settings.json" 2>/dev/null || true
-    rmdir "$NOTES_DIR/AI/.claude" 2>/dev/null || true
-
-    # Copy Obsidian daily scripts (always overwrite to pick up nix config changes)
-    mkdir -p "$NOTES_DIR/scripts"
-    install -m755 ${obsidianScriptsSource}/common_summary_functions.sh "$NOTES_DIR/scripts/common_summary_functions.sh"
-    install -m755 ${obsidianScriptsSource}/slack_summary.sh            "$NOTES_DIR/scripts/slack_summary.sh"
-    install -m755 ${obsidianScriptsSource}/asana_daily_summary.sh      "$NOTES_DIR/scripts/asana_daily_summary.sh"
-    install -m755 ${obsidianScriptsSource}/monthly_summary_generator.sh "$NOTES_DIR/scripts/monthly_summary_generator.sh"
-    ${lib.optionalString isWork ''
-    # Work-only: code_summary.sh requires code.amazon.com API + builder-mcp
-    install -m755 ${obsidianScriptsSource}/code_summary.sh             "$NOTES_DIR/scripts/code_summary.sh"
-    ''}
-  '';
+      # ── Global reach: ~/.claude entries are symlinks into the vault ─────
+      # A pre-existing real directory is rescued into the vault first;
+      # ln -sfn does NOT replace a real directory (it would create a link
+      # INSIDE it), so the rm is required. No-op once the link exists.
+      # ~/.claude/skills is linked by skills.nix to the shared skills root.
+      mkdir -p "$MIND_DIR/.claude/output-styles"
+      for entry in commands agents output-styles; do
+        if [ -d "$HOME/.claude/$entry" ] && [ ! -L "$HOME/.claude/$entry" ]; then
+          cp -Rn "$HOME/.claude/$entry"/. "$MIND_DIR/.claude/$entry/" 2>/dev/null || true
+          rm -rf "$HOME/.claude/$entry"
+        fi
+        ln -sfn "$MIND_DIR/.claude/$entry" "$HOME/.claude/$entry"
+      done
+      ln -sf "$MIND_DIR/brain/CLAUDE-global.md" "$HOME/.claude/CLAUDE.md"
+    '';
+  };
 }
