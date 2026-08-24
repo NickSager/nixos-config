@@ -26,6 +26,9 @@ Custom slash commands, subagents, and reusable workflows. Defined in `.claude/co
 |---------|---------|
 | `/om-humanize` | Voice-calibrated editing — makes Claude-drafted text sound like you wrote it |
 | `/om-weekly` | Weekly synthesis — cross-session patterns, North Star alignment, uncaptured wins |
+| `/hld-author` | Author a high-level design doc / HLD — ground every claim in source, draft at the right altitude, adversarial multi-lens review until briefing-approvable. Skill in `.claude/skills/hld-author/` |
+| `/slop-review` | De-slop an existing doc — adversarial fresh-reader review, then apply fixes. Skill in `.claude/skills/slop-review/`, with `check.py` for mechanical signals |
+| `/tech-doc-author` | Author operational docs (handovers, runbooks, component docs) in the plain technical house style — short declarative sentences, terms defined inline, facts grounded and anchored, 1-2 pages. Skill in `.claude/skills/tech-doc-author/` |
 
 ### Meeting Prep & Capture
 

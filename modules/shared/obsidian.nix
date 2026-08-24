@@ -205,15 +205,18 @@ in
     mkdir -p "$NOTES_DIR/.claude/commands"
     mkdir -p "$NOTES_DIR/.claude/agents"
     mkdir -p "$NOTES_DIR/.claude/scripts"
-    mkdir -p "$NOTES_DIR/.claude/skills/defuddle"
-    mkdir -p "$NOTES_DIR/.claude/skills/qmd"
-    mkdir -p "$NOTES_DIR/.claude/skills/obsidian-markdown/references"
-    mkdir -p "$NOTES_DIR/.claude/skills/obsidian-bases/references"
-    mkdir -p "$NOTES_DIR/.claude/skills/obsidian-cli"
-    mkdir -p "$NOTES_DIR/.claude/skills/json-canvas/references"
-    mkdir -p "$NOTES_DIR/.claude/skills/om-triage"
-    mkdir -p "$NOTES_DIR/.claude/skills/om-triage-learn"
     mkdir -p "$NOTES_DIR/.claude/output-styles"
+
+    # Vault-workflow skills install into the shared agent-agnostic skills
+    # root; skills.nix links each agent's skills dir to it.
+    mkdir -p "$NOTES_DIR/.agents/skills/defuddle"
+    mkdir -p "$NOTES_DIR/.agents/skills/qmd"
+    mkdir -p "$NOTES_DIR/.agents/skills/obsidian-markdown/references"
+    mkdir -p "$NOTES_DIR/.agents/skills/obsidian-bases/references"
+    mkdir -p "$NOTES_DIR/.agents/skills/obsidian-cli"
+    mkdir -p "$NOTES_DIR/.agents/skills/json-canvas/references"
+    mkdir -p "$NOTES_DIR/.agents/skills/om-triage"
+    mkdir -p "$NOTES_DIR/.agents/skills/om-triage-learn"
 
     # ── Nix-managed files (always overwrite to pick up config changes) ────
 
@@ -272,20 +275,20 @@ in
     install -m644 ${obsidianMindSource}/agents/triage-log-diver.md     "$NOTES_DIR/.claude/agents/triage-log-diver.md"
     install -m644 ${obsidianMindSource}/agents/triage-metric-diver.md  "$NOTES_DIR/.claude/agents/triage-metric-diver.md"
 
-    # Skills
-    install -m644 ${obsidianMindSource}/skills/defuddle/SKILL.md                                  "$NOTES_DIR/.claude/skills/defuddle/SKILL.md"
-    install -m644 ${obsidianMindSource}/skills/qmd/SKILL.md                                       "$NOTES_DIR/.claude/skills/qmd/SKILL.md"
-    install -m644 ${obsidianMindSource}/skills/obsidian-markdown/SKILL.md                          "$NOTES_DIR/.claude/skills/obsidian-markdown/SKILL.md"
-    install -m644 ${obsidianMindSource}/skills/obsidian-markdown/references/CALLOUTS.md            "$NOTES_DIR/.claude/skills/obsidian-markdown/references/CALLOUTS.md"
-    install -m644 ${obsidianMindSource}/skills/obsidian-markdown/references/EMBEDS.md              "$NOTES_DIR/.claude/skills/obsidian-markdown/references/EMBEDS.md"
-    install -m644 ${obsidianMindSource}/skills/obsidian-markdown/references/PROPERTIES.md          "$NOTES_DIR/.claude/skills/obsidian-markdown/references/PROPERTIES.md"
-    install -m644 ${obsidianMindSource}/skills/obsidian-bases/SKILL.md                             "$NOTES_DIR/.claude/skills/obsidian-bases/SKILL.md"
-    install -m644 ${obsidianMindSource}/skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md    "$NOTES_DIR/.claude/skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md"
-    install -m644 ${obsidianMindSource}/skills/obsidian-cli/SKILL.md                               "$NOTES_DIR/.claude/skills/obsidian-cli/SKILL.md"
-    install -m644 ${obsidianMindSource}/skills/json-canvas/SKILL.md                                "$NOTES_DIR/.claude/skills/json-canvas/SKILL.md"
-    install -m644 ${obsidianMindSource}/skills/json-canvas/references/EXAMPLES.md                  "$NOTES_DIR/.claude/skills/json-canvas/references/EXAMPLES.md"
-    install -m644 ${obsidianMindSource}/skills/om-triage/SKILL.md                                  "$NOTES_DIR/.claude/skills/om-triage/SKILL.md"
-    install -m644 ${obsidianMindSource}/skills/om-triage-learn/SKILL.md                            "$NOTES_DIR/.claude/skills/om-triage-learn/SKILL.md"
+    # Skills (installed into the shared agent-agnostic skills root)
+    install -m644 ${obsidianMindSource}/skills/defuddle/SKILL.md                                  "$NOTES_DIR/.agents/skills/defuddle/SKILL.md"
+    install -m644 ${obsidianMindSource}/skills/qmd/SKILL.md                                       "$NOTES_DIR/.agents/skills/qmd/SKILL.md"
+    install -m644 ${obsidianMindSource}/skills/obsidian-markdown/SKILL.md                          "$NOTES_DIR/.agents/skills/obsidian-markdown/SKILL.md"
+    install -m644 ${obsidianMindSource}/skills/obsidian-markdown/references/CALLOUTS.md            "$NOTES_DIR/.agents/skills/obsidian-markdown/references/CALLOUTS.md"
+    install -m644 ${obsidianMindSource}/skills/obsidian-markdown/references/EMBEDS.md              "$NOTES_DIR/.agents/skills/obsidian-markdown/references/EMBEDS.md"
+    install -m644 ${obsidianMindSource}/skills/obsidian-markdown/references/PROPERTIES.md          "$NOTES_DIR/.agents/skills/obsidian-markdown/references/PROPERTIES.md"
+    install -m644 ${obsidianMindSource}/skills/obsidian-bases/SKILL.md                             "$NOTES_DIR/.agents/skills/obsidian-bases/SKILL.md"
+    install -m644 ${obsidianMindSource}/skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md    "$NOTES_DIR/.agents/skills/obsidian-bases/references/FUNCTIONS_REFERENCE.md"
+    install -m644 ${obsidianMindSource}/skills/obsidian-cli/SKILL.md                               "$NOTES_DIR/.agents/skills/obsidian-cli/SKILL.md"
+    install -m644 ${obsidianMindSource}/skills/json-canvas/SKILL.md                                "$NOTES_DIR/.agents/skills/json-canvas/SKILL.md"
+    install -m644 ${obsidianMindSource}/skills/json-canvas/references/EXAMPLES.md                  "$NOTES_DIR/.agents/skills/json-canvas/references/EXAMPLES.md"
+    install -m644 ${obsidianMindSource}/skills/om-triage/SKILL.md                                  "$NOTES_DIR/.agents/skills/om-triage/SKILL.md"
+    install -m644 ${obsidianMindSource}/skills/om-triage-learn/SKILL.md                            "$NOTES_DIR/.agents/skills/om-triage-learn/SKILL.md"
 
     # Output styles
     install -m644 ${obsidianMindSource}/output-styles/ste.md                                       "$NOTES_DIR/.claude/output-styles/ste.md"
@@ -372,7 +375,7 @@ in
     # ── Symlinks from ~/.claude/ to vault ─────────────────────────────────
     ln -sfn "$NOTES_DIR/.claude/commands" "$HOME/.claude/commands"
     ln -sfn "$NOTES_DIR/.claude/agents"   "$HOME/.claude/agents"
-    ln -sfn "$NOTES_DIR/.claude/skills"   "$HOME/.claude/skills"
+    # ~/.claude/skills is linked by skills.nix to the shared agent skills root.
     # One-time migration: output-styles was a real directory before it was
     # nix-managed. ln -sfn does NOT replace a real directory (it would create a
     # link INSIDE it), so remove it first. Guarded on -d && ! -L so this is a
