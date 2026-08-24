@@ -28,7 +28,7 @@ let
   # a no-op once the link exists.
   linkAgent = dir: ''
     if [ -d "${dir}" ] && [ ! -L "${dir}" ]; then
-      cp -Rn "${dir}"/* "$MIND_DIR/.agents/skills/" 2>/dev/null || true
+      cp -Rn "${dir}"/. "$MIND_DIR/.agents/skills/" 2>/dev/null || true
       rm -rf "${dir}"
     fi
     ln -sfn "$MIND_DIR/.agents/skills" "${dir}"
@@ -45,6 +45,7 @@ let
   installPstack = ''
     mkdir -p "$MIND_DIR/.claude/agents"
     ${lib.concatMapStringsSep "\n" (s: ''
+      chmod -R u+w "$MIND_DIR/.agents/skills/${s}" 2>/dev/null || true
       rm -rf "$MIND_DIR/.agents/skills/${s}"
       cp -R ${pstack}/pstack/skills/${s} "$MIND_DIR/.agents/skills/${s}"
     '') pstackSkills}
@@ -56,6 +57,7 @@ let
 
   removePstack = ''
     ${lib.concatMapStringsSep "\n" (s: ''
+      chmod -R u+w "$MIND_DIR/.agents/skills/${s}" 2>/dev/null || true
       rm -rf "$MIND_DIR/.agents/skills/${s}"
     '') pstackSkills}
     ${lib.concatMapStringsSep "\n" (a: ''

@@ -193,6 +193,9 @@ in
       for dir in .claude/agents .claude/commands .claude/scripts .claude/skills \
                  .claude-plugin .codex .gemini .scripts .shardmind bases templates; do
         mkdir -p "$MIND_DIR/$dir"
+        # An interrupted prior run can leave read-only store-mode copies;
+        # cp -Rf cannot replace files inside a read-only directory.
+        chmod -R u+w "$MIND_DIR/$dir" 2>/dev/null || true
         cp -Rf ${obsidian-mind}/$dir/. "$MIND_DIR/$dir/"
       done
       for f in .claude/memory-template.md .claude/update-skills.ts .mcp.json \
@@ -231,6 +234,11 @@ in
         fi
         ln -sfn "$MIND_DIR/.claude/$entry" "$HOME/.claude/$entry"
       done
+      # Rescue a real (non-symlink) global CLAUDE.md before replacing it.
+      if [ -f "$HOME/.claude/CLAUDE.md" ] && [ ! -L "$HOME/.claude/CLAUDE.md" ] \
+         && [ ! -f "$MIND_DIR/brain/CLAUDE-global.md" ]; then
+        install -m644 "$HOME/.claude/CLAUDE.md" "$MIND_DIR/brain/CLAUDE-global.md"
+      fi
       ln -sf "$MIND_DIR/brain/CLAUDE-global.md" "$HOME/.claude/CLAUDE.md"
 
       # ── Settings split ──────────────────────────────────────────────────

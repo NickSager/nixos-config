@@ -174,7 +174,7 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                extraSpecialArgs = { inherit profile; };
+                extraSpecialArgs = { inherit profile obsidian-mind pstack; };
                 users.${user} = { config, pkgs, lib, ... }:
                   import ./modules/nixos/home-manager.nix { inherit config pkgs lib inputs user; };
               };
