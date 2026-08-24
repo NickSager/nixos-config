@@ -146,7 +146,9 @@ let name = "Nick Sager";
 
   git = {
     enable = true;
-    ignores = [ "*.swp" ];
+    # .superpowers/ is the superpowers plugin's repo-local SDD working state;
+    # its path is script-computed with no override, so it is ignored globally.
+    ignores = [ "*.swp" ".superpowers/" ];
     lfs = {
       enable = true;
     };

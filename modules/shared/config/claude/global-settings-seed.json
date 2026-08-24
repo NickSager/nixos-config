@@ -105,13 +105,21 @@
   },
   "enabledPlugins": {
     "AmazonBuilderCoreAIAgents-pipeline-assistant@aim": true,
-    "AmazonBuilderCoreAIAgents-core@aim": true
+    "AmazonBuilderCoreAIAgents-core@aim": true,
+    "superpowers@superpowers-dev": true
   },
   "extraKnownMarketplaces": {
     "aim": {
       "source": {
         "source": "directory",
         "path": "/Users/nsager/.aim/cc-plugins"
+      }
+    },
+    "superpowers-dev": {
+      "source": {
+        "source": "github",
+        "repo": "obra/superpowers",
+        "ref": "v6.3.0"
       }
     }
   },
