@@ -106,7 +106,8 @@
   "enabledPlugins": {
     "AmazonBuilderCoreAIAgents-pipeline-assistant@aim": true,
     "AmazonBuilderCoreAIAgents-core@aim": true,
-    "superpowers@superpowers-dev": true
+    "superpowers@superpowers-dev": true,
+    "mattpocock-skills@mattpocock": false
   },
   "extraKnownMarketplaces": {
     "aim": {
@@ -120,6 +121,13 @@
         "source": "github",
         "repo": "obra/superpowers",
         "ref": "v6.3.0"
+      }
+    },
+    "mattpocock": {
+      "source": {
+        "source": "github",
+        "repo": "mattpocock/skills",
+        "ref": "v1.2.3"
       }
     }
   },
