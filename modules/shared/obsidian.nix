@@ -232,6 +232,22 @@ in
         ln -sfn "$MIND_DIR/.claude/$entry" "$HOME/.claude/$entry"
       done
       ln -sf "$MIND_DIR/brain/CLAUDE-global.md" "$HOME/.claude/CLAUDE.md"
+
+      # ── Settings split ──────────────────────────────────────────────────
+      # The global ~/.claude/settings.json becomes a real user-owned file:
+      # everything except hooks, hand-editable without a rebuild. The om
+      # hooks live in the agent vault's .claude/settings.json (upstream's
+      # hooks plus vault write rules) and fire only in vault sessions.
+      # Both are seed-once. The old install symlinked the global path into
+      # the human vault; the symlink must go first, or the -f guard follows
+      # it and the seed never lands.
+      if [ -L "$HOME/.claude/settings.json" ]; then
+        rm "$HOME/.claude/settings.json"
+      fi
+      [ -f "$HOME/.claude/settings.json" ] || \
+        install -m644 ${./config/claude/global-settings-seed.json} "$HOME/.claude/settings.json"
+      [ -f "$MIND_DIR/.claude/settings.json" ] || \
+        install -m644 ${./config/claude/mind-vault-settings-seed.json} "$MIND_DIR/.claude/settings.json"
     '';
   };
 }

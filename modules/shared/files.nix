@@ -5,10 +5,9 @@ let
   # Can put github public keys here to be copied
   nvimSource = ./config/nvim;
 
-  # NOTE: Claude Code's ~/.claude/settings.json (env, model, hooks, permissions)
-  # is no longer Nix-generated. It lives in the vault at .claude/settings.json
-  # and is symlinked into ~/.claude/ by modules/shared/obsidian.nix, making the
-  # vault the single source of truth and keeping it hand-editable without a rebuild.
+  # NOTE: Claude Code's ~/.claude/settings.json is a real user-owned file,
+  # seeded once by modules/shared/obsidian.nix and hand-editable without a
+  # rebuild. Hooks live in the agent vault's .claude/settings.json.
 
   claudeStatusline = ''
     #!/bin/bash
@@ -56,8 +55,7 @@ in
 
     # Claude Code configuration.
     # NOTE: ~/.claude/settings.json is intentionally NOT managed here. It is
-    # symlinked to the vault's .claude/settings.json by modules/shared/obsidian.nix
-    # so the settings are the global source of truth AND remain hand-editable
+    # seeded once by modules/shared/obsidian.nix and stays hand-editable
     # mid-session without a nix rebuild. Only the statusline is Nix-generated.
     ".claude/statusline.sh" = {
       text = claudeStatusline;
