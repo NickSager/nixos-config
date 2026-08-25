@@ -1,5 +1,4 @@
 {
-  "awsAuthRefresh": "ada credentials update --profile claude --account $ISENGARD_ACCT --provider isengard --role Admin --once",
   "env": {
     "AWS_PROFILE": "claude",
     "AWS_REGION": "us-west-2",
@@ -51,26 +50,8 @@
       "Bash(tmux kill-window:*)",
       "Bash(tmux has-session:*)",
       "Bash(tmux new-session:*)",
-      "mcp__builder-mcp__ReadInternalWebsites",
-      "mcp__builder-mcp__TicketingReadActions",
-      "mcp__builder-mcp__InternalSearch",
-      "mcp__builder-mcp__InternalCodeSearch",
-      "mcp__builder-mcp__GetPipelineDetails",
-      "mcp__builder-mcp__ApolloReadActions",
-      "mcp__builder-mcp__OncallReadActions",
-      "mcp__builder-mcp__WorkspaceGitDetails",
-      "mcp__builder-mcp__MechanicDiscoverTools",
-      "mcp__builder-mcp__MechanicDescribeTool",
-      "mcp__waf-dp-triage__classify_ticket",
-      "mcp__waf-dp-triage__poll_new_tickets",
-      "mcp__waf-dp-triage__mhs_command",
-      "mcp__waf-dp-triage__check_command",
-      "mcp__waf-dp-triage__query_goku_kb",
-      "mcp__waf-dp-triage__analyze_log_content",
-      "mcp__waf-dp-triage__record_processed",
       "Bash(unzstd:*)",
       "Bash(zstdcat:*)",
-      "Read(//Volumes/workplace/Ops/**)",
       "Read(~/.claude/**)",
       "Read(**/.claude/**)",
       "Read(~/Documents/Notes/**)",
@@ -104,18 +85,10 @@
     "command": "~/.claude/statusline.sh"
   },
   "enabledPlugins": {
-    "AmazonBuilderCoreAIAgents-pipeline-assistant@aim": true,
-    "AmazonBuilderCoreAIAgents-core@aim": true,
     "superpowers@superpowers-dev": true,
     "mattpocock-skills@mattpocock": false
   },
   "extraKnownMarketplaces": {
-    "aim": {
-      "source": {
-        "source": "directory",
-        "path": "/Users/nsager/.aim/cc-plugins"
-      }
-    },
     "superpowers-dev": {
       "source": {
         "source": "github",

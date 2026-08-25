@@ -44,15 +44,6 @@
     #  flake = false;
     #};
 
-    # Obsidian daily work tracking setup by thsvaugh.
-    # Uncomment to fetch templates/scripts/prompts directly from the repo
-    # instead of maintaining local copies under modules/shared/config/obsidian/.
-    # Update with: nix flake update obsidian-daily-setup
-    #obsidian-daily-setup = {
-    #  url = "git+ssh://git@code.amazon.com/packages/Thsvaugh-ObsidianDailySetup";
-    #  flake = false;
-    #};
-
     # obsidian-mind agent vault, pinned to an upstream release tag.
     # Copied into ~/Documents/Mind by modules/shared/obsidian.nix.
     # Upgrade: bump the tag, `nix flake update obsidian-mind`, read the

@@ -5,12 +5,6 @@
 #   - ~/Documents/Mind (agent): upstream obsidian-mind, copied from the
 #     pinned flake input. Custom toolkit files live in it as plain vault
 #     files nix never touches.
-#
-# Human side based on https://code.amazon.com/packages/Thsvaugh-ObsidianDailySetup/trees/mainline
-# TODO: Periodically check for updates from Thsvaugh's repo and sync changes
-#       to templates, scripts, and prompts under modules/shared/config/obsidian/
-#       Alternatively, uncomment the obsidian-daily-setup flake input in flake.nix
-#       to fetch updates automatically via `nix flake update obsidian-daily-setup`.
 
 { lib, pkgs, profile ? "personal", obsidian-mind ? null, ... }:
 
@@ -125,8 +119,6 @@ in
     # Templates: read-only symlinks (Obsidian reads these, never writes)
     "${notesDir}/Main/Templates/Daily_Note.md".source =
       obsidianSource + "/templates/Daily_Note.md";
-    "${notesDir}/Main/Templates/PhoneTool Template.md".source =
-      obsidianSource + "/templates/PhoneTool Template.md";
     "${notesDir}/Main/Templates/Meeting_Note.md".source =
       obsidianSource + "/templates/Meeting_Note.md";
     "${notesDir}/Main/Templates/Project.md".source =
@@ -158,7 +150,6 @@ in
 
       # Mutable vault directories (created once, never overwritten)
       mkdir -p "$NOTES_DIR/Main/Daily_Notes"
-      mkdir -p "$NOTES_DIR/Main/Phonetool"
       mkdir -p "$NOTES_DIR/Main/Meeting_Notes"
       mkdir -p "$NOTES_DIR/Inbox"
       mkdir -p "$NOTES_DIR/Projects/active"
@@ -172,10 +163,6 @@ in
       install -m755 ${obsidianScriptsSource}/slack_summary.sh            "$NOTES_DIR/scripts/slack_summary.sh"
       install -m755 ${obsidianScriptsSource}/asana_daily_summary.sh      "$NOTES_DIR/scripts/asana_daily_summary.sh"
       install -m755 ${obsidianScriptsSource}/monthly_summary_generator.sh "$NOTES_DIR/scripts/monthly_summary_generator.sh"
-      ${lib.optionalString isWork ''
-      # Work-only: code_summary.sh requires code.amazon.com API + builder-mcp
-      install -m755 ${obsidianScriptsSource}/code_summary.sh             "$NOTES_DIR/scripts/code_summary.sh"
-      ''}
     '';
   } // lib.optionalAttrs (obsidian-mind != null) {
     # ── Agent vault (~/Documents/Mind) ─────────────────────────────────────

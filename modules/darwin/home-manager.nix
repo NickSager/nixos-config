@@ -57,7 +57,6 @@ in
         imports = [
           ../shared/obsidian.nix
           ../shared/skills.nix
-          ../shared/work.nix
           ../shared/ai-agents.nix
         ];
         home = {

@@ -1,6 +1,6 @@
 # Deliverables Analysis Prompt
 
-You are an expert analyst specializing in Amazon/AWS performance evaluation and deliverables assessment. Your task is to analyze work materials and identify, categorize, and cluster deliverables from an Amazon/AWS management perspective.
+You are an expert analyst specializing in performance evaluation and deliverables assessment. Your task is to analyze work materials and identify, categorize, and cluster deliverables from a management perspective.
 
 ## IMPORTANT: Variable Replacement
 Before beginning analysis, replace these placeholders with actual values:
@@ -9,7 +9,7 @@ Before beginning analysis, replace these placeholders with actual values:
 - `{FOLDER_PATHS}` → Actual folder paths to analyze
 
 ## Context
-Amazon/AWS evaluates employee contributions through deliverables that demonstrate:
+Performance reviews evaluate employee contributions through deliverables that demonstrate:
 - Customer impact and obsession
 - Technical excellence and innovation
 - Business value creation
@@ -275,10 +275,10 @@ Example format:
 - [Any measurable improvements: performance, cost, time savings]
 
 ### Leadership Principle Alignment
-- **Customer Obsession**: [Examples of customer-focused deliverables]
+- **Customer Focus**: [Examples of customer-focused deliverables]
 - **Ownership**: [Examples of end-to-end responsibility]
-- **Deliver Results**: [Examples of measurable outcomes]
-- **Invent and Simplify**: [Examples of innovation and simplification]
+- **Results-Driven**: [Examples of measurable outcomes]
+- **Innovation & Simplification**: [Examples of innovation and simplification]
 
 ### Knowledge Contribution
 - Documentation created: [Count and scope]
@@ -309,7 +309,7 @@ Note: Clearly label the individual's role (reviewer, advisor, participant, mento
 4. **Attribution Accuracy**: Only include deliverables where individual played a primary or contributor role
 5. **Contribution Clarity**: Clearly distinguish between creation, implementation, feedback, and participation activities
 6. **Quantifiable**: Include specific metrics and measurable outcomes where documented
-7. **Leadership-Aligned**: Frame deliverables in context of Amazon Leadership Principles using factual examples
+7. **Leadership-Aligned**: Frame deliverables in context of your organization's leadership principles/values using factual examples
 8. **Analytical**: Present information as objective analysis suitable for professional review
 9. **NO HALLUCINATION**: Do not invent, assume, or fabricate any information. If data is unavailable or unclear, omit that section and continue with known facts only
 10. **NO OVERSELLING**: Avoid superlative language, promotional descriptions, or interpretative assessments beyond documented facts
@@ -356,12 +356,9 @@ Use these patterns to identify presentations and speaking activities:
 - Cross-team "coordination" without specific technical deliverables
 
 ### Code Review Analysis
-Examine code commits and reviews using:
-```
-https://code.amazon.com/reviews/from-user/{USERNAME}?utf8=%E2%9C%93&start_time={START_DATE}&end_time={END_DATE}&open=true&canceled=&shipped=true&pending=true&commit=Go
-```
-
-Replace `{USERNAME}` with the actual username.
+Examine code commits and reviews using your organization's code review system
+(e.g. GitHub/GitLab pull requests, or `git log --author={USERNAME} --since={START_DATE} --until={END_DATE}`
+against your repositories) filtered to `{USERNAME}` for the `{START_DATE}`–`{END_DATE}` range.
 
 **Code Review Deliverables to Extract:**
 - **Shipped Reviews**: Completed code contributions with business impact
@@ -373,12 +370,9 @@ Replace `{USERNAME}` with the actual username.
 - **Bug Fixes**: Issue resolutions and stability improvements
 
 ### User Activity Analysis
-Examine commit activity and contributions using:
-```
-https://code.amazon.com/users/{USERNAME}/activity?sorted=&start_time={START_DATE}&end_time={END_DATE}&package_regex=&branch_regex=&commit_msg_regex=
-```
-
-Replace `{USERNAME}` with the actual username.
+Examine commit activity and contributions across your repositories for
+`{USERNAME}` over the `{START_DATE}`–`{END_DATE}` range (e.g. via your code
+host's contribution/activity view or `git log` across relevant repos).
 
 **Activity Deliverables to Extract:**
 - **Commit Frequency**: Volume and consistency of code contributions
@@ -452,7 +446,7 @@ Save the final report as: `deliverables_report_{START_DATE}_to_{END_DATE}.md` in
 - **Professional Standard**: Job-critical material requiring analytical tone and verified attribution
 
 ### Performance Review Context
-This analysis is used for Amazon/AWS performance evaluation where:
+This analysis is used for performance evaluation where:
 - Attribution accuracy is critical for career advancement
 - Conservative counting maintains professional credibility
 - Factual presentation without overselling demonstrates Leadership Principles alignment

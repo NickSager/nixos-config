@@ -2,8 +2,7 @@
 
 A complete system for tracking daily work activities using Obsidian, with AI-powered automation for aggregating Slack messages, task updates, and generating monthly summaries.
 
-Based on [Thsvaugh-ObsidianDailySetup](https://code.amazon.com/packages/Thsvaugh-ObsidianDailySetup/trees/mainline).
-See the associated blog post at [Obsidian for Daily Work Tracking](https://w.amazon.com/bin/view/Users/thsvaugh/Blog/2025-11-17_obsidian_work_tracking_setup/).
+Originally adapted from an internal daily-work-tracking setup shared by a coworker.
 
 ## Overview
 
@@ -12,9 +11,8 @@ This repository contains all the necessary scripts, templates, and prompts to se
 **Key Features:**
 - Structured daily notes with task management integration
 - Automated Slack message summaries
-- Task management system integration (Taskei)
+- Task management summaries via Asana (optional, through an Asana MCP server)
 - Monthly summary generation
-- PhoneTool integration for contact management
 - Time tracking for meetings
 
 ## Quick Start
@@ -22,10 +20,9 @@ This repository contains all the necessary scripts, templates, and prompts to se
 ### Prerequisites
 
 1. **Obsidian** - Installed via nix (shared packages)
-2. **Amazon Q CLI** - Install following [AWS documentation](https://docs.aws.amazon.com/amazonq/latest/qdeveloper-ug/command-line-getting-started-installing.html)
+2. **Claude Code** - the `claude` CLI, used to process and summarize captured data
 3. **jq** - Installed via nix (shared packages)
-4. **slack-cli** - Download from [Thsvaugh-SlackCLI on Code](https://code.amazon.com/packages/Thsvaugh-SlackCLI/trees/mainline)
-5. **taskei** - Amazon's internal task management CLI (optional, for task integration)
+4. **slack-cli** - a Slack CLI exposing `slack-cli search ... --format llm` (this repo assumes a custom/internal build; swap in your own Slack export tool if you don't have one)
 
 ### Nix-Managed Installation
 
@@ -50,7 +47,7 @@ Create a daily note and run the scripts manually:
 ```bash
 # Create today's daily note in Obsidian first, then:
 ~/Documents/Notes/scripts/slack_summary.sh $(date +%Y-%m-%d)
-~/Documents/Notes/scripts/taskei_daily_summary.sh $(date +%Y-%m-%d)
+~/Documents/Notes/scripts/asana_daily_summary.sh $(date +%Y-%m-%d)
 ```
 
 ## Directory Structure
@@ -61,15 +58,12 @@ Create a daily note and run the scripts manually:
 │   ├── Daily_Notes/           # Daily notes (mutable)
 │   │   └── YYYY-MM-DD.md
 │   ├── Templates/             # Obsidian templates (nix-managed symlinks)
-│   │   ├── Daily_Note.md
-│   │   └── PhoneTool Template.md
-│   ├── Phonetool/            # Contact network (mutable)
+│   │   └── Daily_Note.md
 │   └── Meeting_Notes/        # Meeting notes (mutable)
 ├── scripts/                  # Automation scripts (copied by nix, mutable)
 │   ├── common_summary_functions.sh
 │   ├── slack_summary.sh
-│   ├── code_summary.sh
-│   ├── taskei_daily_summary.sh
+│   ├── asana_daily_summary.sh
 │   └── monthly_summary_generator.sh
 ├── prompts/                  # AI prompts for processing (nix-managed symlinks)
 │   ├── slack_aggregate.md
@@ -105,52 +99,42 @@ Generates daily Slack message summaries.
 **What it does:**
 1. Fetches Slack messages for the specified date using `slack-cli`
 2. Handles pagination with rolling summaries for large message volumes
-3. Uses Amazon Q CLI to process and categorize messages
+3. Uses Claude Code (`claude`) to process and categorize messages
 4. Updates daily note with formatted Slack Summary section
 
 **Requirements:**
 - `slack-cli` tool installed and configured
-- Amazon Q CLI with file read/write permissions
+- `claude` CLI with file read/write permissions
 - Daily note must already exist for the target date
 
 **Installing slack-cli:**
 
-The Slack summary scripts require [Thsvaugh-SlackCLI](https://code.amazon.com/packages/Thsvaugh-SlackCLI/trees/mainline):
+The Slack summary script expects a `slack-cli` binary that supports
+`slack-cli search "..." --format llm`. Install/configure whatever Slack CLI
+you have access to, then:
 
-1. Clone and install following the package README
-2. Configure with your Slack workspace credentials
-3. Test: `slack-cli search "from:@$USER on:$(date +%Y-%m-%d)"`
+1. Configure it with your Slack workspace credentials
+2. Test: `slack-cli search "from:@$USER on:$(date +%Y-%m-%d)"`
 
 Optionally set `SLACK_USERNAME` in your shell env if your Slack handle differs
 from `$USER`.
 
-### code_summary.sh
+### asana_daily_summary.sh
 
-Generates daily code activity summaries from code.amazon.com (work profile only).
+Generates daily task management summaries from Asana.
 
 **Usage:**
 ```bash
-./scripts/code_summary.sh YYYY-MM-DD
+./scripts/asana_daily_summary.sh YYYY-MM-DD
 ```
 
 **What it does:**
-1. Fetches commit and code review data from code.amazon.com API
-2. Uses kiro-cli to process and summarize activity
-3. Updates daily note with Code Summary section
+1. Asks Claude Code to fetch Asana tasks updated on the given date (via an Asana MCP server)
+2. Summarizes task names, status changes, and comments
+3. Updates daily note with an Asana Summary section
 
-### taskei_daily_summary.sh
-
-Generates daily task management summaries.
-
-**Usage:**
-```bash
-./scripts/taskei_daily_summary.sh YYYY-MM-DD [TIMEZONE]
-```
-
-**Configuration:**
-- Edit `ROOM_ID` in the script for your Taskei room (find it with `taskei rooms list`)
-- Username automatically detected from `$USER`
-- Default timezone: `America/New_York`
+**Requirements:**
+- An Asana MCP server configured for the `claude` CLI (the script skips gracefully if none is available)
 
 ### monthly_summary_generator.sh
 
@@ -170,14 +154,6 @@ Structured template for daily notes with:
 - Day planner sections (Work, Ad-Hoc, Meetings, Issues, Notes)
 - Automatic time tracking integration
 
-### PhoneTool Template.md
-
-Contact page template with:
-- Frontmatter metadata (name, role, contact info, aliases)
-- Quick links (PhoneTool, Slack, email, LinkedIn, SayMyName)
-- Dataview query for profile display
-- Automatic meeting/mention tracking
-
 ## Automation Setup
 
 ### Option 1: Cron Jobs (Recommended)
@@ -188,8 +164,8 @@ Add to crontab (`crontab -e`):
 # Run Slack summary at 7 PM daily
 0 19 * * * ~/Documents/Notes/scripts/slack_summary.sh >> /tmp/slack_summary.log 2>&1
 
-# Run Taskei summary at 7:30 PM daily
-30 19 * * * ~/Documents/Notes/scripts/taskei_daily_summary.sh >> /tmp/taskei_summary.log 2>&1
+# Run Asana summary at 7:30 PM daily
+30 19 * * * ~/Documents/Notes/scripts/asana_daily_summary.sh >> /tmp/asana_summary.log 2>&1
 
 # Run monthly summary on the 1st of each month at 8 AM
 0 8 1 * * ~/Documents/Notes/scripts/monthly_summary_generator.sh >> /tmp/monthly_summary.log 2>&1
@@ -197,10 +173,10 @@ Add to crontab (`crontab -e`):
 
 ### Option 2: Manual Execution
 
-Use the shell alias (added by nix home-manager zsh config):
+Run the scripts directly:
 
 ```bash
-daily-summary
+cd ~/Documents/Notes && ./scripts/slack_summary.sh && ./scripts/asana_daily_summary.sh
 ```
 
 ## Daily Workflow
@@ -219,7 +195,7 @@ daily-summary
 
 ### End of Day
 1. Review your manual notes
-2. Run `daily-summary` or let cron jobs handle it
+2. Run the summary scripts manually or let cron jobs handle it
 3. Review generated summaries for accuracy
 4. Edit as needed to add missing context
 
@@ -237,7 +213,6 @@ daily-summary
 | Dataview | SQL-like queries for data aggregation | Essential |
 | Templater | Dynamic templates with variables and scripting | Essential |
 | Natural Language Dates | Parse dates from natural language | Essential |
-| PhoneTool | Import contact data from Amazon PhoneTool | Optional* |
 | Advanced Tables | Enhanced table editing | Recommended |
 | Emoji Shortcodes | Quick emoji insertion | Recommended |
 | Emoji Toolbar | Emoji picker | Recommended |
@@ -245,19 +220,17 @@ daily-summary
 | Marp Slides | Create presentations from markdown | Optional |
 | Mindmap NextGen | Auto-generated mindmaps | Optional |
 | PlantUML | Technical diagrams | Recommended |
-| Quip | Document integration | Optional* |
+| Quip | Document integration | Optional |
 | Style Settings | Custom CSS configuration | Optional |
 | Super Simple Time Tracker | Detailed time tracking | Optional |
 | Vim Yank Highlight | Visual feedback for vim users | Optional |
-
-\* Amazon-specific plugins
 
 ## Troubleshooting
 
 ### Scripts fail with "command not found"
 
 ```bash
-for cmd in q slack-cli taskei jq; do
+for cmd in claude slack-cli jq; do
     command -v "$cmd" >/dev/null || echo "Missing: $cmd"
 done
 ```
@@ -273,7 +246,7 @@ Create the daily note in Obsidian first, then run the script.
 
 ## Acknowledgments
 
-- Original setup by [thsvaugh](https://code.amazon.com/packages/Thsvaugh-ObsidianDailySetup/trees/mainline)
+- Original setup shared by a coworker
 - Built using [Obsidian](https://obsidian.md)
-- Automation powered by [Amazon Q CLI](https://aws.amazon.com/q/)
+- Automation powered by [Claude Code](https://claude.com/product/claude-code)
 - Inspired by the [Zettelkasten](https://zettelkasten.de/) method and [Getting Things Done](https://gettingthingsdone.com/)

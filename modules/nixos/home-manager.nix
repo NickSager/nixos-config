@@ -14,7 +14,6 @@ in
 {
   imports = [
     ../shared/obsidian.nix
-    ../shared/work.nix
   ];
 
   gtk = {

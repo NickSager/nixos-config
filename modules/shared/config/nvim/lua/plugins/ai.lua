@@ -95,20 +95,6 @@ return {
                 ANTHROPIC_DEFAULT_OPUS_MODEL = settings.ANTHROPIC_DEFAULT_OPUS_MODEL,
                 ANTHROPIC_DEFAULT_HAIKU_MODEL = settings.ANTHROPIC_DEFAULT_HAIKU_MODEL,
               },
-              handlers = {
-                setup = function(self)
-                  -- Refresh AWS credentials before starting ACP session
-                  local isengard_acct = os.getenv("ISENGARD_ACCT")
-                  if isengard_acct and isengard_acct ~= "" then
-                    local refresh_cmd = string.format(
-                      "ada credentials update --profile claude --account %s --provider isengard --role Admin --once",
-                      isengard_acct
-                    )
-                    vim.fn.system(refresh_cmd)
-                  end
-                  return true
-                end,
-              },
             })
           end,
         },
