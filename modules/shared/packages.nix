@@ -6,11 +6,9 @@ let
     virtualenv
   ]);
 
-  myTexlive = pkgs.texlive.combine {
-    inherit (pkgs.texlive)
-      scheme-full
-      latexmk;
-  };
+  # texlive.combine {scheme-full} is deprecated (removal targeted for 27.05);
+  # texliveFull is the same scheme-full closure via the non-deprecated path.
+  myTexlive = pkgs.texliveFull;
 
   myFonts = import ./fonts.nix { inherit pkgs; };
 in

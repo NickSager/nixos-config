@@ -141,7 +141,7 @@
                   "homebrew/homebrew-core" = homebrew-core;
                   "homebrew/homebrew-cask" = homebrew-cask;
                   "homebrew/homebrew-bundle" = homebrew-bundle;
-                  "gammons/tap" = gammons-tap;
+                  "gammons/homebrew-tap" = gammons-tap;
                 };
                 mutableTaps = false;
                 autoMigrate = true;

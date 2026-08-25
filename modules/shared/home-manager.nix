@@ -6,6 +6,10 @@ let name = "Nick Sager";
 
   neovim = {
     enable = true;
+    # Explicit: no plugin here uses Neovim's python3/ruby remote-plugin
+    # providers (LSP/DAP/REPL tools all shell out as external processes).
+    withPython3 = false;
+    withRuby = false;
     extraConfig = ''
     '';
   };
@@ -361,14 +365,12 @@ let name = "Nick Sager";
       )
     ];
     enableDefaultConfig = false;
-    matchBlocks = {
-      "*" = {
-        addKeysToAgent = "yes";
-        controlMaster = "auto";
-        controlPath = "~/.ssh/master-%r@%n:%p";
-        controlPersist = "10m";
-        serverAliveInterval = 60;
-      };
+    settings."*" = {
+      AddKeysToAgent = "yes";
+      ControlMaster = "auto";
+      ControlPath = "~/.ssh/master-%r@%n:%p";
+      ControlPersist = "10m";
+      ServerAliveInterval = 60;
     };
   };
 
