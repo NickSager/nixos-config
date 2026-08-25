@@ -82,7 +82,7 @@ in
   system.defaults.dock = {
     persistent-apps =
       if profile == "work" then [
-        { app = "/System/Applications/Launchpad.app"; }
+        { app = "/System/Applications/Apps.app"; }
         { app = "/Applications/Microsoft Outlook.app"; }
         { app = "/System/Applications/Calendar.app"; }
         { app = "/System/Applications/Reminders.app"; }
@@ -92,7 +92,7 @@ in
         { app = "${pkgs.alacritty}/Applications/Alacritty.app"; }
         { app = "/Applications/Slack.app"; }
       ] else [
-        { app = "/System/Applications/Launchpad.app"; }
+        { app = "/System/Applications/Apps.app"; }
         { app = "/System/Applications/Mail.app"; }
         { app = "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app"; }
         { app = "/System/Applications/Messages.app"; }
