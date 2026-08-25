@@ -122,7 +122,7 @@ with pkgs; [
   # terraform # Infrastructure as code tool
   # terraform-ls # Terraform language server
   # tflint # Terraform linter
-  # myTexlive # TeX Live, 3+ Gb
+  myTexlive # TeX Live, 3+ Gb
   tmux # Terminal multiplexer
   tree # Directory tree viewer
 

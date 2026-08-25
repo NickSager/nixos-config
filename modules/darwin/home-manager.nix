@@ -109,7 +109,6 @@ in
       ];
 
     persistent-others = [
-      { file = toString myEmacsLauncher; }
       {
         folder = {
           path = "${config.users.users.${user}.home}/Downloads";

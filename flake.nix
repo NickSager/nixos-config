@@ -71,7 +71,7 @@
   };
   outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, gammons-tap, home-manager, nixpkgs, flake-utils, disko, agenix, emacs-overlay, niri-flake, obsidian-mind, pstack } @inputs:
     let
-      profile = "work"; # "work" or "personal"
+      profile = "personal"; # "work" or "personal"
       user = if profile == "work" then "nsager" else "nick";
       linuxSystems = [ "x86_64-linux" "aarch64-linux" ];
       darwinSystems = [ "aarch64-darwin" "x86_64-darwin" ];
