@@ -74,7 +74,8 @@
       profile = "personal"; # "work" or "personal"
       user = if profile == "work" then "nsager" else "nick";
       linuxSystems = [ "x86_64-linux" "aarch64-linux" ];
-      darwinSystems = [ "aarch64-darwin" "x86_64-darwin" ];
+      darwinSystems = [ "aarch64-darwin" ];
+      nixosSystems = [ "x86_64-linux" ];
       forAllSystems = f: nixpkgs.lib.genAttrs (linuxSystems ++ darwinSystems) f;
       devShell = system: let pkgs = nixpkgs.legacyPackages.${system}; in {
         default = with pkgs; mkShell {
@@ -142,7 +143,7 @@
           ];
         }
       );
-      nixosConfigurations = nixpkgs.lib.genAttrs linuxSystems (system:
+      nixosConfigurations = nixpkgs.lib.genAttrs nixosSystems (system:
         nixpkgs.lib.nixosSystem {
           inherit system;
           specialArgs = inputs // { inherit user profile; };
