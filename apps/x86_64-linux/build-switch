@@ -25,8 +25,6 @@ is_nix_os() {
 
     return 1
 }
-# We pass SSH from user to root so root can download secrets from our private Github
-sudo /run/current-system/sw/bin/nixos-rebuild switch --flake .#$FLAKE_TARGET $@
 
 echo "${YELLOW}Starting...${NC}"
 
@@ -34,7 +32,6 @@ if is_nix_os; then
     echo "Running on a NixOS-based system"
     # We pass SSH from user to root so root can download secrets from our private Github
     sudo SSH_AUTH_SOCK=$SSH_AUTH_SOCK /run/current-system/sw/bin/nixos-rebuild switch --flake .#$FLAKE_TARGET $@
-    # /run/current-system/sw/bin/nixos-rebuild switch --flake .#$FLAKE_TARGET $@
 else
     echo "Running on a Linux system (non-NixOS)"
     nix --extra-experimental-features 'nix-command flakes' \
