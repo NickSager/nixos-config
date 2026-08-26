@@ -183,6 +183,7 @@ in
       # ln -sfn does NOT replace a real directory (it would create a link
       # INSIDE it), so the rm is required. No-op once the link exists.
       # ~/.claude/skills is linked by skills.nix to the shared skills root.
+      mkdir -p "$HOME/.claude"
       mkdir -p "$MIND_DIR/.claude/output-styles"
       for entry in commands agents output-styles; do
         if [ -d "$HOME/.claude/$entry" ] && [ ! -L "$HOME/.claude/$entry" ]; then
