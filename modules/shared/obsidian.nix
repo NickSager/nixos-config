@@ -56,9 +56,7 @@ in
         appearance = { cssTheme = "Soft Paper"; };
         extraFiles."themes/Soft Paper".source = obsidianSource + "/themes/soft-paper";
         communityPlugins = with obsidianPlugins; [
-          # Essential
           obsidian-tasks-plugin       # Advanced task management
-          obsidian-day-planner        # Time-blocking and meeting tracking
           dataview                    # SQL-like queries for notes
           {
             pkg = templater-obsidian;
@@ -88,27 +86,6 @@ in
             };
           }
           nldates-obsidian            # Natural Language Dates
-          # Recommended
-          markdown-table-editor       # Advanced Tables
-          obsidian-plantuml           # Technical diagrams
-          emoji-shortcodes            # Quick emoji insertion
-          obsidian-emoji-toolbar      # Emoji picker
-          # Optional
-          {
-            pkg = obsidian-style-settings;
-            settings = {
-              "soft-paper-settings@@sp-hide-scrollbars" = true;
-              "soft-paper-settings@@sp-compact-bases" = false;
-              "soft-paper-settings@@sp-compact-explorer" = false;
-              "soft-paper-settings@@sp-hide-add-property" = false;
-              "soft-paper-settings@@sp-status-bar-blue" = false;
-              "soft-paper-settings@@sp-settings-transparent" = false;
-            };
-          }
-          obsidian-mindmap-nextgen    # Auto-generated mindmaps
-          marp-slides                 # Presentations from markdown
-          obsidian-image-toolkit      # Enhanced image viewing
-          simple-time-tracker         # Detailed time tracking
           vim-yank-highlight          # Visual feedback for vim users
         ];
       };
@@ -161,7 +138,6 @@ in
       mkdir -p "$NOTES_DIR/scripts"
       install -m755 ${obsidianScriptsSource}/common_summary_functions.sh "$NOTES_DIR/scripts/common_summary_functions.sh"
       install -m755 ${obsidianScriptsSource}/slack_summary.sh            "$NOTES_DIR/scripts/slack_summary.sh"
-      install -m755 ${obsidianScriptsSource}/asana_daily_summary.sh      "$NOTES_DIR/scripts/asana_daily_summary.sh"
       install -m755 ${obsidianScriptsSource}/monthly_summary_generator.sh "$NOTES_DIR/scripts/monthly_summary_generator.sh"
     '';
   } // lib.optionalAttrs (obsidian-mind != null) {
@@ -201,12 +177,6 @@ in
 
       # Store copies arrive read-only; the vault must stay editable.
       chmod -R u+w "$MIND_DIR"
-
-      # Bridge: keep the global CLAUDE.md resolvable until the content
-      # migration moves it into the agent vault for real.
-      if [ ! -f "$MIND_DIR/brain/CLAUDE-global.md" ] && [ -f "$HOME/Documents/Notes/AI/brain/CLAUDE-global.md" ]; then
-        install -m644 "$HOME/Documents/Notes/AI/brain/CLAUDE-global.md" "$MIND_DIR/brain/CLAUDE-global.md"
-      fi
 
       # ── Global reach: ~/.claude entries are symlinks into the vault ─────
       # A pre-existing real directory is rescued into the vault first;

@@ -1,6 +1,6 @@
 # Obsidian Daily Work Tracking System
 
-A complete system for tracking daily work activities using Obsidian, with AI-powered automation for aggregating Slack messages, task updates, and generating monthly summaries.
+A complete system for tracking daily work activities using Obsidian, with AI-powered automation for aggregating Slack messages and generating monthly summaries.
 
 Originally adapted from an internal daily-work-tracking setup shared by a coworker.
 
@@ -11,9 +11,7 @@ This repository contains all the necessary scripts, templates, and prompts to se
 **Key Features:**
 - Structured daily notes with task management integration
 - Automated Slack message summaries
-- Task management summaries via Asana (optional, through an Asana MCP server)
 - Monthly summary generation
-- Time tracking for meetings
 
 ## Quick Start
 
@@ -47,7 +45,6 @@ Create a daily note and run the scripts manually:
 ```bash
 # Create today's daily note in Obsidian first, then:
 ~/Documents/Notes/scripts/slack_summary.sh $(date +%Y-%m-%d)
-~/Documents/Notes/scripts/asana_daily_summary.sh $(date +%Y-%m-%d)
 ```
 
 ## Directory Structure
@@ -63,7 +60,6 @@ Create a daily note and run the scripts manually:
 ├── scripts/                  # Automation scripts (copied by nix, mutable)
 │   ├── common_summary_functions.sh
 │   ├── slack_summary.sh
-│   ├── asana_daily_summary.sh
 │   └── monthly_summary_generator.sh
 ├── prompts/                  # AI prompts for processing (nix-managed symlinks)
 │   ├── slack_aggregate.md
@@ -119,23 +115,6 @@ you have access to, then:
 Optionally set `SLACK_USERNAME` in your shell env if your Slack handle differs
 from `$USER`.
 
-### asana_daily_summary.sh
-
-Generates daily task management summaries from Asana.
-
-**Usage:**
-```bash
-./scripts/asana_daily_summary.sh YYYY-MM-DD
-```
-
-**What it does:**
-1. Asks Claude Code to fetch Asana tasks updated on the given date (via an Asana MCP server)
-2. Summarizes task names, status changes, and comments
-3. Updates daily note with an Asana Summary section
-
-**Requirements:**
-- An Asana MCP server configured for the `claude` CLI (the script skips gracefully if none is available)
-
 ### monthly_summary_generator.sh
 
 Generates comprehensive monthly summaries.
@@ -151,8 +130,7 @@ Generates comprehensive monthly summaries.
 
 Structured template for daily notes with:
 - Task query sections (overdue, due this week, no due date)
-- Day planner sections (Work, Ad-Hoc, Meetings, Issues, Notes)
-- Automatic time tracking integration
+- Freeform sections (Work, Ad-Hoc, Meetings, Issues, Notes)
 
 ## Automation Setup
 
@@ -164,9 +142,6 @@ Add to crontab (`crontab -e`):
 # Run Slack summary at 7 PM daily
 0 19 * * * ~/Documents/Notes/scripts/slack_summary.sh >> /tmp/slack_summary.log 2>&1
 
-# Run Asana summary at 7:30 PM daily
-30 19 * * * ~/Documents/Notes/scripts/asana_daily_summary.sh >> /tmp/asana_summary.log 2>&1
-
 # Run monthly summary on the 1st of each month at 8 AM
 0 8 1 * * ~/Documents/Notes/scripts/monthly_summary_generator.sh >> /tmp/monthly_summary.log 2>&1
 ```
@@ -176,7 +151,7 @@ Add to crontab (`crontab -e`):
 Run the scripts directly:
 
 ```bash
-cd ~/Documents/Notes && ./scripts/slack_summary.sh && ./scripts/asana_daily_summary.sh
+cd ~/Documents/Notes && ./scripts/slack_summary.sh
 ```
 
 ## Daily Workflow
@@ -188,7 +163,7 @@ cd ~/Documents/Notes && ./scripts/slack_summary.sh && ./scripts/asana_daily_summ
 4. Link to relevant people and projects using `[[Name]]`
 
 ### Throughout the Day
-1. Check off meetings as they occur (Day Planner tracks time automatically)
+1. Check off meetings as they occur
 2. Add meeting notes under each meeting with attendees as links
 3. Document issues in the "Issues" section with resolution steps
 4. Add ad-hoc work and decisions to "Notes" section
@@ -209,20 +184,9 @@ cd ~/Documents/Notes && ./scripts/slack_summary.sh && ./scripts/asana_daily_summ
 | Plugin | Purpose | Priority |
 |--------|---------|----------|
 | Tasks | Advanced task management with GTD features | Essential |
-| Day Planner | Time-blocking and automatic meeting time tracking | Essential |
 | Dataview | SQL-like queries for data aggregation | Essential |
 | Templater | Dynamic templates with variables and scripting | Essential |
 | Natural Language Dates | Parse dates from natural language | Essential |
-| Advanced Tables | Enhanced table editing | Recommended |
-| Emoji Shortcodes | Quick emoji insertion | Recommended |
-| Emoji Toolbar | Emoji picker | Recommended |
-| Image Toolkit | Enhanced image viewing | Recommended |
-| Marp Slides | Create presentations from markdown | Optional |
-| Mindmap NextGen | Auto-generated mindmaps | Optional |
-| PlantUML | Technical diagrams | Recommended |
-| Quip | Document integration | Optional |
-| Style Settings | Custom CSS configuration | Optional |
-| Super Simple Time Tracker | Detailed time tracking | Optional |
 | Vim Yank Highlight | Visual feedback for vim users | Optional |
 
 ## Troubleshooting

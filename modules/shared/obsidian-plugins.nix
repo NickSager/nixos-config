@@ -45,12 +45,6 @@ in
     version = "7.22.0";
     hash = "sha256-Ve33LF/aA8XjUalD8gqZ4lXMAC1TKltViZfBDqL0H6o=";
   };
-  obsidian-day-planner = mkPlugin {
-    owner = "ivan-lednev";
-    repo = "obsidian-day-planner";
-    version = "0.28.0";
-    hash = "sha256-ZbGh7hlZ0YVu8mkefVqnmRzAI9OkhLTA8DjS7ZRN6AU=";
-  };
   dataview = mkPlugin {
     owner = "blacksmithgu";
     repo = "obsidian-dataview";
@@ -68,64 +62,6 @@ in
     repo = "nldates-obsidian";
     version = "0.6.2";
     hash = "sha256-xbefGDCx7hH8onudG5S3cEGgFhd1vjXJo0jJm9t5ZyA=";
-  };
-
-  # Recommended
-  markdown-table-editor = mkPlugin {
-    owner = "ganesshkumar";
-    repo = "obsidian-table-editor";
-    version = "0.3.1";
-    hash = "sha256-lqOwI973i5l95i7Ob6VM+p5clYBzMBvMfJ5tsEqar0Y=";
-  };
-  obsidian-plantuml = mkPlugin {
-    owner = "joethei";
-    repo = "obsidian-plantuml";
-    version = "1.8.0";
-    hash = "sha256-dGB/p8VP5u9D4QZXr3J7fPm2Mo4d3/I7qnGAeMNtfyc=";
-  };
-  emoji-shortcodes = mkPlugin {
-    owner = "phibr0";
-    repo = "obsidian-emoji-shortcodes";
-    version = "2.2.0";
-    hash = "sha256-K7l+RBg6lOCJCGFY6NHfTPSsw/oJjEfndtnXmCIV4oc=";
-  };
-  obsidian-emoji-toolbar = mkPlugin {
-    owner = "oliveryh";
-    repo = "obsidian-emoji-toolbar";
-    version = "1.0.0";
-    hash = "sha256-q9GeQ+5rVTiLHWTau1U+UPIi0JTV6nqSqlwvicQg13U=";
-  };
-
-  # Optional
-  obsidian-style-settings = mkPlugin {
-    owner = "mgmeyers";
-    repo = "obsidian-style-settings";
-    version = "1.0.9";
-    hash = "sha256-oJ65ABQshqa0MO6JJ68VvUehRictlGVq3INteOJKN+s=";
-  };
-  obsidian-mindmap-nextgen = mkPlugin {
-    owner = "james-tindal";
-    repo = "obsidian-mindmap-nextgen";
-    version = "1.15.1";
-    hash = "sha256-5agWf0bLAf6Np5a6BQ88QOcsbXqcj+3Sdv0QlaXMgfY=";
-  };
-  marp-slides = mkPlugin {
-    owner = "samuele-cozzi";
-    repo = "obsidian-marp-slides";
-    version = "0.45.6";
-    hash = "sha256-4ubqS0hVRzIyqYgrCqaRsbHQpTKZPjj0rVGJEabD+b0=";
-  };
-  obsidian-image-toolkit = mkPlugin {
-    owner = "obsidian-community";
-    repo = "obsidian-image-toolkit";
-    version = "0.2.0";
-    hash = "sha256-fTBB+sHRECO7FbC8pc+wsIJ5pt8uxtXASR4ZOqYjn3o=";
-  };
-  simple-time-tracker = mkPlugin {
-    owner = "Ellpeck";
-    repo = "ObsidianSimpleTimeTracker";
-    version = "1.2.2";
-    hash = "sha256-vcvDkWAxB4lEqgRXJD/qJpqgNaeMAoS0tF0nFFXOGtk=";
   };
   vim-yank-highlight = mkPlugin {
     owner = "aleksey-rowan";
