@@ -32,9 +32,9 @@ nix flake update homebrew-core homebrew-cask homebrew-bundle
 
 ### Module Composition Pattern
 
-The flake passes all inputs plus `user` to every module via `specialArgs`:
+The flake passes all inputs plus `user` and `profile` to every system module via `specialArgs`:
 ```nix
-specialArgs = inputs // { inherit user; };
+specialArgs = inputs // { inherit user profile; };
 ```
 
 Each platform host (in `hosts/`) imports and composes modules from `modules/`. The key composition pattern uses attribute set merge (`//`) for home-manager programs:
@@ -58,7 +58,7 @@ home.packages = pkgs.callPackage ./packages.nix {};
 
 ### Directory Structure
 
-- `flake.nix` - Entry point; defines `user = "nsager"` referenced throughout
+- `flake.nix` - Entry point; selects the `personal` profile and the `nick` user by default
 - `hosts/` - Platform entry points that import and compose modules
 - `modules/shared/` - Cross-platform config (packages, home-manager programs, fonts, dotfiles)
 - `modules/darwin/` - macOS-specific (homebrew casks, dock management, nix-apps symlinks)
@@ -85,7 +85,7 @@ home.packages = pkgs.callPackage ./packages.nix {};
 
 - **macOS**: Uses nix-darwin + nix-homebrew for casks. Dock is declaratively managed via dockutil. Apps symlinked via `modules/darwin/nix-apps.nix`.
 - **NixOS**: Full Wayland desktop with Niri compositor, Waybar, Fuzzel launcher, Mako notifications, greetd display manager. Uses disko for disk management.
-- **Generic Linux** (`homeConfigurations`): Home-manager only, no system-level config. Uses `user = "nick"` (different from other platforms).
+- **Generic Linux** (`homeConfigurations`): Home-manager only, no system-level config. Uses the same profile-selected user as the system configurations.
 
 ### Secrets
 
