@@ -9,6 +9,7 @@ let
     # Import shared configuration (tmux, zsh, packages, etc.)
     # Comment these out initially if you want to start completely minimal
     ../../modules/shared
+    ../../modules/shared/cachix
 
     # Agenix for secrets management - temporarily disabled
     # inputs.agenix.nixosModules.default
@@ -192,10 +193,6 @@ let
       trusted-users       = [ "@admin" "${user}" "root" ];
       substituters        = [
         "https://nix-community.cachix.org"
-        "https://cache.nixos.org"
-      ];
-      trusted-public-keys = [
-        "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
       ];
       experimental-features = [ "nix-command" "flakes" ];
     };
