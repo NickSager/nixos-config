@@ -198,6 +198,14 @@ in
       fi
       ln -sf "$MIND_DIR/brain/CLAUDE-global.md" "$HOME/.claude/CLAUDE.md"
 
+      # Codex CLI reads ~/.codex/AGENTS.md as global instructions in every
+      # project, same role as ~/.claude/CLAUDE.md. Point it at the same file.
+      mkdir -p "$HOME/.codex"
+      if [ -f "$HOME/.codex/AGENTS.md" ] && [ ! -L "$HOME/.codex/AGENTS.md" ]; then
+        rm -f "$HOME/.codex/AGENTS.md"
+      fi
+      ln -sf "$MIND_DIR/brain/CLAUDE-global.md" "$HOME/.codex/AGENTS.md"
+
       # ── Settings split ──────────────────────────────────────────────────
       # The global ~/.claude/settings.json becomes a real user-owned file:
       # everything except hooks, hand-editable without a rebuild. The om

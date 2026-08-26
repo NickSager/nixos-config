@@ -19,6 +19,7 @@ let
   # Every agent's skills path becomes a single symlink to the shared root.
   agentSkillsDirs = [
     "$HOME/.claude/skills"
+    "$HOME/.agents/skills"  # Codex CLI's global skill discovery path
   ];
 
   # If an agent's skills path is a real directory (pre-existing install),
@@ -27,6 +28,7 @@ let
   # a link INSIDE it), so the rm is required; guarded on -d && ! -L it is
   # a no-op once the link exists.
   linkAgent = dir: ''
+    mkdir -p "$(dirname "${dir}")"
     if [ -d "${dir}" ] && [ ! -L "${dir}" ]; then
       cp -Rn "${dir}"/. "$MIND_DIR/.agents/skills/" 2>/dev/null || true
       rm -rf "${dir}"
