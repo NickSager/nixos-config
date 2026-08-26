@@ -100,8 +100,6 @@
         "copy-keys" = mkApp "copy-keys" system;
         "create-keys" = mkApp "create-keys" system;
         "check-keys" = mkApp "check-keys" system;
-        "install" = mkApp "install" system;
-        "install-with-secrets" = mkApp "install-with-secrets" system;
       };
       mkDarwinApps = system: {
         "apply" = mkApp "apply" system;
@@ -114,16 +112,6 @@
       };
     in
     {
-      templates = {
-        starter = {
-          path = ./templates/starter;
-          description = "Starter configuration";
-        };
-        starter-with-secrets = {
-          path = ./templates/starter-with-secrets;
-          description = "Starter configuration with secrets";
-        };
-      };
       devShells = forAllSystems devShell;
       apps = nixpkgs.lib.genAttrs linuxSystems mkLinuxApps // nixpkgs.lib.genAttrs darwinSystems mkDarwinApps;
       darwinConfigurations = nixpkgs.lib.genAttrs darwinSystems (system:

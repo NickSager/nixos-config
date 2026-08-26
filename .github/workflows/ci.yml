@@ -1,0 +1,32 @@
+name: Validate configuration
+
+on:
+  push:
+    branches:
+      - main
+      - nick
+  pull_request:
+    branches:
+      - main
+      - nick
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-darwin:
+    runs-on: macos-14
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@main
+
+      - name: Build Apple Silicon configuration
+        run: nix build .#darwinConfigurations.aarch64-darwin.system --no-link --print-build-logs
