@@ -7,7 +7,7 @@ shared-packages ++ [
   
   apple-cursor # macOS-style cursor theme
   
-  cider-appimage # Apple Music client
+  cider-2 # Apple Music client
   
   cliphist # Clipboard history manager for Wayland
 
