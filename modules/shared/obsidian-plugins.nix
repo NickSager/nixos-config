@@ -16,7 +16,7 @@
 
 let
   mkPlugin =
-    { owner, repo, version, tag ? version, hash }:
+    { owner, repo, version, manifestId, tag ? version, hash }:
     let
       baseUrl = "https://github.com/${owner}/${repo}/releases/download/${tag}";
     in
@@ -29,6 +29,7 @@ let
       nativeBuildInputs = [ pkgs.curl ];
       SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
       phases = [ "installPhase" ];
+      passthru = { inherit manifestId; };
       installPhase = ''
         mkdir -p $out
         curl -sfL -o $out/main.js "${baseUrl}/main.js"
@@ -43,30 +44,35 @@ in
     owner = "obsidian-tasks-group";
     repo = "obsidian-tasks";
     version = "7.22.0";
+    manifestId = "obsidian-tasks-plugin";
     hash = "sha256-Ve33LF/aA8XjUalD8gqZ4lXMAC1TKltViZfBDqL0H6o=";
   };
   dataview = mkPlugin {
     owner = "blacksmithgu";
     repo = "obsidian-dataview";
     version = "0.5.70";
+    manifestId = "dataview";
     hash = "sha256-mBXQrFHSZaqj6P9ZGzGfw1UfnQKroTlkilI/IOl7Q+g=";
   };
   templater-obsidian = mkPlugin {
     owner = "SilentVoid13";
     repo = "Templater";
     version = "2.18.1";
+    manifestId = "templater-obsidian";
     hash = "sha256-xh6iQn0IXsa2gJH8360MQagpJT3M4+FrdWQGMOH5d7E=";
   };
   nldates-obsidian = mkPlugin {
     owner = "argenos";
     repo = "nldates-obsidian";
     version = "0.6.2";
+    manifestId = "nldates-obsidian";
     hash = "sha256-xbefGDCx7hH8onudG5S3cEGgFhd1vjXJo0jJm9t5ZyA=";
   };
   vim-yank-highlight = mkPlugin {
     owner = "aleksey-rowan";
     repo = "obsidian-vim-yank-highlight";
     version = "1.0.8";
+    manifestId = "vim-yank-highlight";
     hash = "sha256-K36V3jDSqG5VBHLiEjkkNi3CllH1/fA5tmEm0mrtvzc=";
   };
 }
