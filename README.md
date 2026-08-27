@@ -64,7 +64,9 @@ managing the operating system.
 Home Manager manages a human Obsidian vault at `~/Documents/Notes` and seeds
 an agent vault at `~/Documents/Mind` from a pinned `obsidian-mind` input.
 Claude Code and Codex share skills stored under the agent vault. Native agent
-installers run once when their marker directories are absent.
+installers for Hermes, Claude Code, and Codex run once when their marker
+directories are absent. After Hermes is provisioned, run `hermes setup` to
+select a provider.
 
 ## Secrets
 
