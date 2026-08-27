@@ -11,6 +11,7 @@
 let
   obsidianSource = ./config/obsidian;
   obsidianScriptsSource = ./config/obsidian/scripts;
+  notesClaude = obsidianSource + "/CLAUDE.md";
   obsidianPlugins = import ./obsidian-plugins.nix { inherit pkgs; };
   notesDir = "Documents/Notes";
   isWork = profile == "work";
@@ -121,6 +122,12 @@ in
     # the vault rather than into the Nix store.
     obsidianVault = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
       NOTES_DIR="$HOME/Documents/Notes"
+
+      # The human vault's instructions are seeded once so later local edits
+      # remain user-owned while new vaults never receive the retired Notes/AI
+      # architecture.
+      [ -e "$NOTES_DIR/CLAUDE.md" ] || \
+        install -m644 ${notesClaude} "$NOTES_DIR/CLAUDE.md"
 
       # Hotkeys: copy as writable file (Obsidian ignores read-only symlinks)
       install -m644 ${hotkeysJson} "$NOTES_DIR/.obsidian/hotkeys.json"
