@@ -63,6 +63,8 @@ let
     };
   };
 
+  programs.niri.package = pkgs.niri;
+
   # Set your time zone.
   time.timeZone = "America/Kentucky/Louisville";
 
