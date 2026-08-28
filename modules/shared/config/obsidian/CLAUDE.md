@@ -20,6 +20,6 @@ wikilink bridge to Mind.
 
 ## Automation
 
-The available vault scripts are `slack_summary.sh`, `asana_daily_summary.sh`,
-and `monthly_summary_generator.sh`. They use `claude --print`; review their
-output before treating it as a record of work.
+The available vault scripts are `slack_summary.sh` and
+`monthly_summary_generator.sh`. They use `claude --print`; review their output
+before treating it as a record of work.
