@@ -65,9 +65,9 @@ let
     bases = true;
   };
   dailyNotesJson = json.generate "daily-notes.json" {
-    folder = "work/daily";
+    folder = "";
     format = "YYYY-MM-DD";
-    template = "templates/daily";
+    template = "";
   };
   templatesJson = json.generate "templates.json" { folder = "templates"; };
   communityPluginList = with obsidianPlugins; [
