@@ -45,6 +45,10 @@ let
   pstackAgents = [ "comment-sicko.md" "poteto-agent.md" ];
 
   installPstack = ''
+    PSTACK_MANIFEST="$MIND_DIR/.pstack-managed-files"
+    if [ -f "$PSTACK_MANIFEST" ]; then
+      cat "$PSTACK_MANIFEST" >> "$MIND_DIR/.obsidian-mind-stage-paths"
+    fi
     mkdir -p "$MIND_DIR/.claude/agents"
     ${lib.concatMapStringsSep "\n" (s: ''
       chmod -R u+w "$MIND_DIR/.agents/skills/${s}" 2>/dev/null || true
@@ -55,6 +59,12 @@ let
       install -m644 ${pstack}/pstack/agents/${a} "$MIND_DIR/.claude/agents/${a}"
     '') pstackAgents}
     chmod -R u+w "$MIND_DIR/.agents/skills"
+    {
+      ${lib.concatMapStringsSep "\n" (s: ''printf '%s\n' '.agents/skills/${s}' '') pstackSkills}
+      ${lib.concatMapStringsSep "\n" (a: ''printf '%s\n' '.claude/agents/${a}' '') pstackAgents}
+    } > "$PSTACK_MANIFEST"
+    cat "$PSTACK_MANIFEST" >> "$MIND_DIR/.obsidian-mind-stage-paths"
+    printf '%s\n' '.pstack-managed-files' >> "$MIND_DIR/.obsidian-mind-stage-paths"
   '';
 
   removePstack = ''
@@ -68,7 +78,7 @@ let
   '';
 in
 {
-  home.activation.agentSkills = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  home.activation.agentSkills = lib.hm.dag.entryAfter [ "agentVault" ] ''
     MIND_DIR="$HOME/Documents/Mind"
     mkdir -p "$MIND_DIR/.agents/skills"
 

@@ -18,7 +18,7 @@ let
   installers = [
     {
       name = "hermes";
-      marker = "$HOME/.hermes";
+      marker = "$HOME/.hermes/hermes-agent";
       command = "curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash";
     }
     {

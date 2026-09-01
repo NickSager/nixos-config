@@ -60,14 +60,10 @@
       "Bash(install -m 644 /Users/nsager/Documents/Notes/Main/Templates/*.md /Users/nsager/Documents/Notes/Main/Daily_Notes/**)",
       "Edit(~/Documents/Notes/Main/Daily_Notes/**)",
       "Edit(**/Documents/Notes/Main/Daily_Notes/**)",
-      "Write(~/Documents/Notes/Main/Daily_Notes/**)",
-      "Write(**/Documents/Notes/Main/Daily_Notes/**)",
       "Read(~/Documents/Mind/**)",
       "Read(**/Documents/Mind/**)",
       "Edit(~/Documents/Mind/**)",
-      "Edit(**/Documents/Mind/**)",
-      "Write(~/Documents/Mind/**)",
-      "Write(**/Documents/Mind/**)"
+      "Edit(**/Documents/Mind/**)"
     ]
   },
   "model": "us.anthropic.claude-fable-5",

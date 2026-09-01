@@ -91,6 +91,7 @@ with pkgs; [
   # neofetch removed (unmaintained); use fastfetch if needed
   # ngrok # Secure tunneling service
   nodejs # Node.js runtime + npm/npx
+  (pkgs.callPackage ./qmd.nix {}) # Pinned local hybrid search for Mind
   # nodePackages.live-server # Development server with live reload
   # nodePackages.nodemon # Node.js file watcher
   # nodePackages.npm # Node package manager

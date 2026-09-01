@@ -6,7 +6,7 @@
 #     pinned flake input. Custom toolkit files live in it as plain vault
 #     files nix never touches.
 
-{ lib, pkgs, profile ? "personal", obsidian-mind ? null, ... }:
+{ config, lib, pkgs, profile ? "personal", obsidian-mind ? null, ... }:
 
 let
   obsidianSource = ./config/obsidian;
@@ -15,6 +15,31 @@ let
   obsidianPlugins = import ./obsidian-plugins.nix { inherit pkgs; };
   notesDir = "Documents/Notes";
   isWork = profile == "work";
+  mindRevision = if obsidian-mind == null then "unknown" else obsidian-mind.rev or "unknown";
+  mindIntegration = ./scripts/mind-agent-integration.sh;
+  omGlobalInstructions = ./config/obsidian-mind/global-instructions.md;
+  omHermesInstructions = ./config/obsidian-mind/hermes-soul.md;
+  omWrapUpAddon = ./config/obsidian-mind/wrap-up-addon.md;
+  omMcpWrapper = pkgs.writeShellScript "om-mcp" ''
+    project_root="$PWD"
+    if [ -n "''${OM_PROJECT_ROOT:-}" ]; then
+      project_root="$OM_PROJECT_ROOT"
+    fi
+    caller="$(basename "$project_root" | tr '[:upper:]' '[:lower:]' | tr -cd '[:alnum:]_.-')"
+    if [ -f "$project_root/.om-project" ]; then
+      declared="$(sed -n '/^[[:space:]]*#/d; /^[[:space:]]*$/d; { s/^[[:space:]]*//; s/[[:space:]]*$//; p; q; }' "$project_root/.om-project")"
+      if [ -n "$declared" ]; then
+        case "$declared" in
+          *[!A-Za-z0-9_.-]*) ;;
+          *) caller="$(printf '%s' "$declared" | tr '[:upper:]' '[:lower:]')" ;;
+        esac
+      fi
+    fi
+    if [ -n "$caller" ]; then
+      export OM_CALLER="$caller"
+    fi
+    exec ${pkgs.nodejs}/bin/node "$HOME/Documents/Mind/.claude/scripts/om-mcp.mjs"
+  '';
 
   # Hotkeys must be a writable copy — Obsidian ignores read-only symlinks.
   hotkeysJson = (pkgs.formats.json { }).generate "hotkeys.json" {
@@ -94,6 +119,11 @@ in
   };
 
   home.file = {
+    ".local/bin/om-mcp" = {
+      source = omMcpWrapper;
+      executable = true;
+    };
+
     # Templates: read-only symlinks (Obsidian reads these, never writes)
     "${notesDir}/Main/Templates/Daily_Note.md".source =
       obsidianSource + "/templates/Daily_Note.md";
@@ -156,6 +186,34 @@ in
       MIND_DIR="$HOME/Documents/Mind"
       mkdir -p "$MIND_DIR/memories"
 
+      MANAGED_MANIFEST="$MIND_DIR/.obsidian-mind-managed-files"
+      STAGE_MANIFEST="$MIND_DIR/.obsidian-mind-stage-paths"
+      NEXT_MANIFEST="$(mktemp "$MIND_DIR/.obsidian-mind-managed-files.tmp.XXXXXX")"
+      if [ -f "$MANAGED_MANIFEST" ]; then
+        cat "$MANAGED_MANIFEST" >> "$STAGE_MANIFEST"
+        while IFS= read -r rel; do
+          [ -n "$rel" ] || continue
+          case "$rel" in
+            /*|..|../*|*/..|*/../*)
+              echo "Refusing unsafe managed Mind path: $rel" >&2
+              exit 1
+              ;;
+          esac
+          case "$rel" in
+            .claude/agents/*|.claude/commands/*|.claude/scripts/*|.claude/skills/*|\
+            .claude-plugin/*|.codex/*|.gemini/*|.scripts/*|.shardmind/*|bases/*|templates/*|\
+            .claude/memory-template.md|.claude/update-skills.ts|.mcp.json|.shardmindignore|\
+            AGENTS.md|CLAUDE.md|GEMINI.md|Home.md|vault-manifest.json)
+              rm -f "$MIND_DIR/$rel"
+              ;;
+            *)
+              echo "Refusing unexpected managed Mind path: $rel" >&2
+              exit 1
+              ;;
+          esac
+        done < "$MANAGED_MANIFEST"
+      fi
+
       # Machinery: always overwritten so a release-tag bump lands on the
       # next rebuild. cp -Rf replaces same-named files but leaves the
       # custom toolkit (plain sibling files in the same directories) alone.
@@ -167,11 +225,21 @@ in
         # cp -Rf cannot replace files inside a read-only directory.
         chmod -R u+w "$MIND_DIR/$dir" 2>/dev/null || true
         cp -Rf ${obsidian-mind}/$dir/. "$MIND_DIR/$dir/"
+        find ${obsidian-mind}/$dir \( -type f -o -type l \) -print | \
+          sed "s#^${obsidian-mind}/##" >> "$NEXT_MANIFEST"
       done
       for f in .claude/memory-template.md .claude/update-skills.ts .mcp.json \
                .shardmindignore AGENTS.md CLAUDE.md GEMINI.md Home.md vault-manifest.json; do
         install -m644 ${obsidian-mind}/$f "$MIND_DIR/$f"
+        printf '%s\n' "$f" >> "$NEXT_MANIFEST"
       done
+
+      cat ${omWrapUpAddon} >> "$MIND_DIR/.claude/commands/om-wrap-up.md"
+      sort -u "$NEXT_MANIFEST" -o "$NEXT_MANIFEST"
+      install -m644 "$NEXT_MANIFEST" "$MANAGED_MANIFEST"
+      cat "$NEXT_MANIFEST" >> "$STAGE_MANIFEST"
+      printf '%s\n' '.obsidian-mind-managed-files' >> "$STAGE_MANIFEST"
+      rm -f "$NEXT_MANIFEST"
 
       # Content: seeded once, never overwritten (user-owned notes and
       # Obsidian state). cp -Rn adds files a new release ships without
@@ -229,6 +297,24 @@ in
         install -m644 ${./config/claude/global-settings-seed.json} "$HOME/.claude/settings.json"
       [ -f "$MIND_DIR/.claude/settings.json" ] || \
         install -m644 ${./config/claude/mind-vault-settings-seed.json} "$MIND_DIR/.claude/settings.json"
+
+      ${pkgs.bash}/bin/bash ${mindIntegration} export-skills "$MIND_DIR"
+      ${pkgs.bash}/bin/bash ${mindIntegration} configure-instructions \
+        "$MIND_DIR" ${omGlobalInstructions} ${omHermesInstructions}
+    '';
+
+    mindAgentClients = lib.hm.dag.entryAfter [ "agentVault" "aiAgents" ] ''
+      MIND_DIR="$HOME/Documents/Mind"
+      export JQ_BIN=${pkgs.jq}/bin/jq
+      export YQ_BIN=${pkgs.yq-go}/bin/yq
+      ${pkgs.bash}/bin/bash ${mindIntegration} configure-clients \
+        "$MIND_DIR" "${config.home.homeDirectory}/.local/bin/om-mcp"
+    '';
+
+    mindGit = lib.hm.dag.entryAfter [ "agentSkills" "mindAgentClients" ] ''
+      MIND_DIR="$HOME/Documents/Mind"
+      export PATH="${pkgs.git}/bin:$PATH"
+      ${pkgs.bash}/bin/bash ${mindIntegration} git-sync "$MIND_DIR" "${mindRevision}"
     '';
   };
 }
