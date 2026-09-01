@@ -127,7 +127,7 @@
           wvous-tr-corner = 5; # Top right corner starts screensaver
           wvous-tr-modifier = 0;
         };
-        system.defaults."com.apple.AppleMultitouchTrackpad" = {
+        "com.apple.AppleMultitouchTrackpad" = {
           Clicking = true;              # Enable tap-to-click
           Dragging = 1;                 # Enable drag with Drag Lock
           TrackpadThreeFingerDrag = false; # Ensure Three-Finger Drag is disabled to avoid conflicts

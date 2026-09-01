@@ -95,6 +95,7 @@
       };
       mkApp = scriptName: system: {
         type = "app";
+        meta.description = "Run ${scriptName} for ${system}";
         program = "${(nixpkgs.legacyPackages.${system}.writeScriptBin scriptName ''
           #!/usr/bin/env bash
           PATH=${nixpkgs.legacyPackages.${system}.git}/bin:$PATH
