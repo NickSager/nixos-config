@@ -1,4 +1,4 @@
-{ config, pkgs, lib, home-manager, user, profile, obsidian-mind, pstack, ... }:
+{ config, pkgs, lib, home-manager, user, profile, obsidian-mind, pstack, pocock, ... }:
 
 let
   # Define the content of your file as a derivation
@@ -51,7 +51,7 @@ in
 
   home-manager = {
     useGlobalPkgs = true;
-    extraSpecialArgs = { inherit profile obsidian-mind pstack; };
+    extraSpecialArgs = { inherit profile obsidian-mind pstack pocock; };
     users.${user} = { pkgs, config, lib, ... }:
       {
         imports = [

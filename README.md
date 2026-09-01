@@ -39,6 +39,8 @@ nix flake update homebrew-core homebrew-cask homebrew-bundle
 ```
 
 Flakes only include Git-tracked files. Stage new files before building.
+See [the maintenance guide](docs/MAINTENANCE.md) for pinned obsidian-mind,
+pstack, Pocock skill, and QMD updates.
 
 ## Platform notes
 

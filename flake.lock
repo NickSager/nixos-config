@@ -416,6 +416,23 @@
         "type": "github"
       }
     },
+    "pocock": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1787581197,
+        "narHash": "sha256-N5tpUIHO2VFeJntBTl6/VLDIVpqoshwFxNJlfXXUwsQ=",
+        "owner": "mattpocock",
+        "repo": "skills",
+        "rev": "6654f6b60cd9d5be8b54c6fafe44346dabeb3b76",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mattpocock",
+        "repo": "skills",
+        "rev": "6654f6b60cd9d5be8b54c6fafe44346dabeb3b76",
+        "type": "github"
+      }
+    },
     "pstack": {
       "flake": false,
       "locked": {
@@ -449,6 +466,7 @@
         "nix-homebrew": "nix-homebrew",
         "nixpkgs": "nixpkgs_3",
         "obsidian-mind": "obsidian-mind",
+        "pocock": "pocock",
         "pstack": "pstack"
       }
     },

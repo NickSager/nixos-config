@@ -5,12 +5,12 @@
 # edit them in place); each agent's skills directory is ONE symlink to
 # the root. Adding an agent = one entry in `agentSkillsDirs`.
 #
-# The pstack set (flake input, pinned commit) installs into the same root
-# behind the potetoSkills switch. Skill directories and the 2 agent files
-# are overwritten from the pin on every rebuild; local edits to them do
-# not survive a switch. Off removes exactly the pinned set's names.
+# Pstack and Pocock install from separate pinned inputs and keep separate
+# manifests. Their managed directories are replaced on every activation;
+# custom sibling skills remain user-owned. Pocock wins the two current name
+# collisions (`tdd` and `teach`) so no path belongs to both sources.
 
-{ lib, pstack ? null, ... }:
+{ lib, pstack ? null, pocock ? null, ... }:
 
 let
   # Disable switch for the whole pstack set (including unslop).
@@ -36,19 +36,48 @@ let
     ln -sfn "$MIND_DIR/.agents/skills" "${dir}"
   '';
 
-  # Skill names come from the pinned source, so the off branch removes
-  # exactly what the on branch installed and touches nothing else.
-  pstackSkills =
+  pocockCategories = [ "engineering" "in-progress" "misc" "productivity" ];
+  pocockSkills =
+    if pocock == null then [] else
+    lib.concatMap (category:
+      map (name: {
+        inherit name;
+        source = "${pocock}/skills/${category}/${name}";
+      }) (lib.filter
+        (name: builtins.pathExists "${pocock}/skills/${category}/${name}/SKILL.md")
+        (builtins.attrNames (builtins.readDir "${pocock}/skills/${category}"))))
+      pocockCategories;
+  pocockSkillNames = map (skill: skill.name) pocockSkills;
+
+  # Pocock owns collisions so each managed path has exactly one source.
+  pstackSkills = lib.filter (name: !(builtins.elem name pocockSkillNames)) (
     if pstack != null
     then builtins.attrNames (builtins.readDir "${pstack}/pstack/skills")
-    else [];
+    else []);
   pstackAgents = [ "comment-sicko.md" "poteto-agent.md" ];
+
+  removeManagedPaths = manifest: ''
+    if [ -f "${manifest}" ]; then
+      cat "${manifest}" >> "$MIND_DIR/.obsidian-mind-stage-paths"
+      while IFS= read -r rel; do
+        [ -n "$rel" ] || continue
+        case "$rel" in
+          .agents/skills/*|.claude/agents/*)
+            chmod -R u+w "$MIND_DIR/$rel" 2>/dev/null || true
+            rm -rf "$MIND_DIR/$rel"
+            ;;
+          *)
+            echo "Refusing unexpected managed skill path: $rel" >&2
+            exit 1
+            ;;
+        esac
+      done < "${manifest}"
+    fi
+  '';
 
   installPstack = ''
     PSTACK_MANIFEST="$MIND_DIR/.pstack-managed-files"
-    if [ -f "$PSTACK_MANIFEST" ]; then
-      cat "$PSTACK_MANIFEST" >> "$MIND_DIR/.obsidian-mind-stage-paths"
-    fi
+    ${removeManagedPaths "$PSTACK_MANIFEST"}
     mkdir -p "$MIND_DIR/.claude/agents"
     ${lib.concatMapStringsSep "\n" (s: ''
       chmod -R u+w "$MIND_DIR/.agents/skills/${s}" 2>/dev/null || true
@@ -67,14 +96,18 @@ let
     printf '%s\n' '.pstack-managed-files' >> "$MIND_DIR/.obsidian-mind-stage-paths"
   '';
 
-  removePstack = ''
-    ${lib.concatMapStringsSep "\n" (s: ''
-      chmod -R u+w "$MIND_DIR/.agents/skills/${s}" 2>/dev/null || true
-      rm -rf "$MIND_DIR/.agents/skills/${s}"
-    '') pstackSkills}
-    ${lib.concatMapStringsSep "\n" (a: ''
-      rm -f "$MIND_DIR/.claude/agents/${a}"
-    '') pstackAgents}
+  installPocock = ''
+    POCOCK_MANIFEST="$MIND_DIR/.pocock-managed-files"
+    ${removeManagedPaths "$POCOCK_MANIFEST"}
+    ${lib.concatMapStringsSep "\n" (skill: ''
+      cp -R ${skill.source} "$MIND_DIR/.agents/skills/${skill.name}"
+      chmod -R u+w "$MIND_DIR/.agents/skills/${skill.name}"
+    '') pocockSkills}
+    {
+      ${lib.concatMapStringsSep "\n" (skill: ''printf '%s\n' '.agents/skills/${skill.name}' '') pocockSkills}
+    } > "$POCOCK_MANIFEST"
+    cat "$POCOCK_MANIFEST" >> "$MIND_DIR/.obsidian-mind-stage-paths"
+    printf '%s\n' '.pocock-managed-files' >> "$MIND_DIR/.obsidian-mind-stage-paths"
   '';
 in
 {
@@ -84,7 +117,7 @@ in
 
     ${lib.concatMapStringsSep "\n" linkAgent agentSkillsDirs}
 
-    ${lib.optionalString (pstack != null)
-      (if potetoSkills then installPstack else removePstack)}
+    ${lib.optionalString (pstack != null && potetoSkills) installPstack}
+    ${lib.optionalString (pocock != null) installPocock}
   '';
 }

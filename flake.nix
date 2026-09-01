@@ -60,6 +60,14 @@
       url = "github:cursor/plugins/46125561306434d8a1d7745d540d8932ab0cd2a2";
       flake = false;
     };
+
+    # Matt Pocock's reusable coding skills. Keep this source independent from
+    # pstack so either set can be updated or removed without touching the
+    # other's managed files.
+    pocock = {
+      url = "github:mattpocock/skills/6654f6b60cd9d5be8b54c6fafe44346dabeb3b76";
+      flake = false;
+    };
     emacs-overlay = {
       url = "github:nix-community/emacs-overlay";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -69,7 +77,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, gammons-tap, home-manager, nixpkgs, flake-utils, disko, agenix, emacs-overlay, niri-flake, obsidian-mind, pstack } @inputs:
+  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, gammons-tap, home-manager, nixpkgs, flake-utils, disko, agenix, emacs-overlay, niri-flake, obsidian-mind, pstack, pocock } @inputs:
     let
       profile = "personal"; # "work" or "personal"
       user = if profile == "work" then "nsager" else "nick";
@@ -154,7 +162,7 @@
               home-manager = {
                 useGlobalPkgs = true;
                 useUserPackages = true;
-                extraSpecialArgs = { inherit profile obsidian-mind pstack; };
+                extraSpecialArgs = { inherit profile obsidian-mind pstack pocock; };
                 users.${user} = { config, pkgs, lib, ... }:
                   import ./modules/nixos/home-manager.nix { inherit config pkgs lib inputs user; };
               };
