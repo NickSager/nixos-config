@@ -9,7 +9,19 @@ let
   obsidianPlugins = import ./obsidian-plugins.nix { inherit pkgs; };
   vaultDir = "Documents/Notes";
   mindRevision = if obsidian-mind == null then "unknown" else obsidian-mind.rev or "unknown";
-  mindIntegration = ./scripts/mind-agent-integration.sh;
+  mindIntegration = pkgs.writeShellApplication {
+    name = "mind-agent-integration";
+    runtimeInputs = with pkgs; [
+      coreutils
+      findutils
+      gawk
+      git
+      gnugrep
+      gnused
+    ];
+    excludeShellChecks = [ "SC2016" "SC2129" ];
+    text = builtins.readFile ./scripts/mind-agent-integration.sh;
+  };
   omGlobalInstructions = ./config/obsidian-mind/global-instructions.md;
   omHermesInstructions = ./config/obsidian-mind/hermes-soul.md;
   omWrapUpAddon = ./config/obsidian-mind/wrap-up-addon.md;
@@ -322,8 +334,8 @@ in
       migrate_claude_settings "$HOME/.claude/settings.json"
       migrate_claude_settings "$MIND_DIR/.claude/settings.json"
 
-      ${pkgs.bash}/bin/bash ${mindIntegration} export-skills "$MIND_DIR"
-      ${pkgs.bash}/bin/bash ${mindIntegration} configure-instructions \
+      ${mindIntegration}/bin/mind-agent-integration export-skills "$MIND_DIR"
+      ${mindIntegration}/bin/mind-agent-integration configure-instructions \
         "$MIND_DIR" ${omGlobalInstructions} ${omHermesInstructions}
     '';
 
@@ -331,14 +343,13 @@ in
       MIND_DIR="$HOME/Documents/Notes"
       export JQ_BIN=${pkgs.jq}/bin/jq
       export YQ_BIN=${pkgs.yq-go}/bin/yq
-      ${pkgs.bash}/bin/bash ${mindIntegration} configure-clients \
+      ${mindIntegration}/bin/mind-agent-integration configure-clients \
         "$MIND_DIR" "${config.home.homeDirectory}/.local/bin/om-mcp"
     '';
 
     mindGit = lib.hm.dag.entryAfter [ "agentSkills" "mindAgentClients" ] ''
       MIND_DIR="$HOME/Documents/Notes"
-      export PATH="${pkgs.git}/bin:$PATH"
-      ${pkgs.bash}/bin/bash ${mindIntegration} git-sync "$MIND_DIR" "${mindRevision}"
+      ${mindIntegration}/bin/mind-agent-integration git-sync "$MIND_DIR" "${mindRevision}"
     '';
   };
 }
