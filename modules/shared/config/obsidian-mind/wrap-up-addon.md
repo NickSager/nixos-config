@@ -1,7 +1,7 @@
 
 ## Nix-managed final hygiene
 
-After the report above, finish these steps from the Mind vault root:
+After the report above, finish these steps from the Notes vault root:
 
 1. Run the deterministic hygiene pass and apply its safe fixes:
    `node --experimental-strip-types .claude/scripts/tidy-fix.ts --apply`.

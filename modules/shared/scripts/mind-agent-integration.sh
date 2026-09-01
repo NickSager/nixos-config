@@ -92,7 +92,7 @@ export_skills() {
         printf '%s\n' \
           '## Cross-agent context' \
           '' \
-          'References to SessionStart context are conditional. If the current session does not already contain that context, run the following command from the Mind vault root and use its output as the missing injection:' \
+          'References to SessionStart context are conditional. If the current session does not already contain that context, run the following command from the Notes vault root and use its output as the missing injection:' \
           '' \
           '```bash' \
           'CLAUDE_PROJECT_DIR="$PWD" node --experimental-strip-types .claude/scripts/session-start.ts </dev/null' \

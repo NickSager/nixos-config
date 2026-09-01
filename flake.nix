@@ -45,7 +45,7 @@
     #};
 
     # obsidian-mind agent vault, pinned to an upstream release tag.
-    # Copied into ~/Documents/Mind by modules/shared/obsidian.nix.
+    # Copied into ~/Documents/Notes by modules/shared/obsidian.nix.
     # Upgrade: bump the tag, `nix flake update obsidian-mind`, read the
     # upstream CHANGELOG, rebuild.
     obsidian-mind = {

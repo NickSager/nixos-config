@@ -56,14 +56,8 @@
       "Read(~/Documents/Notes/**)",
       "Read(**/Documents/Notes/**)",
       "Read(/nix/store/**/Documents/Notes/**)",
-      "Bash(install -m 644 ~/Documents/Notes/Main/Templates/*.md ~/Documents/Notes/Main/Daily_Notes/**)",
-      "Bash(install -m 644 /Users/nsager/Documents/Notes/Main/Templates/*.md /Users/nsager/Documents/Notes/Main/Daily_Notes/**)",
-      "Edit(~/Documents/Notes/Main/Daily_Notes/**)",
-      "Edit(**/Documents/Notes/Main/Daily_Notes/**)",
-      "Read(~/Documents/Mind/**)",
-      "Read(**/Documents/Mind/**)",
-      "Edit(~/Documents/Mind/**)",
-      "Edit(**/Documents/Mind/**)"
+      "Edit(~/Documents/Notes/**)",
+      "Edit(**/Documents/Notes/**)"
     ]
   },
   "model": "us.anthropic.claude-fable-5",
@@ -72,8 +66,7 @@
     "command": "~/.claude/statusline.sh"
   },
   "enabledPlugins": {
-    "superpowers@superpowers-dev": true,
-    "mattpocock-skills@mattpocock": false
+    "superpowers@superpowers-dev": true
   },
   "extraKnownMarketplaces": {
     "superpowers-dev": {
@@ -82,19 +75,12 @@
         "repo": "obra/superpowers",
         "ref": "v6.3.0"
       }
-    },
-    "mattpocock": {
-      "source": {
-        "source": "github",
-        "repo": "mattpocock/skills",
-        "ref": "v1.2.3"
-      }
     }
   },
   "outputStyle": "STE",
   "alwaysThinkingEnabled": true,
   "effortLevel": "high",
-  "autoMemoryDirectory": "~/Documents/Mind/memories",
+  "autoMemoryDirectory": "~/Documents/Notes/memories",
   "skipWorkflowUsageWarning": true,
   "autoCompactEnabled": true
 }

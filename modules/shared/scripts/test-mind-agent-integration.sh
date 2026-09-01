@@ -13,7 +13,7 @@ test_root="$(mktemp -d)"
 trap 'rm -rf "$test_root"' EXIT
 
 export HOME="$test_root/home"
-mind="$HOME/Documents/Mind"
+mind="$HOME/Documents/Notes"
 mkdir -p "$mind/.claude" "$mind/brain" "$HOME/.codex" "$HOME/.hermes"
 cp -R "$MIND_SOURCE/.claude/commands" "$mind/.claude/commands"
 chmod -R u+w "$mind/.claude/commands"

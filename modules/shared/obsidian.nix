@@ -1,20 +1,13 @@
-# Obsidian vaults — home-manager module shared across all platforms.
-#
-# Two vaults with a hard boundary:
-#   - ~/Documents/Notes (human): daily notes, templates, personal notes.
-#   - ~/Documents/Mind (agent): upstream obsidian-mind, copied from the
-#     pinned flake input. Custom toolkit files live in it as plain vault
-#     files nix never touches.
+# One Obsidian and agent vault at ~/Documents/Notes. Pinned obsidian-mind
+# machinery and explicit Obsidian configuration are copied as real files.
+# User notes and Obsidian workspace state remain user-owned.
 
 { config, lib, pkgs, profile ? "personal", obsidian-mind ? null, ... }:
 
 let
   obsidianSource = ./config/obsidian;
-  obsidianScriptsSource = ./config/obsidian/scripts;
-  notesClaude = obsidianSource + "/CLAUDE.md";
   obsidianPlugins = import ./obsidian-plugins.nix { inherit pkgs; };
-  notesDir = "Documents/Notes";
-  isWork = profile == "work";
+  vaultDir = "Documents/Notes";
   mindRevision = if obsidian-mind == null then "unknown" else obsidian-mind.rev or "unknown";
   mindIntegration = ./scripts/mind-agent-integration.sh;
   omGlobalInstructions = ./config/obsidian-mind/global-instructions.md;
@@ -38,84 +31,77 @@ let
     if [ -n "$caller" ]; then
       export OM_CALLER="$caller"
     fi
-    exec ${pkgs.nodejs}/bin/node "$HOME/Documents/Mind/.claude/scripts/om-mcp.mjs"
+    exec ${pkgs.nodejs}/bin/node "$HOME/Documents/Notes/.claude/scripts/om-mcp.mjs"
   '';
 
-  # Hotkeys must be a writable copy — Obsidian ignores read-only symlinks.
-  hotkeysJson = (pkgs.formats.json { }).generate "hotkeys.json" {
+  json = pkgs.formats.json { };
+  hotkeysJson = json.generate "hotkeys.json" {
     "file-explorer:new-file" = [];
     "daily-notes" = [{ modifiers = ["Mod"]; key = "D"; }];
     "templater-obsidian:create-new-note-from-template" = [{ modifiers = ["Mod"]; key = "N"; }];
   };
+  appJson = json.generate "app.json" {
+    userIgnoreFilters = [
+      "ARCHITECTURE.md" "README.md" "README.ja.md" "README.ko.md"
+      "README.zh-CN.md" "CHANGELOG.md" "CONTRIBUTING.md" ".agents/"
+      ".claude/" ".scripts/" ".claude-plugin/" ".codex/" ".gemini/"
+      ".shardmind/"
+    ];
+  };
+  appearanceJson = json.generate "appearance.json" { cssTheme = "Soft Paper"; };
+  corePluginsJson = json.generate "core-plugins.json" {
+    daily-notes = true;
+    templates = true;
+    backlink = true;
+    global-search = true;
+    graph = true;
+    outline = true;
+    tag-pane = true;
+    file-explorer = true;
+    command-palette = true;
+    bookmarks = true;
+    editor-status = true;
+    word-count = true;
+    bases = true;
+  };
+  dailyNotesJson = json.generate "daily-notes.json" {
+    folder = "work/daily";
+    format = "YYYY-MM-DD";
+    template = "templates/daily";
+  };
+  templatesJson = json.generate "templates.json" { folder = "templates"; };
+  communityPluginList = with obsidianPlugins; [
+    obsidian-tasks-plugin dataview templater-obsidian nldates-obsidian vim-yank-highlight
+  ];
+  communityPluginsJson = json.generate "community-plugins.json"
+    (map (plugin: plugin.manifestId) communityPluginList);
+  templaterJson = json.generate "templater-data.json" {
+    command_timeout = 5;
+    templates_folder = "templates";
+    templates_pairs = [["" ""]];
+    trigger_on_file_creation = false;
+    auto_jump_to_cursor = true;
+    enable_system_commands = false;
+    shell_path = "";
+    user_scripts_folder = "";
+    enable_folder_templates = false;
+    folder_templates = [];
+    enable_file_templates = false;
+    file_templates = [{ regex = ".*"; template = ""; }];
+    syntax_highlighting = true;
+    syntax_highlighting_mobile = false;
+    enabled_templates_hotkeys = [""];
+    startup_templates = [""];
+    intellisense_render = 1;
+  };
 in
 
 {
-  # ── Declarative plugin management ──────────────────────────────────────
-  # community-plugins.json is read-only once this is active.
-  # To add/remove plugins, edit obsidian-plugins.nix and run build-switch.
   programs.obsidian = {
     enable = true;
-    vaults.${notesDir} = {
-      settings = {
-        corePlugins = [
-          {
-            name = "daily-notes";
-            settings = {
-              folder = "Main/Daily_Notes";
-              format = "YYYY/YYYY-MM/YYYY-MM-DD";
-              template = "Main/Templates/Daily_Note";
-            };
-          }
-          "templates"
-          "backlink"
-          "global-search"
-          "graph"
-          "outline"
-          "tag-pane"
-          "file-explorer"
-          "command-palette"
-          "bookmarks"
-          "editor-status"
-          "word-count"
-          "bases"
-        ];
-        appearance = { cssTheme = "Soft Paper"; };
-        extraFiles."themes/Soft Paper".source = obsidianSource + "/themes/soft-paper";
-        communityPlugins = with obsidianPlugins; [
-          obsidian-tasks-plugin       # Advanced task management
-          dataview                    # SQL-like queries for notes
-          {
-            pkg = templater-obsidian;
-            settings = {
-              command_timeout = 5;
-              templates_folder = "Main/Templates";
-              templates_pairs = [["" ""]];
-              trigger_on_file_creation = true;
-              auto_jump_to_cursor = true;
-              enable_system_commands = false;
-              shell_path = "";
-              user_scripts_folder = "";
-              enable_folder_templates = true;
-              folder_templates = [
-                { folder = "Main/Daily_Notes"; template = "Main/Templates/Daily_Note.md"; }
-                { folder = "Main/Meeting_Notes"; template = "Main/Templates/Meeting_Note.md"; }
-                { folder = "Projects"; template = "Main/Templates/Project.md"; }
-                { folder = "Tasks"; template = "Main/Templates/Task.md"; }
-              ];
-              enable_file_templates = false;
-              file_templates = [{ regex = ".*"; template = ""; }];
-              syntax_highlighting = true;
-              syntax_highlighting_mobile = false;
-              enabled_templates_hotkeys = [""];
-              startup_templates = [""];
-              intellisense_render = 1;
-            };
-          }
-          nldates-obsidian            # Natural Language Dates
-          vim-yank-highlight          # Visual feedback for vim users
-        ];
-      };
-    };
+    # Register the vault and install Obsidian. The activation below copies
+    # vault configuration as writable real files instead of Home Manager links.
+    vaults.${vaultDir} = { };
   };
 
   home.file = {
@@ -123,67 +109,15 @@ in
       source = omMcpWrapper;
       executable = true;
     };
-
-    # Templates: read-only symlinks (Obsidian reads these, never writes)
-    "${notesDir}/Main/Templates/Daily_Note.md".source =
-      obsidianSource + "/templates/Daily_Note.md";
-    "${notesDir}/Main/Templates/Meeting_Note.md".source =
-      obsidianSource + "/templates/Meeting_Note.md";
-    "${notesDir}/Main/Templates/Project.md".source =
-      obsidianSource + "/templates/Project.md";
-    "${notesDir}/Main/Templates/Task.md".source =
-      obsidianSource + "/templates/Task.md";
-
-    # Prompts: read-only symlinks (scripts read these, never write)
-    "${notesDir}/prompts" = {
-      source = obsidianSource + "/prompts";
-      recursive = true;
-    };
-
-    # README and .gitignore for the vault
-    "${notesDir}/README.md".source = obsidianSource + "/README.md";
-    "${notesDir}/.gitignore".source = obsidianSource + "/vault-gitignore";
   };
 
-  home.activation = {
-    # ── Human vault (~/Documents/Notes) ────────────────────────────────────
-    # Mutable directories and script copies. Scripts are copied (not
-    # symlinked) so their relative paths (e.g. ../prompts/) resolve inside
-    # the vault rather than into the Nix store.
-    obsidianVault = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      NOTES_DIR="$HOME/Documents/Notes"
-
-      # The human vault's instructions are seeded once so later local edits
-      # remain user-owned while new vaults never receive the retired Notes/AI
-      # architecture.
-      [ -e "$NOTES_DIR/CLAUDE.md" ] || \
-        install -m644 ${notesClaude} "$NOTES_DIR/CLAUDE.md"
-
-      # Hotkeys: copy as writable file (Obsidian ignores read-only symlinks)
-      install -m644 ${hotkeysJson} "$NOTES_DIR/.obsidian/hotkeys.json"
-
-      # Mutable vault directories (created once, never overwritten)
-      mkdir -p "$NOTES_DIR/Main/Daily_Notes"
-      mkdir -p "$NOTES_DIR/Main/Meeting_Notes"
-      mkdir -p "$NOTES_DIR/Inbox"
-      mkdir -p "$NOTES_DIR/Projects/active"
-      mkdir -p "$NOTES_DIR/Projects/plans"
-      mkdir -p "$NOTES_DIR/Projects/archive"
-      mkdir -p "$NOTES_DIR/Tasks"
-
-      # Copy Obsidian daily scripts (always overwrite to pick up nix config changes)
-      mkdir -p "$NOTES_DIR/scripts"
-      install -m755 ${obsidianScriptsSource}/common_summary_functions.sh "$NOTES_DIR/scripts/common_summary_functions.sh"
-      install -m755 ${obsidianScriptsSource}/slack_summary.sh            "$NOTES_DIR/scripts/slack_summary.sh"
-      install -m755 ${obsidianScriptsSource}/monthly_summary_generator.sh "$NOTES_DIR/scripts/monthly_summary_generator.sh"
-    '';
-  } // lib.optionalAttrs (obsidian-mind != null) {
-    # ── Agent vault (~/Documents/Mind) ─────────────────────────────────────
+  home.activation = lib.optionalAttrs (obsidian-mind != null) {
+    # Pinned obsidian-mind and writable Obsidian configuration share one vault.
     # Upstream obsidian-mind lands here from the pinned flake input.
     # An upgrade is: bump the tag in flake.nix, `nix flake update
     # obsidian-mind`, read the upstream CHANGELOG, rebuild.
     agentVault = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-      MIND_DIR="$HOME/Documents/Mind"
+      MIND_DIR="$HOME/Documents/Notes"
       mkdir -p "$MIND_DIR/memories"
 
       MANAGED_MANIFEST="$MIND_DIR/.obsidian-mind-managed-files"
@@ -234,6 +168,7 @@ in
         printf '%s\n' "$f" >> "$NEXT_MANIFEST"
       done
 
+      chmod u+w "$MIND_DIR/.claude/commands/om-wrap-up.md"
       cat ${omWrapUpAddon} >> "$MIND_DIR/.claude/commands/om-wrap-up.md"
       sort -u "$NEXT_MANIFEST" -o "$NEXT_MANIFEST"
       install -m644 "$NEXT_MANIFEST" "$MANAGED_MANIFEST"
@@ -252,6 +187,65 @@ in
 
       # Store copies arrive read-only; the vault must stay editable.
       chmod -R u+w "$MIND_DIR"
+
+      # Copy an explicit Obsidian file set. Only paths recorded in this
+      # manifest can be replaced or removed; workspace and other user state
+      # are never included.
+      OBSIDIAN_MANIFEST="$MIND_DIR/.nix-managed-obsidian-files"
+      NEXT_OBSIDIAN_MANIFEST="$(mktemp "$MIND_DIR/.nix-managed-obsidian-files.tmp.XXXXXX")"
+      if [ -f "$OBSIDIAN_MANIFEST" ]; then
+        cat "$OBSIDIAN_MANIFEST" >> "$STAGE_MANIFEST"
+        while IFS= read -r rel; do
+          [ -n "$rel" ] || continue
+          case "$rel" in
+            .obsidian/app.json|.obsidian/appearance.json|.obsidian/core-plugins.json|\
+            .obsidian/daily-notes.json|.obsidian/templates.json|\
+            .obsidian/community-plugins.json|.obsidian/hotkeys.json|\
+            .obsidian/plugins/*|.obsidian/themes/*)
+              chmod -R u+w "$MIND_DIR/$rel" 2>/dev/null || true
+              rm -rf "$MIND_DIR/$rel"
+              ;;
+            *)
+              echo "Refusing unexpected managed Obsidian path: $rel" >&2
+              exit 1
+              ;;
+          esac
+        done < "$OBSIDIAN_MANIFEST"
+      fi
+
+      mkdir -p "$MIND_DIR/.obsidian/plugins" "$MIND_DIR/.obsidian/themes"
+      install -m644 ${appJson} "$MIND_DIR/.obsidian/app.json"
+      install -m644 ${appearanceJson} "$MIND_DIR/.obsidian/appearance.json"
+      install -m644 ${corePluginsJson} "$MIND_DIR/.obsidian/core-plugins.json"
+      install -m644 ${dailyNotesJson} "$MIND_DIR/.obsidian/daily-notes.json"
+      install -m644 ${templatesJson} "$MIND_DIR/.obsidian/templates.json"
+      install -m644 ${communityPluginsJson} "$MIND_DIR/.obsidian/community-plugins.json"
+      install -m644 ${hotkeysJson} "$MIND_DIR/.obsidian/hotkeys.json"
+      cp -R ${obsidianSource}/themes/soft-paper "$MIND_DIR/.obsidian/themes/Soft Paper"
+      chmod -R u+w "$MIND_DIR/.obsidian/themes/Soft Paper"
+      ${lib.concatMapStringsSep "\n" (plugin: ''
+        cp -R ${plugin} "$MIND_DIR/.obsidian/plugins/${plugin.manifestId}"
+        chmod -R u+w "$MIND_DIR/.obsidian/plugins/${plugin.manifestId}"
+      '') communityPluginList}
+      install -m644 ${templaterJson} \
+        "$MIND_DIR/.obsidian/plugins/templater-obsidian/data.json"
+
+      {
+        printf '%s\n' \
+          '.obsidian/app.json' \
+          '.obsidian/appearance.json' \
+          '.obsidian/core-plugins.json' \
+          '.obsidian/daily-notes.json' \
+          '.obsidian/templates.json' \
+          '.obsidian/community-plugins.json' \
+          '.obsidian/hotkeys.json' \
+          '.obsidian/themes/Soft Paper'
+        ${lib.concatMapStringsSep "\n" (plugin: ''printf '%s\n' '.obsidian/plugins/${plugin.manifestId}' '') communityPluginList}
+      } > "$NEXT_OBSIDIAN_MANIFEST"
+      install -m644 "$NEXT_OBSIDIAN_MANIFEST" "$OBSIDIAN_MANIFEST"
+      cat "$NEXT_OBSIDIAN_MANIFEST" >> "$STAGE_MANIFEST"
+      printf '%s\n' '.nix-managed-obsidian-files' >> "$STAGE_MANIFEST"
+      rm -f "$NEXT_OBSIDIAN_MANIFEST"
 
       # ── Global reach: ~/.claude entries are symlinks into the vault ─────
       # A pre-existing real directory is rescued into the vault first;
@@ -298,13 +292,43 @@ in
       [ -f "$MIND_DIR/.claude/settings.json" ] || \
         install -m644 ${./config/claude/mind-vault-settings-seed.json} "$MIND_DIR/.claude/settings.json"
 
+      migrate_claude_settings() {
+        target="$1"
+        tmp="$(mktemp "''${target}.tmp.XXXXXX")"
+        ${pkgs.jq}/bin/jq '
+          .permissions.allow = (
+            (.permissions.allow // [])
+            | map(select(
+                (contains("Documents/Mind")
+                 or contains("Main/Daily_Notes")
+                 or contains("Main/Templates"))
+                | not
+              ))
+            | . + [
+                "Read(~/Documents/Notes/**)",
+                "Read(**/Documents/Notes/**)",
+                "Edit(~/Documents/Notes/**)",
+                "Edit(**/Documents/Notes/**)"
+              ]
+            | unique
+          )
+          | if .autoMemoryDirectory == "~/Documents/Mind/memories"
+            then .autoMemoryDirectory = "~/Documents/Notes/memories"
+            else . end
+        ' "$target" > "$tmp"
+        chmod --reference="$target" "$tmp" 2>/dev/null || chmod 600 "$tmp"
+        mv "$tmp" "$target"
+      }
+      migrate_claude_settings "$HOME/.claude/settings.json"
+      migrate_claude_settings "$MIND_DIR/.claude/settings.json"
+
       ${pkgs.bash}/bin/bash ${mindIntegration} export-skills "$MIND_DIR"
       ${pkgs.bash}/bin/bash ${mindIntegration} configure-instructions \
         "$MIND_DIR" ${omGlobalInstructions} ${omHermesInstructions}
     '';
 
     mindAgentClients = lib.hm.dag.entryAfter [ "agentVault" "aiAgents" ] ''
-      MIND_DIR="$HOME/Documents/Mind"
+      MIND_DIR="$HOME/Documents/Notes"
       export JQ_BIN=${pkgs.jq}/bin/jq
       export YQ_BIN=${pkgs.yq-go}/bin/yq
       ${pkgs.bash}/bin/bash ${mindIntegration} configure-clients \
@@ -312,7 +336,7 @@ in
     '';
 
     mindGit = lib.hm.dag.entryAfter [ "agentSkills" "mindAgentClients" ] ''
-      MIND_DIR="$HOME/Documents/Mind"
+      MIND_DIR="$HOME/Documents/Notes"
       export PATH="${pkgs.git}/bin:$PATH"
       ${pkgs.bash}/bin/bash ${mindIntegration} git-sync "$MIND_DIR" "${mindRevision}"
     '';

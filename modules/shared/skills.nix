@@ -1,6 +1,6 @@
 # Agent-agnostic skills — one shared skill root for every coding agent.
 #
-# The root lives in the agent vault: ~/Documents/Mind/.agents/skills.
+# The root lives in the shared vault: ~/Documents/Notes/.agents/skills.
 # Custom skills are plain vault files (never nix-managed, so agents can
 # edit them in place); each agent's skills directory is ONE symlink to
 # the root. Adding an agent = one entry in `agentSkillsDirs`.
@@ -112,7 +112,7 @@ let
 in
 {
   home.activation.agentSkills = lib.hm.dag.entryAfter [ "agentVault" ] ''
-    MIND_DIR="$HOME/Documents/Mind"
+    MIND_DIR="$HOME/Documents/Notes"
     mkdir -p "$MIND_DIR/.agents/skills"
 
     ${lib.concatMapStringsSep "\n" linkAgent agentSkillsDirs}
