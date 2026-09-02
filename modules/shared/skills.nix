@@ -6,7 +6,7 @@
 # Adding an agent = one entry in `agentSkillsDirs`.
 #
 # Pstack and Pocock install from separate pinned inputs and keep separate
-# manifests. Their managed directories are replaced on every activation.
+# manifests. Changed files are updated in place on activation.
 # Non-colliding custom sibling skills remain user-owned.
 
 { lib, pkgs, pstack ? null, pocock ? null, ... }:
@@ -54,11 +54,12 @@ let
     else []);
   pstackAgents = [ "comment-sicko.md" "poteto-agent.md" ];
 
-  removeManagedPaths = manifest: ''
+  removeStaleManagedPaths = manifest: nextManifest: ''
     if [ -f "${manifest}" ]; then
       cat "${manifest}" >> "$MIND_DIR/.obsidian-mind-stage-paths"
       while IFS= read -r rel; do
         [ -n "$rel" ] || continue
+        grep -Fqx "$rel" "${nextManifest}" && continue
         ${mindIntegration}/bin/mind-agent-integration validate-managed-path \
           "$MIND_DIR" "$rel"
         case "$rel" in
@@ -77,35 +78,42 @@ let
 
   installPstack = ''
     PSTACK_MANIFEST="$MIND_DIR/.pstack-managed-files"
-    ${removeManagedPaths "$PSTACK_MANIFEST"}
-    mkdir -p "$MIND_DIR/.claude/agents"
-    ${lib.concatMapStringsSep "\n" (s: ''
-      chmod -R u+w "$MIND_DIR/.agents/skills/${s}" 2>/dev/null || true
-      rm -rf "$MIND_DIR/.agents/skills/${s}"
-      cp -R ${pstack}/pstack/skills/${s} "$MIND_DIR/.agents/skills/${s}"
-    '') pstackSkills}
-    ${lib.concatMapStringsSep "\n" (a: ''
-      install -m644 ${pstack}/pstack/agents/${a} "$MIND_DIR/.claude/agents/${a}"
-    '') pstackAgents}
-    chmod -R u+w "$MIND_DIR/.agents/skills"
+    NEXT_PSTACK_MANIFEST="$(mktemp)"
     {
       ${lib.concatMapStringsSep "\n" (s: ''printf '%s\n' '.agents/skills/${s}' '') pstackSkills}
       ${lib.concatMapStringsSep "\n" (a: ''printf '%s\n' '.claude/agents/${a}' '') pstackAgents}
-    } > "$PSTACK_MANIFEST"
+    } > "$NEXT_PSTACK_MANIFEST"
+    ${removeStaleManagedPaths "$PSTACK_MANIFEST" "$NEXT_PSTACK_MANIFEST"}
+    mkdir -p "$MIND_DIR/.claude/agents"
+    ${lib.concatMapStringsSep "\n" (s: ''
+      ${mindIntegration}/bin/mind-agent-integration sync-tree-if-changed \
+        ${pstack}/pstack/skills/${s} "$MIND_DIR/.agents/skills/${s}"
+    '') pstackSkills}
+    ${lib.concatMapStringsSep "\n" (a: ''
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed \
+        ${pstack}/pstack/agents/${a} "$MIND_DIR/.claude/agents/${a}"
+    '') pstackAgents}
+    ${mindIntegration}/bin/mind-agent-integration install-if-changed \
+      "$NEXT_PSTACK_MANIFEST" "$PSTACK_MANIFEST"
+    rm -f "$NEXT_PSTACK_MANIFEST"
     cat "$PSTACK_MANIFEST" >> "$MIND_DIR/.obsidian-mind-stage-paths"
     printf '%s\n' '.pstack-managed-files' >> "$MIND_DIR/.obsidian-mind-stage-paths"
   '';
 
   installPocock = ''
     POCOCK_MANIFEST="$MIND_DIR/.pocock-managed-files"
-    ${removeManagedPaths "$POCOCK_MANIFEST"}
-    ${lib.concatMapStringsSep "\n" (skill: ''
-      cp -R ${skill.source} "$MIND_DIR/.agents/skills/${skill.name}"
-      chmod -R u+w "$MIND_DIR/.agents/skills/${skill.name}"
-    '') pocockSkills}
+    NEXT_POCOCK_MANIFEST="$(mktemp)"
     {
       ${lib.concatMapStringsSep "\n" (skill: ''printf '%s\n' '.agents/skills/${skill.name}' '') pocockSkills}
-    } > "$POCOCK_MANIFEST"
+    } > "$NEXT_POCOCK_MANIFEST"
+    ${removeStaleManagedPaths "$POCOCK_MANIFEST" "$NEXT_POCOCK_MANIFEST"}
+    ${lib.concatMapStringsSep "\n" (skill: ''
+      ${mindIntegration}/bin/mind-agent-integration sync-tree-if-changed \
+        ${skill.source} "$MIND_DIR/.agents/skills/${skill.name}"
+    '') pocockSkills}
+    ${mindIntegration}/bin/mind-agent-integration install-if-changed \
+      "$NEXT_POCOCK_MANIFEST" "$POCOCK_MANIFEST"
+    rm -f "$NEXT_POCOCK_MANIFEST"
     cat "$POCOCK_MANIFEST" >> "$MIND_DIR/.obsidian-mind-stage-paths"
     printf '%s\n' '.pocock-managed-files' >> "$MIND_DIR/.obsidian-mind-stage-paths"
   '';

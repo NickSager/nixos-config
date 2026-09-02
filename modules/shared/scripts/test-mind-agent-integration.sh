@@ -16,6 +16,19 @@ export HOME="$test_root/home"
 mind="$HOME/Documents/Notes"
 mkdir -p "$mind/.claude" "$mind/brain" "$HOME/.codex" "$HOME/.hermes"
 
+sync_source="$test_root/sync-source"
+sync_target="$test_root/sync-target"
+mkdir -p "$sync_source/nested"
+printf 'stable\n' > "$sync_source/nested/file.md"
+bash "$integration" sync-tree-if-changed "$sync_source" "$sync_target"
+first_mtime="$(stat -f %m "$sync_target/nested/file.md")"
+sleep 1
+bash "$integration" sync-tree-if-changed "$sync_source" "$sync_target"
+[ "$(stat -f %m "$sync_target/nested/file.md")" = "$first_mtime" ]
+printf 'changed\n' > "$sync_source/nested/file.md"
+bash "$integration" sync-tree-if-changed "$sync_source" "$sync_target"
+grep -qx 'changed' "$sync_target/nested/file.md"
+
 bash "$integration" validate-managed-path "$mind" '.obsidian/plugins/tasks'
 for unsafe in '' '/tmp/outside' '.' './brain' 'brain/.' 'brain/./note' \
               '..' '../brain' 'brain/..' 'brain/../note' \

@@ -32,6 +32,41 @@ validate_managed_path() {
   esac
 }
 
+install_if_changed() {
+  local source="$1"
+  local target="$2"
+
+  if [ -f "$target" ] && cmp -s "$source" "$target"; then
+    return 0
+  fi
+  mkdir -p "$(dirname "$target")"
+  chmod u+w "$target" 2>/dev/null || true
+  install -m644 "$source" "$target"
+}
+
+sync_tree_if_changed() {
+  local source="$1"
+  local target="$2"
+  local path rel link
+
+  [ -d "$source" ] || die "tree source is not a directory: $source"
+  mkdir -p "$target"
+  while IFS= read -r -d '' path; do
+    rel="${path#"$source"/}"
+    if [ -d "$path" ]; then
+      mkdir -p "$target/$rel"
+    elif [ -L "$path" ]; then
+      link="$(readlink "$path")"
+      if [ ! -L "$target/$rel" ] || [ "$(readlink "$target/$rel")" != "$link" ]; then
+        rm -f "$target/$rel"
+        ln -s "$link" "$target/$rel"
+      fi
+    else
+      install_if_changed "$path" "$target/$rel"
+    fi
+  done < <(find "$source" -mindepth 1 -print0)
+}
+
 replace_block() {
   local target="$1"
   local start="$2"
@@ -64,23 +99,11 @@ replace_block() {
     printf '\n%s\n' "$end"
   } >> "$tmp"
   chmod --reference="$target" "$tmp" 2>/dev/null || chmod 644 "$tmp"
-  mv "$tmp" "$target"
-}
-
-remove_previous_skill_exports() {
-  local mind_dir="$1"
-  local manifest="$mind_dir/.obsidian-mind-om-skill-files"
-  local rel
-
-  [ -f "$manifest" ] || return 0
-  while IFS= read -r rel; do
-    [ -n "$rel" ] || continue
-    validate_managed_path "$mind_dir" "$rel"
-    case "$rel" in
-      .agents/skills/om-*/SKILL.md) rm -f "$mind_dir/$rel" ;;
-      *) die "refusing unexpected OM skill path in manifest: $rel" ;;
-    esac
-  done < "$manifest"
+  if cmp -s "$tmp" "$target"; then
+    rm -f "$tmp"
+  else
+    mv "$tmp" "$target"
+  fi
 }
 
 export_skills() {
@@ -89,15 +112,13 @@ export_skills() {
   local manifest="$mind_dir/.obsidian-mind-om-skill-files"
   local stage_manifest="$mind_dir/.obsidian-mind-stage-paths"
   local next_manifest
-  local command name skill_dir description
+  local command name skill_dir description skill_file rel
 
   [ -d "$commands" ] || die "missing upstream command directory: $commands"
   next_manifest="$(mktemp "${manifest}.tmp.XXXXXX")"
   if [ -f "$manifest" ]; then
     cat "$manifest" >> "$stage_manifest"
   fi
-  remove_previous_skill_exports "$mind_dir"
-
   for command in "$commands"/om-*.md; do
     [ -f "$command" ] || continue
     name="$(basename "$command" .md)"
@@ -109,6 +130,7 @@ export_skills() {
     ' "$command")"
     [ -n "$description" ] || description="description: Run the upstream $name workflow from obsidian-mind."
     mkdir -p "$skill_dir"
+    skill_file="$(mktemp)"
     {
       printf '%s\n' '---' "name: $name" "$description" '---' ''
       if grep -q 'SessionStart' "$command"; then
@@ -127,13 +149,26 @@ export_skills() {
         frontmatter && $0 == "---" { frontmatter = 0; next }
         !frontmatter { print }
       ' "$command"
-    } > "$skill_dir/SKILL.md"
+    } > "$skill_file"
+    install_if_changed "$skill_file" "$skill_dir/SKILL.md"
+    rm -f "$skill_file"
     printf '.agents/skills/%s/SKILL.md\n' "$name" >> "$next_manifest"
   done
 
   [ -s "$next_manifest" ] || die "no om-* commands were exported"
   sort -u "$next_manifest" -o "$next_manifest"
-  install -m644 "$next_manifest" "$manifest"
+  if [ -f "$manifest" ]; then
+    while IFS= read -r rel; do
+      [ -n "$rel" ] || continue
+      grep -Fqx "$rel" "$next_manifest" && continue
+      validate_managed_path "$mind_dir" "$rel"
+      case "$rel" in
+        .agents/skills/om-*/SKILL.md) rm -f "$mind_dir/$rel" ;;
+        *) die "refusing unexpected stale OM skill path: $rel" ;;
+      esac
+    done < "$manifest"
+  fi
+  install_if_changed "$next_manifest" "$manifest"
   cat "$next_manifest" >> "$stage_manifest"
   printf '.obsidian-mind-om-skill-files\n' >> "$stage_manifest"
   rm -f "$next_manifest"
@@ -252,10 +287,13 @@ git_sync() {
   local marker="$mind_dir/.obsidian-mind-revision"
   local short_revision="${revision:0:12}"
   local initial=0
-  local rel
+  local rel marker_source
   local -a paths=()
 
-  printf '%s\n' "$revision" > "$marker"
+  marker_source="$(mktemp)"
+  printf '%s\n' "$revision" > "$marker_source"
+  install_if_changed "$marker_source" "$marker"
+  rm -f "$marker_source"
   printf '.obsidian-mind-revision\n' >> "$stage_manifest"
 
   if [ ! -d "$mind_dir/.git" ]; then
@@ -290,6 +328,14 @@ case "${1:-}" in
     [ "$#" -eq 3 ] || die 'usage: validate-managed-path ROOT REL'
     validate_managed_path "$2" "$3"
     ;;
+  install-if-changed)
+    [ "$#" -eq 3 ] || die 'usage: install-if-changed SOURCE TARGET'
+    install_if_changed "$2" "$3"
+    ;;
+  sync-tree-if-changed)
+    [ "$#" -eq 3 ] || die 'usage: sync-tree-if-changed SOURCE TARGET'
+    sync_tree_if_changed "$2" "$3"
+    ;;
   export-skills)
     [ "$#" -eq 2 ] || die 'usage: export-skills MIND_DIR'
     export_skills "$2"
@@ -307,6 +353,6 @@ case "${1:-}" in
     git_sync "$2" "$3"
     ;;
   *)
-    die 'expected validate-managed-path, export-skills, configure-instructions, configure-clients, or git-sync'
+    die 'expected validate-managed-path, install-if-changed, sync-tree-if-changed, export-skills, configure-instructions, configure-clients, or git-sync'
     ;;
 esac

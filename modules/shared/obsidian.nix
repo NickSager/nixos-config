@@ -124,10 +124,37 @@ in
       MANAGED_MANIFEST="$MIND_DIR/.obsidian-mind-managed-files"
       STAGE_MANIFEST="$MIND_DIR/.obsidian-mind-stage-paths"
       NEXT_MANIFEST="$(mktemp "$MIND_DIR/.obsidian-mind-managed-files.tmp.XXXXXX")"
+      [ ! -f "$MANAGED_MANIFEST" ] || cat "$MANAGED_MANIFEST" >> "$STAGE_MANIFEST"
+
+      # Machinery: changed upstream files are replaced when a release-tag
+      # bump lands, while unchanged files and custom siblings are untouched.
+      # A new upstream top-level directory needs one entry here.
+      for dir in .claude/agents .claude/commands .claude/scripts .claude/skills \
+                 .claude-plugin .codex .gemini .scripts .shardmind bases templates; do
+        mkdir -p "$MIND_DIR/$dir"
+        ${mindIntegration}/bin/mind-agent-integration sync-tree-if-changed \
+          ${obsidian-mind}/$dir "$MIND_DIR/$dir"
+        find ${obsidian-mind}/$dir \( -type f -o -type l \) -print | \
+          sed "s#^${obsidian-mind}/##" >> "$NEXT_MANIFEST"
+      done
+      for f in .claude/memory-template.md .claude/update-skills.ts .mcp.json \
+               .shardmindignore AGENTS.md CLAUDE.md GEMINI.md Home.md vault-manifest.json; do
+        ${mindIntegration}/bin/mind-agent-integration install-if-changed \
+          ${obsidian-mind}/$f "$MIND_DIR/$f"
+        printf '%s\n' "$f" >> "$NEXT_MANIFEST"
+      done
+
+      WRAP_UP_WITH_ADDON="$(mktemp)"
+      cat ${obsidian-mind}/.claude/commands/om-wrap-up.md ${omWrapUpAddon} \
+        > "$WRAP_UP_WITH_ADDON"
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed \
+        "$WRAP_UP_WITH_ADDON" "$MIND_DIR/.claude/commands/om-wrap-up.md"
+      rm -f "$WRAP_UP_WITH_ADDON"
+      sort -u "$NEXT_MANIFEST" -o "$NEXT_MANIFEST"
       if [ -f "$MANAGED_MANIFEST" ]; then
-        cat "$MANAGED_MANIFEST" >> "$STAGE_MANIFEST"
         while IFS= read -r rel; do
           [ -n "$rel" ] || continue
+          grep -Fqx "$rel" "$NEXT_MANIFEST" && continue
           ${mindIntegration}/bin/mind-agent-integration validate-managed-path \
             "$MIND_DIR" "$rel"
           case "$rel" in
@@ -138,37 +165,14 @@ in
               rm -f "$MIND_DIR/$rel"
               ;;
             *)
-              echo "Refusing unexpected managed Mind path: $rel" >&2
+              echo "Refusing unexpected stale Mind path: $rel" >&2
               exit 1
               ;;
           esac
         done < "$MANAGED_MANIFEST"
       fi
-
-      # Machinery: always overwritten so a release-tag bump lands on the
-      # next rebuild. cp -Rf replaces same-named files but leaves the
-      # custom toolkit (plain sibling files in the same directories) alone.
-      # A new upstream top-level directory needs one entry here.
-      for dir in .claude/agents .claude/commands .claude/scripts .claude/skills \
-                 .claude-plugin .codex .gemini .scripts .shardmind bases templates; do
-        mkdir -p "$MIND_DIR/$dir"
-        # An interrupted prior run can leave read-only store-mode copies;
-        # cp -Rf cannot replace files inside a read-only directory.
-        chmod -R u+w "$MIND_DIR/$dir" 2>/dev/null || true
-        cp -Rf ${obsidian-mind}/$dir/. "$MIND_DIR/$dir/"
-        find ${obsidian-mind}/$dir \( -type f -o -type l \) -print | \
-          sed "s#^${obsidian-mind}/##" >> "$NEXT_MANIFEST"
-      done
-      for f in .claude/memory-template.md .claude/update-skills.ts .mcp.json \
-               .shardmindignore AGENTS.md CLAUDE.md GEMINI.md Home.md vault-manifest.json; do
-        install -m644 ${obsidian-mind}/$f "$MIND_DIR/$f"
-        printf '%s\n' "$f" >> "$NEXT_MANIFEST"
-      done
-
-      chmod u+w "$MIND_DIR/.claude/commands/om-wrap-up.md"
-      cat ${omWrapUpAddon} >> "$MIND_DIR/.claude/commands/om-wrap-up.md"
-      sort -u "$NEXT_MANIFEST" -o "$NEXT_MANIFEST"
-      install -m644 "$NEXT_MANIFEST" "$MANAGED_MANIFEST"
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed \
+        "$NEXT_MANIFEST" "$MANAGED_MANIFEST"
       cat "$NEXT_MANIFEST" >> "$STAGE_MANIFEST"
       printf '%s\n' '.obsidian-mind-managed-files' >> "$STAGE_MANIFEST"
       rm -f "$NEXT_MANIFEST"
@@ -191,43 +195,23 @@ in
       # are never included.
       OBSIDIAN_MANIFEST="$MIND_DIR/.nix-managed-obsidian-files"
       NEXT_OBSIDIAN_MANIFEST="$(mktemp "$MIND_DIR/.nix-managed-obsidian-files.tmp.XXXXXX")"
-      if [ -f "$OBSIDIAN_MANIFEST" ]; then
-        cat "$OBSIDIAN_MANIFEST" >> "$STAGE_MANIFEST"
-        while IFS= read -r rel; do
-          [ -n "$rel" ] || continue
-          ${mindIntegration}/bin/mind-agent-integration validate-managed-path \
-            "$MIND_DIR" "$rel"
-          case "$rel" in
-            .obsidian/app.json|.obsidian/appearance.json|.obsidian/core-plugins.json|\
-            .obsidian/daily-notes.json|.obsidian/templates.json|\
-            .obsidian/community-plugins.json|.obsidian/hotkeys.json|\
-            .obsidian/plugins/*|.obsidian/themes/*)
-              chmod -R u+w "$MIND_DIR/$rel" 2>/dev/null || true
-              rm -rf "$MIND_DIR/$rel"
-              ;;
-            *)
-              echo "Refusing unexpected managed Obsidian path: $rel" >&2
-              exit 1
-              ;;
-          esac
-        done < "$OBSIDIAN_MANIFEST"
-      fi
+      [ ! -f "$OBSIDIAN_MANIFEST" ] || cat "$OBSIDIAN_MANIFEST" >> "$STAGE_MANIFEST"
 
       mkdir -p "$MIND_DIR/.obsidian/plugins" "$MIND_DIR/.obsidian/themes"
-      install -m644 ${appJson} "$MIND_DIR/.obsidian/app.json"
-      install -m644 ${appearanceJson} "$MIND_DIR/.obsidian/appearance.json"
-      install -m644 ${corePluginsJson} "$MIND_DIR/.obsidian/core-plugins.json"
-      install -m644 ${dailyNotesJson} "$MIND_DIR/.obsidian/daily-notes.json"
-      install -m644 ${templatesJson} "$MIND_DIR/.obsidian/templates.json"
-      install -m644 ${communityPluginsJson} "$MIND_DIR/.obsidian/community-plugins.json"
-      install -m644 ${hotkeysJson} "$MIND_DIR/.obsidian/hotkeys.json"
-      cp -R ${obsidianSource}/themes/soft-paper "$MIND_DIR/.obsidian/themes/Soft Paper"
-      chmod -R u+w "$MIND_DIR/.obsidian/themes/Soft Paper"
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed ${appJson} "$MIND_DIR/.obsidian/app.json"
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed ${appearanceJson} "$MIND_DIR/.obsidian/appearance.json"
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed ${corePluginsJson} "$MIND_DIR/.obsidian/core-plugins.json"
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed ${dailyNotesJson} "$MIND_DIR/.obsidian/daily-notes.json"
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed ${templatesJson} "$MIND_DIR/.obsidian/templates.json"
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed ${communityPluginsJson} "$MIND_DIR/.obsidian/community-plugins.json"
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed ${hotkeysJson} "$MIND_DIR/.obsidian/hotkeys.json"
+      ${mindIntegration}/bin/mind-agent-integration sync-tree-if-changed \
+        ${obsidianSource}/themes/soft-paper "$MIND_DIR/.obsidian/themes/Soft Paper"
       ${lib.concatMapStringsSep "\n" (plugin: ''
-        cp -R ${plugin} "$MIND_DIR/.obsidian/plugins/${plugin.manifestId}"
-        chmod -R u+w "$MIND_DIR/.obsidian/plugins/${plugin.manifestId}"
+        ${mindIntegration}/bin/mind-agent-integration sync-tree-if-changed \
+          ${plugin} "$MIND_DIR/.obsidian/plugins/${plugin.manifestId}"
       '') communityPluginList}
-      install -m644 ${templaterJson} \
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed ${templaterJson} \
         "$MIND_DIR/.obsidian/plugins/templater-obsidian/data.json"
 
       {
@@ -242,7 +226,29 @@ in
           '.obsidian/themes/Soft Paper'
         ${lib.concatMapStringsSep "\n" (plugin: ''printf '%s\n' '.obsidian/plugins/${plugin.manifestId}' '') communityPluginList}
       } > "$NEXT_OBSIDIAN_MANIFEST"
-      install -m644 "$NEXT_OBSIDIAN_MANIFEST" "$OBSIDIAN_MANIFEST"
+      if [ -f "$OBSIDIAN_MANIFEST" ]; then
+        while IFS= read -r rel; do
+          [ -n "$rel" ] || continue
+          grep -Fqx "$rel" "$NEXT_OBSIDIAN_MANIFEST" && continue
+          ${mindIntegration}/bin/mind-agent-integration validate-managed-path \
+            "$MIND_DIR" "$rel"
+          case "$rel" in
+            .obsidian/app.json|.obsidian/appearance.json|.obsidian/core-plugins.json|\
+            .obsidian/daily-notes.json|.obsidian/templates.json|\
+            .obsidian/community-plugins.json|.obsidian/hotkeys.json|\
+            .obsidian/plugins/*|.obsidian/themes/*)
+              chmod -R u+w "$MIND_DIR/$rel" 2>/dev/null || true
+              rm -rf "$MIND_DIR/$rel"
+              ;;
+            *)
+              echo "Refusing unexpected stale Obsidian path: $rel" >&2
+              exit 1
+              ;;
+          esac
+        done < "$OBSIDIAN_MANIFEST"
+      fi
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed \
+        "$NEXT_OBSIDIAN_MANIFEST" "$OBSIDIAN_MANIFEST"
       cat "$NEXT_OBSIDIAN_MANIFEST" >> "$STAGE_MANIFEST"
       printf '%s\n' '.nix-managed-obsidian-files' >> "$STAGE_MANIFEST"
       rm -f "$NEXT_OBSIDIAN_MANIFEST"
