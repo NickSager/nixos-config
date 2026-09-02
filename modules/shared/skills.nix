@@ -13,6 +13,7 @@
 
 let
   mindIntegration = pkgs.callPackage ./mind-agent-integration.nix { };
+  tddAddon = ./config/skills/pocock-tdd-addon.md;
 
   # Every agent's skills path becomes a single symlink to the shared root.
   agentSkillsDirs = [
@@ -38,12 +39,33 @@ let
   pocockSkills =
     if pocock == null then [] else
     lib.concatMap (category:
-      map (name: {
-        inherit name;
-        source = "${pocock}/skills/${category}/${name}";
-      }) (lib.filter
-        (name: builtins.pathExists "${pocock}/skills/${category}/${name}/SKILL.md")
-        (builtins.attrNames (builtins.readDir "${pocock}/skills/${category}"))))
+      map (sourceName:
+        let
+          name = if sourceName == "teach" then "build-course" else sourceName;
+          upstream = "${pocock}/skills/${category}/${sourceName}";
+          source =
+            if sourceName == "teach" then
+              pkgs.runCommand "pocock-build-course-skill" { } ''
+                cp -R ${upstream} "$out"
+                chmod -R u+w "$out"
+                substituteInPlace "$out/SKILL.md" \
+                  --replace-fail 'name: teach' 'name: build-course' \
+                  --replace-fail 'description: Teach the user a new skill or concept, within this workspace.' \
+                    'description: Build a persistent course workspace with missions, lessons, references, and learning records.'
+              ''
+            else if sourceName == "tdd" then
+              pkgs.runCommand "pocock-tdd-skill" { } ''
+                cp -R ${upstream} "$out"
+                chmod -R u+w "$out"
+                cat ${tddAddon} >> "$out/SKILL.md"
+              ''
+            else
+              upstream;
+        in {
+          inherit name source sourceName;
+        }) (lib.filter
+          (name: builtins.pathExists "${pocock}/skills/${category}/${name}/SKILL.md")
+          (builtins.attrNames (builtins.readDir "${pocock}/skills/${category}"))))
       pocockCategories;
   pocockSkillNames = map (skill: skill.name) pocockSkills;
 
