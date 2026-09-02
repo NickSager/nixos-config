@@ -15,6 +15,24 @@ trap 'rm -rf "$test_root"' EXIT
 export HOME="$test_root/home"
 mind="$HOME/Documents/Notes"
 mkdir -p "$mind/.claude" "$mind/brain" "$HOME/.codex" "$HOME/.hermes"
+
+bash "$integration" validate-managed-path "$mind" '.obsidian/plugins/tasks'
+for unsafe in '' '/tmp/outside' '.' './brain' 'brain/.' 'brain/./note' \
+              '..' '../brain' 'brain/..' 'brain/../note' \
+              '.obsidian/plugins/../../../brain' \
+              '.agents/skills/../../../brain'; do
+  if bash "$integration" validate-managed-path "$mind" "$unsafe" 2>/dev/null; then
+    printf 'accepted unsafe managed path: %s\n' "$unsafe" >&2
+    exit 1
+  fi
+done
+mkdir -p "$test_root/outside"
+ln -s "$test_root/outside" "$mind/escape"
+if bash "$integration" validate-managed-path "$mind" 'escape/note' 2>/dev/null; then
+  printf 'accepted managed path through escaping symlink\n' >&2
+  exit 1
+fi
+
 cp -R "$MIND_SOURCE/.claude/commands" "$mind/.claude/commands"
 chmod -R u+w "$mind/.claude/commands"
 printf '# Personal instructions\n' > "$mind/brain/CLAUDE-global.md"
@@ -63,18 +81,20 @@ expected="$(find "$MIND_SOURCE/.claude/commands" -maxdepth 1 -name 'om-*.md' | w
 actual="$(find "$mind/.agents/skills" -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l | tr -d ' ')"
 [ "$actual" = "$expected" ]
 grep -q '^## Cross-agent context$' "$mind/.agents/skills/om-standup/SKILL.md"
+grep -Fq "CLAUDE_PROJECT_DIR=\"\$PWD\" node --experimental-strip-types" \
+  "$mind/.agents/skills/om-standup/SKILL.md"
 grep -q '^description: "Morning kickoff' "$mind/.agents/skills/om-standup/SKILL.md"
 [ "$(grep -c 'NIX-MANAGED: OM PROJECT RECORDING START' "$mind/brain/CLAUDE-global.md")" = 1 ]
 [ "$(grep -c 'NIX-MANAGED: OM PROJECT RECORDING START' "$HOME/.hermes/SOUL.md")" = 1 ]
 grep -q '^Skip OM for conversation, status or listing questions, routine read-only$' \
   "$mind/brain/CLAUDE-global.md"
-grep -q 'Use `remember` for lessons that apply beyond this repository' \
+grep -Fq "Use \`remember\` for lessons that apply beyond this repository" \
   "$mind/brain/CLAUDE-global.md"
 grep -q '^  contrary evidence, or "nothing recorded." An empty result is a finding.$' \
   "$mind/brain/CLAUDE-global.md"
 [ "$(grep -c '^\[mcp_servers.om\]$' "$HOME/.codex/config.toml")" = 1 ]
 grep -q '^\[mcp_servers.keep\]$' "$HOME/.codex/config.toml"
-"$JQ_BIN" -e '.preserved == true and .mcpServers.om.command == $wrapper' \
+"$JQ_BIN" -e ".preserved == true and .mcpServers.om.command == \$wrapper" \
   --arg wrapper "$HOME/.local/bin/om-mcp" "$HOME/.claude.json" >/dev/null
 [ "$("$YQ_BIN" '.model.default' "$HOME/.hermes/config.yaml")" = test ]
 [ "$("$YQ_BIN" '.mcp_servers.om.command' "$HOME/.hermes/config.yaml")" = "$HOME/.local/bin/om-mcp" ]

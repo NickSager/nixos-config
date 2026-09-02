@@ -1,20 +1,18 @@
 # Agent-agnostic skills — one shared skill root for every coding agent.
 #
 # The root lives in the shared vault: ~/Documents/Notes/.agents/skills.
-# Custom skills are plain vault files (never nix-managed, so agents can
-# edit them in place); each agent's skills directory is ONE symlink to
-# the root. Adding an agent = one entry in `agentSkillsDirs`.
+# Custom skills whose names do not collide with pinned inputs remain plain
+# vault files. Each agent's skills directory is ONE symlink to the root.
+# Adding an agent = one entry in `agentSkillsDirs`.
 #
 # Pstack and Pocock install from separate pinned inputs and keep separate
-# manifests. Their managed directories are replaced on every activation;
-# custom sibling skills remain user-owned. Pocock wins the two current name
-# collisions (`tdd` and `teach`) so no path belongs to both sources.
+# manifests. Their managed directories are replaced on every activation.
+# Non-colliding custom sibling skills remain user-owned.
 
-{ lib, pstack ? null, pocock ? null, ... }:
+{ lib, pkgs, pstack ? null, pocock ? null, ... }:
 
 let
-  # Disable switch for the whole pstack set (including unslop).
-  potetoSkills = true;
+  mindIntegration = pkgs.callPackage ./mind-agent-integration.nix { };
 
   # Every agent's skills path becomes a single symlink to the shared root.
   agentSkillsDirs = [
@@ -61,6 +59,8 @@ let
       cat "${manifest}" >> "$MIND_DIR/.obsidian-mind-stage-paths"
       while IFS= read -r rel; do
         [ -n "$rel" ] || continue
+        ${mindIntegration}/bin/mind-agent-integration validate-managed-path \
+          "$MIND_DIR" "$rel"
         case "$rel" in
           .agents/skills/*|.claude/agents/*)
             chmod -R u+w "$MIND_DIR/$rel" 2>/dev/null || true
@@ -117,7 +117,7 @@ in
 
     ${lib.concatMapStringsSep "\n" linkAgent agentSkillsDirs}
 
-    ${lib.optionalString (pstack != null && potetoSkills) installPstack}
+    ${lib.optionalString (pstack != null) installPstack}
     ${lib.optionalString (pocock != null) installPocock}
   '';
 }

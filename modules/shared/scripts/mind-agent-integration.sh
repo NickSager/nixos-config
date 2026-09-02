@@ -9,7 +9,26 @@ die() {
 
 require_safe_relative_path() {
   case "$1" in
-    ''|/*|..|../*|*/..|*/../*) die "refusing unsafe managed path: $1" ;;
+    ''|/*|.|./*|*/.|*/./*|..|../*|*/..|*/../*) die "refusing unsafe managed path: $1" ;;
+  esac
+}
+
+validate_managed_path() {
+  local root="$1"
+  local rel="$2"
+  local probe resolved_root resolved_probe
+
+  [ -d "$root" ] || die "managed root is not a directory: $root"
+  require_safe_relative_path "$rel"
+  resolved_root="$(realpath "$root")"
+  probe="$root/$rel"
+  while [ ! -e "$probe" ] && [ ! -L "$probe" ]; do
+    probe="${probe%/*}"
+  done
+  resolved_probe="$(realpath "$probe")"
+  case "$resolved_probe" in
+    "$resolved_root"|"$resolved_root"/*) ;;
+    *) die "managed path escapes root: $rel" ;;
   esac
 }
 
@@ -18,7 +37,7 @@ replace_block() {
   local start="$2"
   local end="$3"
   local content="$4"
-  local tmp
+  local separator tmp
 
   mkdir -p "$(dirname "$target")"
   touch "$target"
@@ -34,12 +53,16 @@ replace_block() {
       for (i = 1; i <= last; i++) print lines[i]
     }
   ' "$target" > "$tmp"
+  separator=''
   if [ -s "$tmp" ]; then
-    printf '\n' >> "$tmp"
+    separator=$'\n'
   fi
-  printf '%s\n' "$start" >> "$tmp"
-  cat "$content" >> "$tmp"
-  printf '\n%s\n' "$end" >> "$tmp"
+  {
+    printf '%s' "$separator"
+    printf '%s\n' "$start"
+    cat "$content"
+    printf '\n%s\n' "$end"
+  } >> "$tmp"
   chmod --reference="$target" "$tmp" 2>/dev/null || chmod 644 "$tmp"
   mv "$tmp" "$target"
 }
@@ -52,7 +75,7 @@ remove_previous_skill_exports() {
   [ -f "$manifest" ] || return 0
   while IFS= read -r rel; do
     [ -n "$rel" ] || continue
-    require_safe_relative_path "$rel"
+    validate_managed_path "$mind_dir" "$rel"
     case "$rel" in
       .agents/skills/om-*/SKILL.md) rm -f "$mind_dir/$rel" ;;
       *) die "refusing unexpected OM skill path in manifest: $rel" ;;
@@ -95,7 +118,7 @@ export_skills() {
           'References to SessionStart context are conditional. If the current session does not already contain that context, run the following command from the Notes vault root and use its output as the missing injection:' \
           '' \
           '```bash' \
-          'CLAUDE_PROJECT_DIR="$PWD" node --experimental-strip-types .claude/scripts/session-start.ts </dev/null' \
+          "CLAUDE_PROJECT_DIR=\"\$PWD\" node --experimental-strip-types .claude/scripts/session-start.ts </dev/null" \
           '```' \
           ''
       fi
@@ -136,7 +159,7 @@ configure_instructions() {
 configure_codex() {
   local wrapper="$1"
   local config="$HOME/.codex/config.toml"
-  local stripped
+  local separator stripped
 
   mkdir -p "$(dirname "$config")"
   touch "$config"
@@ -155,15 +178,19 @@ configure_codex() {
       for (i = 1; i <= last; i++) print lines[i]
     }
   ' "$config" > "$stripped"
+  separator=''
   if [ -s "$stripped" ]; then
-    printf '\n' >> "$stripped"
+    separator=$'\n'
   fi
-  printf '%s\n%s\n%s\n%s\n%s\n' \
-    '# NIX-MANAGED OM MCP START' \
-    '[mcp_servers.om]' \
-    "command = \"$wrapper\"" \
-    'args = []' \
-    '# NIX-MANAGED OM MCP END' >> "$stripped"
+  {
+    printf '%s' "$separator"
+    printf '%s\n%s\n%s\n%s\n%s\n' \
+      '# NIX-MANAGED OM MCP START' \
+      '[mcp_servers.om]' \
+      "command = \"$wrapper\"" \
+      'args = []' \
+      '# NIX-MANAGED OM MCP END'
+  } >> "$stripped"
   chmod --reference="$config" "$stripped" 2>/dev/null || chmod 600 "$stripped"
   mv "$stripped" "$config"
 }
@@ -181,7 +208,7 @@ configure_claude() {
   fi
   tmp="$(mktemp "${config}.tmp.XXXXXX")"
   "$JQ_BIN" --arg wrapper "$wrapper" \
-    '.mcpServers.om = {type: "stdio", command: $wrapper, args: [], env: {}}' \
+    ".mcpServers.om = {type: \"stdio\", command: \$wrapper, args: [], env: {}}" \
     "$config" > "$tmp"
   chmod --reference="$config" "$tmp" 2>/dev/null || chmod 600 "$tmp"
   mv "$tmp" "$config"
@@ -243,7 +270,7 @@ git_sync() {
   sort -u "$stage_manifest" -o "$stage_manifest"
   while IFS= read -r rel; do
     [ -n "$rel" ] || continue
-    require_safe_relative_path "$rel"
+    validate_managed_path "$mind_dir" "$rel"
     paths+=("$rel")
     git -C "$mind_dir" add -A -- "$rel"
   done < "$stage_manifest"
@@ -259,6 +286,10 @@ git_sync() {
 }
 
 case "${1:-}" in
+  validate-managed-path)
+    [ "$#" -eq 3 ] || die 'usage: validate-managed-path ROOT REL'
+    validate_managed_path "$2" "$3"
+    ;;
   export-skills)
     [ "$#" -eq 2 ] || die 'usage: export-skills MIND_DIR'
     export_skills "$2"
@@ -276,6 +307,6 @@ case "${1:-}" in
     git_sync "$2" "$3"
     ;;
   *)
-    die 'expected export-skills, configure-instructions, configure-clients, or git-sync'
+    die 'expected validate-managed-path, export-skills, configure-instructions, configure-clients, or git-sync'
     ;;
 esac

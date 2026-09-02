@@ -55,7 +55,7 @@
 
     # pstack skill set (Lauren Tan / poteto) from Cursor's plugins repo,
     # pinned to a commit. Copied into the shared skills root by
-    # modules/shared/skills.nix behind the potetoSkills switch.
+    # modules/shared/skills.nix.
     pstack = {
       url = "github:cursor/plugins/46125561306434d8a1d7745d540d8932ab0cd2a2";
       flake = false;

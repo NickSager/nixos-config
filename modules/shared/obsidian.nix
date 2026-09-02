@@ -1,6 +1,7 @@
 # One Obsidian and agent vault at ~/Documents/Notes. Pinned obsidian-mind
 # machinery and explicit Obsidian configuration are copied as real files.
-# User notes and Obsidian workspace state remain user-owned.
+# User-created notes and Obsidian workspace state remain user-owned. Pinned
+# upstream entrypoints and documentation listed in the manifest stay managed.
 
 { config, lib, pkgs, profile ? "personal", obsidian-mind ? null, ... }:
 
@@ -9,19 +10,7 @@ let
   obsidianPlugins = import ./obsidian-plugins.nix { inherit pkgs; };
   vaultDir = "Documents/Notes";
   mindRevision = if obsidian-mind == null then "unknown" else obsidian-mind.rev or "unknown";
-  mindIntegration = pkgs.writeShellApplication {
-    name = "mind-agent-integration";
-    runtimeInputs = with pkgs; [
-      coreutils
-      findutils
-      gawk
-      git
-      gnugrep
-      gnused
-    ];
-    excludeShellChecks = [ "SC2016" "SC2129" ];
-    text = builtins.readFile ./scripts/mind-agent-integration.sh;
-  };
+  mindIntegration = pkgs.callPackage ./mind-agent-integration.nix { };
   omGlobalInstructions = ./config/obsidian-mind/global-instructions.md;
   omHermesInstructions = ./config/obsidian-mind/hermes-soul.md;
   omWrapUpAddon = ./config/obsidian-mind/wrap-up-addon.md;
@@ -139,12 +128,8 @@ in
         cat "$MANAGED_MANIFEST" >> "$STAGE_MANIFEST"
         while IFS= read -r rel; do
           [ -n "$rel" ] || continue
-          case "$rel" in
-            /*|..|../*|*/..|*/../*)
-              echo "Refusing unsafe managed Mind path: $rel" >&2
-              exit 1
-              ;;
-          esac
+          ${mindIntegration}/bin/mind-agent-integration validate-managed-path \
+            "$MIND_DIR" "$rel"
           case "$rel" in
             .claude/agents/*|.claude/commands/*|.claude/scripts/*|.claude/skills/*|\
             .claude-plugin/*|.codex/*|.gemini/*|.scripts/*|.shardmind/*|bases/*|templates/*|\
@@ -188,10 +173,11 @@ in
       printf '%s\n' '.obsidian-mind-managed-files' >> "$STAGE_MANIFEST"
       rm -f "$NEXT_MANIFEST"
 
-      # Content: seeded once, never overwritten (user-owned notes and
-      # Obsidian state). cp -Rn adds files a new release ships without
-      # touching existing ones. .claude/settings.json is deliberately not
-      # copied here; the settings split owns it.
+      # Content: seeded once, never overwritten. User-created notes and
+      # Obsidian state stay user-owned. Pinned upstream entrypoints and docs
+      # listed above stay managed. cp -Rn adds files a new release ships
+      # without touching existing ones. .claude/settings.json is deliberately
+      # not copied here; the settings split owns it.
       for dir in .obsidian brain org perf reference thinking work; do
         mkdir -p "$MIND_DIR/$dir"
         cp -Rn ${obsidian-mind}/$dir/. "$MIND_DIR/$dir/" 2>/dev/null || true
@@ -209,6 +195,8 @@ in
         cat "$OBSIDIAN_MANIFEST" >> "$STAGE_MANIFEST"
         while IFS= read -r rel; do
           [ -n "$rel" ] || continue
+          ${mindIntegration}/bin/mind-agent-integration validate-managed-path \
+            "$MIND_DIR" "$rel"
           case "$rel" in
             .obsidian/app.json|.obsidian/appearance.json|.obsidian/core-plugins.json|\
             .obsidian/daily-notes.json|.obsidian/templates.json|\

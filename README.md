@@ -65,8 +65,9 @@ managing the operating system.
 
 Home Manager seeds one Obsidian and agent vault at `~/Documents/Notes` from a
 pinned `obsidian-mind` input. It copies a fixed set of writable Obsidian
-configuration files and leaves notes and workspace state user-owned. Claude
-Code, Codex, and Hermes share skills stored in the vault. Native agent
+configuration files. User-created notes and workspace state remain user-owned;
+pinned upstream entrypoints and documentation remain managed. Claude Code,
+Codex, and Hermes share skills stored in the vault. Native agent
 installers for Hermes, Claude Code, and Codex run once when their marker
 directories are absent. After Hermes is provisioned, run `hermes setup` to
 select a provider.
