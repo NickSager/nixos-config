@@ -66,6 +66,12 @@ grep -q '^## Cross-agent context$' "$mind/.agents/skills/om-standup/SKILL.md"
 grep -q '^description: "Morning kickoff' "$mind/.agents/skills/om-standup/SKILL.md"
 [ "$(grep -c 'NIX-MANAGED: OM PROJECT RECORDING START' "$mind/brain/CLAUDE-global.md")" = 1 ]
 [ "$(grep -c 'NIX-MANAGED: OM PROJECT RECORDING START' "$HOME/.hermes/SOUL.md")" = 1 ]
+grep -q '^Skip OM for conversation, status or listing questions, routine read-only$' \
+  "$mind/brain/CLAUDE-global.md"
+grep -q 'Use `remember` for lessons that apply beyond this repository' \
+  "$mind/brain/CLAUDE-global.md"
+grep -q '^  contrary evidence, or "nothing recorded." An empty result is a finding.$' \
+  "$mind/brain/CLAUDE-global.md"
 [ "$(grep -c '^\[mcp_servers.om\]$' "$HOME/.codex/config.toml")" = 1 ]
 grep -q '^\[mcp_servers.keep\]$' "$HOME/.codex/config.toml"
 "$JQ_BIN" -e '.preserved == true and .mcpServers.om.command == $wrapper' \
