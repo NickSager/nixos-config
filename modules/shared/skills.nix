@@ -14,6 +14,11 @@
 let
   mindIntegration = pkgs.callPackage ./mind-agent-integration.nix { };
   tddAddon = ./config/skills/pocock-tdd-addon.md;
+  noCommentsAddon = ./config/skills/no-comments-addon.md;
+  potetoModeAddon = ./config/skills/poteto-mode-addon.md;
+  repoSkills = [
+    { name = "comment-sicko"; source = ./config/skills/comment-sicko; }
+  ];
 
   # Every agent's skills path becomes a single symlink to the shared root.
   agentSkillsDirs = [
@@ -74,6 +79,21 @@ let
     if pstack != null
     then builtins.attrNames (builtins.readDir "${pstack}/pstack/skills")
     else []);
+  pstackSkillSource = name:
+    if name == "no-comments" then
+      pkgs.runCommand "pstack-no-comments-skill" { } ''
+        cp -R ${pstack}/pstack/skills/${name} "$out"
+        chmod -R u+w "$out"
+        cat ${noCommentsAddon} >> "$out/SKILL.md"
+      ''
+    else if name == "poteto-mode" then
+      pkgs.runCommand "pstack-poteto-mode-skill" { } ''
+        cp -R ${pstack}/pstack/skills/${name} "$out"
+        chmod -R u+w "$out"
+        cat ${potetoModeAddon} >> "$out/SKILL.md"
+      ''
+    else
+      "${pstack}/pstack/skills/${name}";
   pstackAgents = [ "comment-sicko.md" "poteto-agent.md" ];
 
   removeStaleManagedPaths = manifest: nextManifest: ''
@@ -109,7 +129,7 @@ let
     mkdir -p "$MIND_DIR/.claude/agents"
     ${lib.concatMapStringsSep "\n" (s: ''
       ${mindIntegration}/bin/mind-agent-integration sync-tree-if-changed \
-        ${pstack}/pstack/skills/${s} "$MIND_DIR/.agents/skills/${s}"
+        ${pstackSkillSource s} "$MIND_DIR/.agents/skills/${s}"
     '') pstackSkills}
     ${lib.concatMapStringsSep "\n" (a: ''
       ${mindIntegration}/bin/mind-agent-integration install-if-changed \
@@ -139,6 +159,24 @@ let
     cat "$POCOCK_MANIFEST" >> "$MIND_DIR/.obsidian-mind-stage-paths"
     printf '%s\n' '.pocock-managed-files' >> "$MIND_DIR/.obsidian-mind-stage-paths"
   '';
+
+  installRepoSkills = ''
+    REPO_SKILLS_MANIFEST="$MIND_DIR/.repo-managed-skill-files"
+    NEXT_REPO_SKILLS_MANIFEST="$(mktemp)"
+    {
+      ${lib.concatMapStringsSep "\n" (skill: ''printf '%s\n' '.agents/skills/${skill.name}' '') repoSkills}
+    } > "$NEXT_REPO_SKILLS_MANIFEST"
+    ${removeStaleManagedPaths "$REPO_SKILLS_MANIFEST" "$NEXT_REPO_SKILLS_MANIFEST"}
+    ${lib.concatMapStringsSep "\n" (skill: ''
+      ${mindIntegration}/bin/mind-agent-integration sync-tree-if-changed \
+        ${skill.source} "$MIND_DIR/.agents/skills/${skill.name}"
+    '') repoSkills}
+    ${mindIntegration}/bin/mind-agent-integration install-if-changed \
+      "$NEXT_REPO_SKILLS_MANIFEST" "$REPO_SKILLS_MANIFEST"
+    rm -f "$NEXT_REPO_SKILLS_MANIFEST"
+    cat "$REPO_SKILLS_MANIFEST" >> "$MIND_DIR/.obsidian-mind-stage-paths"
+    printf '%s\n' '.repo-managed-skill-files' >> "$MIND_DIR/.obsidian-mind-stage-paths"
+  '';
 in
 {
   home.activation.agentSkills = lib.hm.dag.entryAfter [ "agentVault" ] ''
@@ -147,6 +185,7 @@ in
 
     ${lib.concatMapStringsSep "\n" linkAgent agentSkillsDirs}
 
+    ${installRepoSkills}
     ${lib.optionalString (pstack != null) installPstack}
     ${lib.optionalString (pocock != null) installPocock}
   '';
