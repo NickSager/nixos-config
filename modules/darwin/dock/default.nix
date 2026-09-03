@@ -11,7 +11,7 @@ in
     local.dock = {
       enable = mkOption {
         description = "Enable dock";
-        default     = stdenv.isDarwin;
+        default     = stdenv.hostPlatform.isDarwin;
       };
 
       entries = mkOption {

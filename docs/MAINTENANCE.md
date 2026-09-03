@@ -22,6 +22,19 @@ vault release, or QMD package.
 6. Stage the intended files and run `nix run .#build`.
 7. After activation, inspect the managed-only upgrade commit in the vault.
 
+## Update Herdr
+
+Herdr is pinned to a release tag in `flake.nix`. A plain `nix flake update`
+only refreshes the revision for that tag; it does not select a newer Herdr
+release.
+
+1. Read the upstream release notes and select the latest stable release.
+2. Update the tag in `herdr.url` in `flake.nix`.
+3. Run `nix flake update herdr`.
+4. Inspect the `flake.lock` change and confirm it resolves the selected tag.
+5. Stage the intended files and run `nix run .#build`.
+6. After activation, run `herdr --version` and confirm the selected version.
+
 ## Update pstack or Pocock skills
 
 Update one source at a time:

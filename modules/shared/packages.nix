@@ -62,6 +62,7 @@ with pkgs; [
   delve # Go debugger
 
   # H
+  herdr # Terminal workspace manager for coding agents
   htop # Interactive process viewer
   # hunspell # Spell checker
 
@@ -98,6 +99,7 @@ with pkgs; [
   # (hiPrio nodePackages.prettier) # Code formatter
 
   # O
+  ollama # Run large language models locally
   # obsidian - managed declaratively via programs.obsidian in modules/shared/obsidian.nix
 
   # P

@@ -7,6 +7,9 @@ _:
   # Communication Tools
   "gammons/tap/slk" # Keyboard-driven terminal UI client for Slack
 
+  # Development Tools
+  "docker-desktop" # Docker VM, daemon, CLI, and Compose plugin
+
 #   # Development Tools
 #   "claude"
 #   "insomnia"

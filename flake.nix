@@ -3,8 +3,14 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
-    home-manager.url = "github:nix-community/home-manager";
-    agenix.url = "github:ryantm/agenix";
+    home-manager = {
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    agenix = {
+      url = "github:ryantm/agenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     # claude-desktop = {
     #   url = "github:k3d3/claude-desktop-linux-flake";
     #   inputs = { 
@@ -61,6 +67,11 @@
       flake = false;
     };
 
+    herdr = {
+      url = "github:herdrdev/herdr/v0.8.2";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Matt Pocock's reusable coding skills. Keep this source independent from
     # pstack so either set can be updated or removed without touching the
     # other's managed files.
@@ -77,7 +88,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, gammons-tap, home-manager, nixpkgs, flake-utils, disko, agenix, emacs-overlay, niri-flake, obsidian-mind, pstack, pocock } @inputs:
+  outputs = { self, darwin, nix-homebrew, homebrew-bundle, homebrew-core, homebrew-cask, gammons-tap, home-manager, nixpkgs, flake-utils, disko, agenix, emacs-overlay, niri-flake, obsidian-mind, pstack, herdr, pocock } @inputs:
     let
       profile = "personal"; # "work" or "personal"
       user = if profile == "work" then "nsager" else "nick";

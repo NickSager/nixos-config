@@ -1,4 +1,4 @@
-{ config, pkgs, emacs-overlay, ... }:
+{ config, pkgs, emacs-overlay, herdr, ... }:
 
 {
 
@@ -16,6 +16,9 @@
                       pathExists (path + ("/" + n + "/default.nix")))
                   (attrNames (readDir path)))
 
-      ++ [emacs-overlay.overlays.default];
+      ++ [
+        emacs-overlay.overlays.default
+        herdr.overlays.default
+      ];
   };
 }
