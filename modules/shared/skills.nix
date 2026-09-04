@@ -1,9 +1,11 @@
-# Agent-agnostic skills — one shared skill root for every coding agent.
+# Agent-agnostic skills use one shared skill root for every coding agent.
 #
 # The root lives in the shared vault: ~/Documents/Notes/.agents/skills.
 # Custom skills whose names do not collide with pinned inputs remain plain
 # vault files. Each agent's skills directory is ONE symlink to the root.
 # Adding an agent = one entry in `agentSkillsDirs`.
+# Hermes-only skills live under ~/Documents/Notes/.hermes/skills and are added
+# only to Hermes' external skill directories.
 #
 # Pstack and Pocock install from separate pinned inputs and keep separate
 # manifests. Changed files are updated in place on activation.
@@ -16,8 +18,12 @@ let
   tddAddon = ./config/skills/pocock-tdd-addon.md;
   noCommentsAddon = ./config/skills/no-comments-addon.md;
   potetoModeAddon = ./config/skills/poteto-mode-addon.md;
-  repoSkills = [
+  potetoRuntimeAdapters = ./config/skills/poteto-runtimes;
+  sharedRepoSkills = [
     { name = "comment-sicko"; source = ./config/skills/comment-sicko; }
+  ];
+  hermesRepoSkills = [
+    { name = "implement-tickets"; source = ./config/skills/implement-tickets; }
   ];
 
   # Every agent's skills path becomes a single symlink to the shared root.
@@ -91,6 +97,8 @@ let
         cp -R ${pstack}/pstack/skills/${name} "$out"
         chmod -R u+w "$out"
         cat ${potetoModeAddon} >> "$out/SKILL.md"
+        mkdir -p "$out/references/runtimes"
+        cp ${potetoRuntimeAdapters}/*.md "$out/references/runtimes/"
       ''
     else
       "${pstack}/pstack/skills/${name}";
@@ -105,7 +113,7 @@ let
         ${mindIntegration}/bin/mind-agent-integration validate-managed-path \
           "$MIND_DIR" "$rel"
         case "$rel" in
-          .agents/skills/*|.claude/agents/*)
+          .agents/skills/*|.claude/agents/*|.hermes/skills/*)
             chmod -R u+w "$MIND_DIR/$rel" 2>/dev/null || true
             rm -rf "$MIND_DIR/$rel"
             ;;
@@ -164,18 +172,36 @@ let
     REPO_SKILLS_MANIFEST="$MIND_DIR/.repo-managed-skill-files"
     NEXT_REPO_SKILLS_MANIFEST="$(mktemp)"
     {
-      ${lib.concatMapStringsSep "\n" (skill: ''printf '%s\n' '.agents/skills/${skill.name}' '') repoSkills}
+      ${lib.concatMapStringsSep "\n" (skill: ''printf '%s\n' '.agents/skills/${skill.name}' '') sharedRepoSkills}
     } > "$NEXT_REPO_SKILLS_MANIFEST"
     ${removeStaleManagedPaths "$REPO_SKILLS_MANIFEST" "$NEXT_REPO_SKILLS_MANIFEST"}
     ${lib.concatMapStringsSep "\n" (skill: ''
       ${mindIntegration}/bin/mind-agent-integration sync-tree-if-changed \
         ${skill.source} "$MIND_DIR/.agents/skills/${skill.name}"
-    '') repoSkills}
+    '') sharedRepoSkills}
     ${mindIntegration}/bin/mind-agent-integration install-if-changed \
       "$NEXT_REPO_SKILLS_MANIFEST" "$REPO_SKILLS_MANIFEST"
     rm -f "$NEXT_REPO_SKILLS_MANIFEST"
     cat "$REPO_SKILLS_MANIFEST" >> "$MIND_DIR/.obsidian-mind-stage-paths"
     printf '%s\n' '.repo-managed-skill-files' >> "$MIND_DIR/.obsidian-mind-stage-paths"
+  '';
+
+  installHermesSkills = ''
+    HERMES_SKILLS_MANIFEST="$MIND_DIR/.hermes-managed-skill-files"
+    NEXT_HERMES_SKILLS_MANIFEST="$(mktemp)"
+    {
+      ${lib.concatMapStringsSep "\n" (skill: ''printf '%s\n' '.hermes/skills/${skill.name}' '') hermesRepoSkills}
+    } > "$NEXT_HERMES_SKILLS_MANIFEST"
+    ${removeStaleManagedPaths "$HERMES_SKILLS_MANIFEST" "$NEXT_HERMES_SKILLS_MANIFEST"}
+    ${lib.concatMapStringsSep "\n" (skill: ''
+      ${mindIntegration}/bin/mind-agent-integration sync-tree-if-changed \
+        ${skill.source} "$MIND_DIR/.hermes/skills/${skill.name}"
+    '') hermesRepoSkills}
+    ${mindIntegration}/bin/mind-agent-integration install-if-changed \
+      "$NEXT_HERMES_SKILLS_MANIFEST" "$HERMES_SKILLS_MANIFEST"
+    rm -f "$NEXT_HERMES_SKILLS_MANIFEST"
+    cat "$HERMES_SKILLS_MANIFEST" >> "$MIND_DIR/.obsidian-mind-stage-paths"
+    printf '%s\n' '.hermes-managed-skill-files' >> "$MIND_DIR/.obsidian-mind-stage-paths"
   '';
 in
 {
@@ -186,6 +212,7 @@ in
     ${lib.concatMapStringsSep "\n" linkAgent agentSkillsDirs}
 
     ${installRepoSkills}
+    ${installHermesSkills}
     ${lib.optionalString (pstack != null) installPstack}
     ${lib.optionalString (pocock != null) installPocock}
   '';

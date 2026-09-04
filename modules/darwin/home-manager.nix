@@ -58,6 +58,7 @@ in
           ../shared/obsidian.nix
           ../shared/skills.nix
           ../shared/ai-agents.nix
+          ../shared/hermes-config.nix
         ];
         home = {
           enableNixpkgsReleaseCheck = false;

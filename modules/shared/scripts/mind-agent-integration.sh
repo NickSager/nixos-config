@@ -178,6 +178,7 @@ configure_instructions() {
   local mind_dir="$1"
   local global_content="$2"
   local hermes_content="$3"
+  local profile_dir
 
   replace_block \
     "$mind_dir/brain/CLAUDE-global.md" \
@@ -189,6 +190,14 @@ configure_instructions() {
     '<!-- NIX-MANAGED: OM PROJECT RECORDING START -->' \
     '<!-- NIX-MANAGED: OM PROJECT RECORDING END -->' \
     "$hermes_content"
+  for profile_dir in "$HOME/.hermes/profiles"/*; do
+    [ -d "$profile_dir" ] || continue
+    replace_block \
+      "$profile_dir/SOUL.md" \
+      '<!-- NIX-MANAGED: OM PROJECT RECORDING START -->' \
+      '<!-- NIX-MANAGED: OM PROJECT RECORDING END -->' \
+      "$hermes_content"
+  done
 }
 
 configure_codex() {
@@ -249,17 +258,19 @@ configure_claude() {
   mv "$tmp" "$config"
 }
 
-configure_hermes() {
-  local wrapper="$1"
-  local skills_dir="$2"
-  local config="$HOME/.hermes/config.yaml"
+configure_hermes_home() {
+  local hermes_home="$1"
+  local wrapper="$2"
+  local shared_skills_dir="$3"
+  local hermes_skills_dir="$4"
+  local config="$hermes_home/config.yaml"
   local tmp
 
   mkdir -p "$(dirname "$config")"
   [ -s "$config" ] || printf '{}\n' > "$config"
   tmp="$(mktemp "${config}.tmp.XXXXXX")"
-  OM_WRAPPER="$wrapper" MIND_SKILLS="$skills_dir" "$YQ_BIN" eval '
-    .skills.external_dirs = ((.skills.external_dirs // []) + [strenv(MIND_SKILLS)] | unique) |
+  OM_WRAPPER="$wrapper" SHARED_SKILLS="$shared_skills_dir" HERMES_SKILLS="$hermes_skills_dir" "$YQ_BIN" eval '
+    .skills.external_dirs = ((.skills.external_dirs // []) + [strenv(SHARED_SKILLS), strenv(HERMES_SKILLS)] | unique) |
     .mcp_servers.om = {
       "command": strenv(OM_WRAPPER),
       "args": []
@@ -267,6 +278,19 @@ configure_hermes() {
   ' "$config" > "$tmp"
   chmod --reference="$config" "$tmp" 2>/dev/null || chmod 600 "$tmp"
   mv "$tmp" "$config"
+}
+
+configure_hermes() {
+  local wrapper="$1"
+  local shared_skills_dir="$2"
+  local hermes_skills_dir="$3"
+  local profile_dir
+
+  configure_hermes_home "$HOME/.hermes" "$wrapper" "$shared_skills_dir" "$hermes_skills_dir"
+  for profile_dir in "$HOME/.hermes/profiles"/*; do
+    [ -d "$profile_dir" ] || continue
+    configure_hermes_home "$profile_dir" "$wrapper" "$shared_skills_dir" "$hermes_skills_dir"
+  done
 }
 
 configure_clients() {
@@ -277,7 +301,7 @@ configure_clients() {
   : "${YQ_BIN:?YQ_BIN must point to yq}"
   configure_codex "$wrapper"
   configure_claude "$wrapper"
-  configure_hermes "$wrapper" "$mind_dir/.agents/skills"
+  configure_hermes "$wrapper" "$mind_dir/.agents/skills" "$mind_dir/.hermes/skills"
 }
 
 git_sync() {

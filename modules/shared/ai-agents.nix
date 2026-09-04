@@ -1,9 +1,9 @@
 # Self-updating terminal AI agents installed via upstream installer scripts.
 #
 # These tools aren't in nixpkgs (or their nixpkgs builds lag badly), and each
-# ships an installer that bootstraps its own runtime and self-updates thereafter.
-# We only bootstrap each one once (when its marker path is absent); it keeps
-# itself current after that. Nix never pins or upgrades these.
+# ships an installer that bootstraps its own runtime and manages later updates.
+# We only bootstrap each one once when its marker path is absent. Nix never
+# pins or upgrades these.
 #
 #   hermes  — Nous Research agent; run `hermes setup` once to pick a provider.
 #   claude  — Claude Code CLI (native install); auto-updates on startup.
@@ -14,7 +14,7 @@
 { lib, pkgs, ... }:
 
 let
-  # Each installer bootstraps once when `marker` is missing, then self-updates.
+  # Each installer bootstraps once when `marker` is missing.
   installers = [
     {
       name = "hermes";

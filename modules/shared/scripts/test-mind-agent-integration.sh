@@ -14,7 +14,8 @@ trap 'rm -rf "$test_root"' EXIT
 
 export HOME="$test_root/home"
 mind="$HOME/Documents/Notes"
-mkdir -p "$mind/.claude" "$mind/brain" "$HOME/.codex" "$HOME/.hermes"
+mkdir -p "$mind/.claude" "$mind/brain" "$HOME/.codex" \
+  "$HOME/.hermes/profiles/work" "$HOME/.hermes/profiles/personal"
 
 sync_source="$test_root/sync-source"
 sync_target="$test_root/sync-target"
@@ -50,6 +51,8 @@ cp -R "$MIND_SOURCE/.claude/commands" "$mind/.claude/commands"
 chmod -R u+w "$mind/.claude/commands"
 printf '# Personal instructions\n' > "$mind/brain/CLAUDE-global.md"
 printf '# Personal soul\n' > "$HOME/.hermes/SOUL.md"
+printf '# Work soul\n' > "$HOME/.hermes/profiles/work/SOUL.md"
+printf '# Personal profile soul\n' > "$HOME/.hermes/profiles/personal/SOUL.md"
 cat > "$HOME/.codex/config.toml" <<'EOF'
 model = "test"
 
@@ -68,6 +71,16 @@ skills:
 model:
   default: test
 EOF
+cat > "$HOME/.hermes/profiles/work/config.yaml" <<'EOF'
+model:
+  default: work-model
+work_only: true
+EOF
+cat > "$HOME/.hermes/profiles/personal/config.yaml" <<'EOF'
+model:
+  default: personal-model
+personal_only: true
+EOF
 
 snapshot="$test_root/first-run.cksum"
 for round in 1 2; do
@@ -81,6 +94,10 @@ for round in 1 2; do
     cksum "$HOME/.codex/config.toml"
     cksum "$HOME/.claude.json"
     cksum "$HOME/.hermes/config.yaml"
+    cksum "$HOME/.hermes/profiles/work/SOUL.md"
+    cksum "$HOME/.hermes/profiles/work/config.yaml"
+    cksum "$HOME/.hermes/profiles/personal/SOUL.md"
+    cksum "$HOME/.hermes/profiles/personal/config.yaml"
     find "$mind/.agents/skills" -type f -name SKILL.md -exec cksum {} \; | sort
   } > "$test_root/current.cksum"
   if [ "$round" -eq 1 ]; then
@@ -99,6 +116,13 @@ grep -Fq "CLAUDE_PROJECT_DIR=\"\$PWD\" node --experimental-strip-types" \
 grep -q '^description: "Morning kickoff' "$mind/.agents/skills/om-standup/SKILL.md"
 [ "$(grep -c 'NIX-MANAGED: OM PROJECT RECORDING START' "$mind/brain/CLAUDE-global.md")" = 1 ]
 [ "$(grep -c 'NIX-MANAGED: OM PROJECT RECORDING START' "$HOME/.hermes/SOUL.md")" = 1 ]
+[ "$(grep -c 'NIX-MANAGED: OM PROJECT RECORDING START' "$HOME/.hermes/profiles/work/SOUL.md")" = 1 ]
+[ "$(grep -c 'NIX-MANAGED: OM PROJECT RECORDING START' "$HOME/.hermes/profiles/personal/SOUL.md")" = 1 ]
+grep -q '^## Poteto execution routing$' "$HOME/.hermes/SOUL.md"
+grep -Fq 'Use `/goal` when one task has a checkable completion condition' \
+  "$HOME/.hermes/SOUL.md"
+grep -Fq 'Use `implement-tickets` and Hermes Kanban only for an approved multi-ticket' \
+  "$HOME/.hermes/SOUL.md"
 grep -q '^Skip OM for conversation, status or listing questions, routine read-only$' \
   "$mind/brain/CLAUDE-global.md"
 grep -Fq "Use \`remember\` for lessons that apply beyond this repository" \
@@ -110,9 +134,20 @@ grep -q '^\[mcp_servers.keep\]$' "$HOME/.codex/config.toml"
 "$JQ_BIN" -e ".preserved == true and .mcpServers.om.command == \$wrapper" \
   --arg wrapper "$HOME/.local/bin/om-mcp" "$HOME/.claude.json" >/dev/null
 [ "$("$YQ_BIN" '.model.default' "$HOME/.hermes/config.yaml")" = test ]
+[ "$("$YQ_BIN" '.model.default' "$HOME/.hermes/profiles/work/config.yaml")" = work-model ]
+[ "$("$YQ_BIN" '.model.default' "$HOME/.hermes/profiles/personal/config.yaml")" = personal-model ]
+[ "$("$YQ_BIN" '.work_only' "$HOME/.hermes/profiles/work/config.yaml")" = true ]
+[ "$("$YQ_BIN" '.personal_only' "$HOME/.hermes/profiles/personal/config.yaml")" = true ]
 [ "$("$YQ_BIN" '.mcp_servers.om.command' "$HOME/.hermes/config.yaml")" = "$HOME/.local/bin/om-mcp" ]
+[ "$("$YQ_BIN" '.mcp_servers.om.command' "$HOME/.hermes/profiles/work/config.yaml")" = "$HOME/.local/bin/om-mcp" ]
+[ "$("$YQ_BIN" '.mcp_servers.om.command' "$HOME/.hermes/profiles/personal/config.yaml")" = "$HOME/.local/bin/om-mcp" ]
 grep -q -- '- /keep/skills' "$HOME/.hermes/config.yaml"
 grep -q -- "- $mind/.agents/skills" "$HOME/.hermes/config.yaml"
+grep -q -- "- $mind/.agents/skills" "$HOME/.hermes/profiles/work/config.yaml"
+grep -q -- "- $mind/.agents/skills" "$HOME/.hermes/profiles/personal/config.yaml"
+grep -q -- "- $mind/.hermes/skills" "$HOME/.hermes/config.yaml"
+grep -q -- "- $mind/.hermes/skills" "$HOME/.hermes/profiles/work/config.yaml"
+grep -q -- "- $mind/.hermes/skills" "$HOME/.hermes/profiles/personal/config.yaml"
 
 printf '.claude/commands/om-standup.md\n.obsidian-mind-managed-files\n' \
   > "$mind/.obsidian-mind-managed-files"
