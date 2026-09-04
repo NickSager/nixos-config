@@ -3,9 +3,12 @@ _:
 [
   # Utility Tools
   "caffeine" # Menu-bar utility to keep the Mac awake (no lid-closed support)
+  "tailscale-app" # Tailscale macOS GUI and menu-bar client
 
   # Communication Tools
   "gammons/tap/slk" # Keyboard-driven terminal UI client for Slack
+  "signal" # Signal Desktop
+  "telegram" # Native Telegram for macOS client
 
   # Development Tools
   "docker-desktop" # Docker VM, daemon, CLI, and Compose plugin

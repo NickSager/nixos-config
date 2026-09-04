@@ -122,6 +122,7 @@ with pkgs; [
   # syncthing # Syncing directories
 
   # T
+  # tailscale # Mesh VPN and secure networking CLI
   # terraform # Infrastructure as code tool
   # terraform-ls # Terraform language server
   # tflint # Terraform linter
