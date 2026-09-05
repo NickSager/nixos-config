@@ -30,6 +30,29 @@
     agenix.packages."${pkgs.stdenv.hostPlatform.system}".default
   ] ++ (import ../../modules/shared/packages.nix { inherit pkgs; });
 
+  launchd.user.agents.hermes-dashboard = {
+    serviceConfig = {
+      ProgramArguments = [
+        "${config.users.users.${user}.home}/.local/bin/hermes"
+        "dashboard"
+        "--host"
+        "127.0.0.1"
+        "--port"
+        "8080"
+        "--no-open"
+      ];
+      WorkingDirectory = config.users.users.${user}.home;
+      RunAtLoad = true;
+      KeepAlive = {
+        SuccessfulExit = false;
+      };
+      ThrottleInterval = 10;
+      ProcessType = "Background";
+      StandardOutPath = "${config.users.users.${user}.home}/.hermes/logs/dashboard.launchd.log";
+      StandardErrorPath = "${config.users.users.${user}.home}/.hermes/logs/dashboard.launchd.error.log";
+    };
+  };
+
   #launchd.user.agents = {
   #  emacs = {
   #    path = [ config.environment.systemPath ];
