@@ -8,7 +8,6 @@ local opt = vim.opt
 opt.conceallevel = 0
 opt.spell = true -- Enable spell checking
 opt.wrap = true -- Enable line wrap
-opt.laststatus = 3 -- Recommended for Avante
 
 -- LSP Server to use for Python.
 -- Set to "basedpyright" to use basedpyright instead of pyright.
