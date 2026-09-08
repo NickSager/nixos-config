@@ -17,6 +17,34 @@ profile and the `nick` user.
 - `apps/` contains the scripts exposed through `nix run`.
 - `overlays/` contains automatically loaded Nixpkgs overlays.
 
+## macOS installation
+
+Install the Xcode Command Line Tools:
+
+```sh
+xcode-select --install
+```
+
+Install upstream Nix in multi-user mode:
+
+```sh
+curl --proto '=https' --tlsv1.2 -L https://nixos.org/nix/install | sh
+```
+
+Open a new terminal, clone this repository, and change into its directory.
+Build the configuration before activating it. Pass the experimental-feature
+flag only for the first build and switch; nix-darwin manages that setting after
+activation.
+
+```sh
+git add .
+nix --extra-experimental-features 'nix-command flakes' run .#build
+nix --extra-experimental-features 'nix-command flakes' run .#build-switch
+```
+
+To provision the work profile, change `profile` in `flake.nix` to `"work"`.
+The work profile uses the `nicholas.sager` user.
+
 ## Common commands
 
 ```sh
@@ -67,10 +95,9 @@ Home Manager seeds one Obsidian and agent vault at `~/Documents/Notes` from a
 pinned `obsidian-mind` input. It copies a fixed set of writable Obsidian
 configuration files. User-created notes and workspace state remain user-owned;
 pinned upstream entrypoints and documentation remain managed. Claude Code,
-Codex, and Hermes share skills stored in the vault. Native agent
-installers for Hermes, Claude Code, and Codex run once when their marker
-directories are absent. After Hermes is provisioned, run `hermes setup` to
-select a provider.
+Codex, and Hermes share skills stored in the vault. Native agent installers for
+Hermes, Claude Code, and Codex run once when their marker directories are
+absent. After Hermes is provisioned, run `hermes setup` to select a provider.
 
 ## Secrets
 

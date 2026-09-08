@@ -91,7 +91,7 @@ in
         { app = "${pkgs.obsidian}/Applications/Obsidian.app"; }
         { app = "/Applications/Firefox.app"; }
         { app = "${pkgs.alacritty}/Applications/Alacritty.app"; }
-        { app = "/Applications/Slack.app"; }
+        { app = "/Applications/Microsoft Teams.app"; }
       ] else [
         { app = "/System/Applications/Apps.app"; }
         { app = "/System/Applications/Mail.app"; }
