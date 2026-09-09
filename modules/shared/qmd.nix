@@ -24,15 +24,13 @@ buildNpmPackage rec {
     inherit pname version src sourceRoot;
     nativeBuildInputs = [ nodejs_22 ];
     postPatch = ''
-      export HOME="$TMPDIR/npm-home"
-      mkdir -p "$HOME"
-      npm install --package-lock-only --ignore-scripts --omit=dev
+      cp ${./qmd-package-lock.json} ./package-lock.json
     '';
-    hash = "sha256-kmhC/LMkk1tDuhJMnsjhd0o/jrG7C5iBG1v2dN2uwng=";
+    hash = "sha256-sz4tCZzmJDJ4yiPXA/o1Yjqu22tLDp1Jm07x+vjKmVw=";
   };
 
   postPatch = ''
-    cp "$npmDeps/package-lock.json" ./package-lock.json
+    cp ${./qmd-package-lock.json} ./package-lock.json
   '';
 
   installPhase = ''

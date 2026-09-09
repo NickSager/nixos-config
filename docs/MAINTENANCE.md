@@ -75,10 +75,29 @@ in the handoff or audit TSV.
    ```
 
 4. Set `src.hash` to that integrity value.
-5. Set `npmDeps.hash = lib.fakeHash`, stage the file, and run
-   `nix run .#build`.
-6. Replace the fake hash with the `got:` hash from the failed build.
-7. Stage the file and run `nix run .#build` again.
+5. Regenerate `modules/shared/qmd-package-lock.json` from the exact tarball:
+
+   ```sh
+   version=VERSION
+   workdir="$(mktemp -d)"
+   curl --fail --location --output "$workdir/qmd.tgz" \
+     "https://registry.npmjs.org/@tobilu/qmd/-/qmd-${version}.tgz"
+   tar -xzf "$workdir/qmd.tgz" -C "$workdir"
+   (
+     cd "$workdir/package"
+     nix shell nixpkgs#nodejs_22 -c npm install \
+       --package-lock-only --ignore-scripts --omit=dev
+   )
+   cp "$workdir/package/package-lock.json" modules/shared/qmd-package-lock.json
+   rm -rf "$workdir"
+   ```
+
+6. Inspect the lock file. Confirm that its root dependencies and optional
+   dependencies match the tarball's `package.json`.
+7. Set `npmDeps.hash = lib.fakeHash`. Stage `modules/shared/qmd.nix` and
+   `modules/shared/qmd-package-lock.json`. Then run `nix run .#build`.
+8. Replace the fake hash with the `got:` hash from the failed build.
+9. Stage both QMD files and run `nix run .#build` again.
 
 Do not run `build-switch` merely to compute QMD hashes. Record the version,
 source hash, dependency hash, and build result in the handoff or audit TSV.
