@@ -12,9 +12,15 @@
 # with the expected hash if you leave the old one — copy the correct hash from
 # the error message.
 
-{ pkgs }:
+{ pkgs, profile ? "personal" }:
 
 let
+  caBundle =
+    if profile == "work" && pkgs.stdenv.hostPlatform.isDarwin then
+      "/etc/nix/certs/ca-bundle.pem"
+    else
+      "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+
   mkPlugin =
     { owner, repo, version, manifestId, tag ? version, hash }:
     let
@@ -27,7 +33,7 @@ let
       outputHashMode = "recursive";
       outputHashAlgo = "sha256";
       nativeBuildInputs = [ pkgs.curl ];
-      SSL_CERT_FILE = "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
+      SSL_CERT_FILE = caBundle;
       phases = [ "installPhase" ];
       passthru = { inherit manifestId; };
       installPhase = ''

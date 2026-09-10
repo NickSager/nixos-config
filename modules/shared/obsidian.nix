@@ -7,7 +7,7 @@
 
 let
   obsidianSource = ./config/obsidian;
-  obsidianPlugins = import ./obsidian-plugins.nix { inherit pkgs; };
+  obsidianPlugins = import ./obsidian-plugins.nix { inherit pkgs profile; };
   vaultDir = "Documents/Notes";
   mindRevision = if obsidian-mind == null then "unknown" else obsidian-mind.rev or "unknown";
   mindIntegration = pkgs.callPackage ./mind-agent-integration.nix { };

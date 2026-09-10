@@ -1,4 +1,4 @@
-{ agenix, config, pkgs, user, ... }:
+{ agenix, config, lib, pkgs, profile ? "personal", user, ... }:
 {
   imports = [
     # ../../modules/darwin/secrets.nix
@@ -13,6 +13,9 @@
     settings = {
       trusted-users = [ "@admin" "${user}" ];
       substituters = [ "https://nix-community.cachix.org" ];
+    } // lib.optionalAttrs (profile == "work") {
+      # The work-machine bundle contains the public roots plus Oracle Umbrella.
+      ssl-cert-file = "/etc/nix/certs/ca-bundle.pem";
     };
     gc = {
       automatic = true;
