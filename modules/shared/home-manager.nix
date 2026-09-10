@@ -163,7 +163,7 @@ let name = "Nick Sager";
       };
       init.defaultBranch = "main";
       core = {
-	    editor = "vim";
+	    editor = "nvim";
         autocrlf = "input";
       };
       # commit.gpgsign = true; # Uncomment to use secrets, else system figures out
