@@ -60,6 +60,7 @@ with pkgs; [
   gotools # Go tools (goimports, godoc, etc.)
   gopls # Go language server
   delve # Go debugger
+  (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
 
   # H
   herdr # Terminal workspace manager for coding agents
@@ -77,6 +78,7 @@ with pkgs; [
 
   # K
   killall # Kill processes by name
+  kubectl
 
   # L
   lazygit # Git TUI
@@ -91,7 +93,7 @@ with pkgs; [
   ncurses # Required: terminfo database for tmux/alacritty TERM resolution
   # neofetch removed (unmaintained); use fastfetch if needed
   # ngrok # Secure tunneling service
-  nodejs # Node.js runtime + npm/npx
+  nodejs_24 # Node.js runtime + npm/npx
   (pkgs.callPackage ./qmd.nix {}) # Pinned local hybrid search for Mind
   # nodePackages.live-server # Development server with live reload
   # nodePackages.nodemon # Node.js file watcher
@@ -104,6 +106,7 @@ with pkgs; [
 
   # P
   pandoc # Document converter
+  pnpm_11
   # php82Packages.composer # PHP dependency manager
   # php82Packages.deployer # PHP deployment tool
   # php82Packages.php-cs-fixer # PHP code style fixer
@@ -127,6 +130,7 @@ with pkgs; [
   # terraform-ls # Terraform language server
   # tflint # Terraform linter
   myTexlive # TeX Live, 3+ Gb
+  tirith # Shell command security policy engine
   tmux # Terminal multiplexer
   tree # Directory tree viewer
 

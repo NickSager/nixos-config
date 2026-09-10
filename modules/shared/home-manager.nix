@@ -432,14 +432,14 @@ let name = "Nick Sager";
       #   '';
       # }
     ];
-    terminal = "screen-256color";
+    terminal = "tmux-256color";
     prefix = "C-Space";
     escapeTime = 0;
     historyLimit = 100000;
     extraConfig = ''
       # Color Options
       # set-option -g default-terminal 'screen-256color'
-      set -ga terminal-overrides ",xterm-256color:Tc"
+      set -as terminal-features ',xterm-256color:RGB'
 
       unbind C-b
       # set -g prefix C-Space

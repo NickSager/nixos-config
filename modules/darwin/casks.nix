@@ -14,6 +14,9 @@ let
   # Development Tools
   "docker-desktop" # Docker VM, daemon, CLI, and Compose plugin
 
+  # Browsers
+  "firefox"
+
 #   # Development Tools
 #   "claude"
 #   "insomnia"
@@ -46,7 +49,6 @@ let
 #   "google-chrome"
   ];
   workExcludedCasks = [
-    "caffeine"
     "tailscale-app"
     "telegram"
   ];

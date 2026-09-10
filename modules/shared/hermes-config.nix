@@ -41,6 +41,14 @@ let
       subagent_auto_approve = true;
       worktree_isolation = true;
     };
+    display = {
+      interface = "tui";
+      mouse_tracking = "wheel";
+    };
+    security = {
+      tirith_enabled = true;
+      tirith_path = "${pkgs.tirith}/bin/tirith";
+    };
   });
 
 in

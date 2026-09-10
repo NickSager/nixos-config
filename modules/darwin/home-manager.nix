@@ -85,13 +85,13 @@ in
       if profile == "work" then [
         { app = "/System/Applications/Apps.app"; }
         { app = "/Applications/Microsoft Outlook.app"; }
+        { app = "/Applications/Microsoft Teams.app"; }
+        { app = "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app"; }
         { app = "/System/Applications/Calendar.app"; }
         { app = "/System/Applications/Reminders.app"; }
         { app = "/System/Applications/Notes.app"; }
         { app = "${pkgs.obsidian}/Applications/Obsidian.app"; }
-        { app = "/Applications/Firefox.app"; }
         { app = "${pkgs.alacritty}/Applications/Alacritty.app"; }
-        { app = "/Applications/Microsoft Teams.app"; }
       ] else [
         { app = "/System/Applications/Apps.app"; }
         { app = "/System/Applications/Mail.app"; }
