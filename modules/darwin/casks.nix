@@ -1,6 +1,7 @@
-_:
+{ lib, profile ? "personal" }:
 
-[
+let
+  allCasks = [
   # Utility Tools
   "caffeine" # Menu-bar utility to keep the Mac awake (no lid-closed support)
   "tailscale-app" # Tailscale macOS GUI and menu-bar client
@@ -43,4 +44,11 @@ _:
 #
 #   # Browsers
 #   "google-chrome"
-]
+  ];
+  workExcludedCasks = [
+    "caffeine"
+    "tailscale-app"
+    "telegram"
+  ];
+in
+lib.subtractLists (lib.optionals (profile == "work") workExcludedCasks) allCasks

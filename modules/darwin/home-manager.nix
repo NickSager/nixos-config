@@ -41,7 +41,7 @@ in
       autoUpdate = false; # `brew update` fails under mutableTaps = false
       cleanup = "none";   # don't uninstall undeclared casks
     };
-    casks  = pkgs.callPackage ./casks.nix {};
+    casks = pkgs.callPackage ./casks.nix { inherit profile; };
     masApps = {
       # "Amphetamine" = 937984704; # Keep-awake w/ triggers + closed-display mode (App Store only)
       # "hidden-bar" = 1452453066;
