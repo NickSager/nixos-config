@@ -8,7 +8,7 @@ let
 
   # texlive.combine {scheme-full} is deprecated (removal targeted for 27.05);
   # texliveFull is the same scheme-full closure via the non-deprecated path.
-  myTexlive = pkgs.texliveFull;
+  myTexlive = pkgs.texliveBasic;
 
   myFonts = import ./fonts.nix { inherit pkgs; };
 in
