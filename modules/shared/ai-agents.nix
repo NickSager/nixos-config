@@ -48,7 +48,7 @@ in
   # Installers shell out to bare `curl` (e.g. to fetch uv); activation runs with
   # a minimal PATH, so export curl and the usual system dirs for the child bash.
   home.activation.aiAgents = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    export PATH="${pkgs.curl}/bin:$PATH:/usr/bin:/bin:/usr/sbin:/sbin"
+    export PATH="$HOME/.local/bin:${pkgs.curl}/bin:$PATH:/usr/bin:/bin:/usr/sbin:/sbin"
     ${lib.optionalString (profile == "work" && pkgs.stdenv.hostPlatform.isDarwin) ''
       export SSL_CERT_FILE=/etc/nix/certs/ca-bundle.pem
       export NODE_EXTRA_CA_CERTS=/etc/nix/certs/ca-bundle.pem
