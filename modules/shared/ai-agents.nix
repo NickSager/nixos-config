@@ -11,7 +11,7 @@
 #
 # All install to ~/.local/bin (on sessionPath), so they win over any nix build.
 
-{ lib, pkgs, profile ? "personal", ... }:
+{ lib, pkgs, runtimeTrustEnvironment ? { }, ... }:
 
 let
   # Each installer bootstraps once when `marker` is missing.
@@ -41,18 +41,15 @@ let
   '';
 in
 {
-  home.sessionVariables = lib.optionalAttrs (profile == "work" && pkgs.stdenv.hostPlatform.isDarwin) {
-    NODE_EXTRA_CA_CERTS = "/etc/nix/certs/ca-bundle.pem";
-  };
+  home.sessionVariables = runtimeTrustEnvironment;
 
   # Installers shell out to bare `curl` (e.g. to fetch uv); activation runs with
   # a minimal PATH, so export curl and the usual system dirs for the child bash.
   home.activation.aiAgents = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     export PATH="$HOME/.local/bin:${pkgs.curl}/bin:$PATH:/usr/bin:/bin:/usr/sbin:/sbin"
-    ${lib.optionalString (profile == "work" && pkgs.stdenv.hostPlatform.isDarwin) ''
-      export SSL_CERT_FILE=/etc/nix/certs/ca-bundle.pem
-      export NODE_EXTRA_CA_CERTS=/etc/nix/certs/ca-bundle.pem
-    ''}
+    ${lib.concatStringsSep "\n" (lib.mapAttrsToList
+      (name: value: "export ${name}=${lib.escapeShellArg value}")
+      runtimeTrustEnvironment)}
     ${lib.concatMapStringsSep "\n" bootstrap installers}
   '';
 }

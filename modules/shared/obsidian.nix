@@ -3,11 +3,11 @@
 # User-created notes and Obsidian workspace state remain user-owned. Pinned
 # upstream entrypoints and documentation listed in the manifest stay managed.
 
-{ config, lib, pkgs, profile ? "personal", obsidian-mind ? null, ... }:
+{ caBundle ? "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt", config, lib, pkgs, obsidian-mind ? null, ... }:
 
 let
   obsidianSource = ./config/obsidian;
-  obsidianPlugins = import ./obsidian-plugins.nix { inherit pkgs profile; };
+  obsidianPlugins = import ./obsidian-plugins.nix { inherit caBundle pkgs; };
   vaultDir = "Documents/Notes";
   mindRevision = if obsidian-mind == null then "unknown" else obsidian-mind.rev or "unknown";
   mindIntegration = pkgs.callPackage ./mind-agent-integration.nix { };

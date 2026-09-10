@@ -12,15 +12,9 @@
 # with the expected hash if you leave the old one — copy the correct hash from
 # the error message.
 
-{ pkgs, profile ? "personal" }:
+{ caBundle ? "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt", pkgs }:
 
 let
-  caBundle =
-    if profile == "work" && pkgs.stdenv.hostPlatform.isDarwin then
-      "/etc/nix/certs/ca-bundle.pem"
-    else
-      "${pkgs.cacert}/etc/ssl/certs/ca-bundle.crt";
-
   mkPlugin =
     { owner, repo, version, manifestId, tag ? version, hash }:
     let

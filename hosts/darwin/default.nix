@@ -1,4 +1,19 @@
-{ agenix, config, lib, pkgs, profile ? "personal", user, ... }:
+{ agenix, config, lib, pkgs, user, ... }:
+let
+  localCertificates = builtins.readDir ../../local-certs;
+  additionalCertificates = map
+    (name: ../../local-certs + "/${name}")
+    (builtins.filter
+      (name: localCertificates.${name} == "regular" && builtins.match ".*\\.pem" name != null)
+      (builtins.attrNames localCertificates));
+  hasAdditionalCertificates = additionalCertificates != [ ];
+  canonicalBundle = "/etc/ssl/certs/ca-certificates.crt";
+  runtimeTrustEnvironment = lib.optionalAttrs hasAdditionalCertificates {
+    SSL_CERT_FILE = canonicalBundle;
+    REQUESTS_CA_BUNDLE = canonicalBundle;
+    NODE_EXTRA_CA_CERTS = canonicalBundle;
+  };
+in
 {
   imports = [
     # ../../modules/darwin/secrets.nix
@@ -13,9 +28,6 @@
     settings = {
       trusted-users = [ "@admin" "${user}" ];
       substituters = [ "https://nix-community.cachix.org" ];
-    } // lib.optionalAttrs (profile == "work") {
-      # The work-machine bundle contains the public roots plus Oracle Umbrella.
-      ssl-cert-file = "/etc/nix/certs/ca-bundle.pem";
     };
     gc = {
       automatic = true;
@@ -33,6 +45,13 @@
     agenix.packages."${pkgs.stdenv.hostPlatform.system}".default
   ] ++ (import ../../modules/shared/packages.nix { inherit pkgs; });
 
+  security.pki.certificateFiles = additionalCertificates;
+  launchd.user.envVariables = runtimeTrustEnvironment;
+  home-manager.extraSpecialArgs = {
+    inherit runtimeTrustEnvironment;
+    caBundle = config.environment.etc."ssl/certs/ca-certificates.crt".source;
+  };
+
   launchd.user.agents.hermes-dashboard = {
     serviceConfig = {
       ProgramArguments = [
@@ -45,6 +64,7 @@
         "--no-open"
       ];
       WorkingDirectory = config.users.users.${user}.home;
+      EnvironmentVariables = runtimeTrustEnvironment;
       RunAtLoad = true;
       KeepAlive = {
         SuccessfulExit = false;

@@ -37,7 +37,7 @@ flag only for the first build and switch; nix-darwin manages that setting after
 activation.
 
 ```sh
-git add .
+git add -N .
 nix --extra-experimental-features 'nix-command flakes' run .#build
 nix --extra-experimental-features 'nix-command flakes' run .#build-switch
 ```
@@ -49,11 +49,11 @@ The work profile uses the `nicholas.sager` user.
 
 ```sh
 # Build without applying
-git add .
+git add -N .
 nix run .#build
 
 # Build and activate
-git add .
+git add -N .
 nix run .#build-switch
 
 # Roll back one macOS generation
@@ -66,7 +66,8 @@ nix flake update
 nix flake update homebrew-core homebrew-cask homebrew-bundle
 ```
 
-Flakes only include Git-tracked files. Stage new files before building.
+Flakes only include files in the Git index. Use `git add -N .` before building
+so new files are visible without staging their contents.
 See [the maintenance guide](docs/MAINTENANCE.md) for pinned obsidian-mind,
 pstack, Pocock skill, and QMD updates.
 
