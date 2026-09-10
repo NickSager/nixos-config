@@ -53,6 +53,7 @@ with pkgs; [
   # G
   gcc # GNU Compiler Collection
   gh # GitHub CLI
+  glab # GitLab CLI
   glow # Markdown renderer for terminal
   gnupg # GNU Privacy Guard
   go # Go programming language
@@ -145,6 +146,9 @@ with pkgs; [
 
   # W
   wget # File downloader
+
+  # Y
+  yalc # Work with local npm packages without publishing
 
   # Z
   zip # ZIP archive creator

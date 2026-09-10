@@ -41,6 +41,9 @@ let
       subagent_auto_approve = true;
       worktree_isolation = true;
     };
+    dashboard = {
+      show_token_analytics = true;
+    };
     display = {
       interface = "tui";
       mouse_tracking = "wheel";

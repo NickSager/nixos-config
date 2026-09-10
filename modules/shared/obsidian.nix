@@ -72,7 +72,7 @@ let
   };
   templatesJson = json.generate "templates.json" { folder = "templates"; };
   communityPluginList = with obsidianPlugins; [
-    obsidian-tasks-plugin dataview templater-obsidian nldates-obsidian vim-yank-highlight
+    obsidian-tasks-plugin dataview templater-obsidian
   ];
   communityPluginsJson = json.generate "community-plugins.json"
     (map (plugin: plugin.manifestId) communityPluginList);

@@ -61,18 +61,4 @@ in
     manifestId = "templater-obsidian";
     hash = "sha256-xh6iQn0IXsa2gJH8360MQagpJT3M4+FrdWQGMOH5d7E=";
   };
-  nldates-obsidian = mkPlugin {
-    owner = "argenos";
-    repo = "nldates-obsidian";
-    version = "0.6.2";
-    manifestId = "nldates-obsidian";
-    hash = "sha256-xbefGDCx7hH8onudG5S3cEGgFhd1vjXJo0jJm9t5ZyA=";
-  };
-  vim-yank-highlight = mkPlugin {
-    owner = "aleksey-rowan";
-    repo = "obsidian-vim-yank-highlight";
-    version = "1.0.8";
-    manifestId = "vim-yank-highlight";
-    hash = "sha256-K36V3jDSqG5VBHLiEjkkNi3CllH1/fA5tmEm0mrtvzc=";
-  };
 }
