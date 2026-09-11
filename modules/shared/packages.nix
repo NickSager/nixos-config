@@ -61,7 +61,10 @@ with pkgs; [
   gotools # Go tools (goimports, godoc, etc.)
   gopls # Go language server
   delve # Go debugger
-  (google-cloud-sdk.withExtraComponents [ google-cloud-sdk.components.gke-gcloud-auth-plugin ])
+  (google-cloud-sdk.withExtraComponents [
+    google-cloud-sdk.components.gke-gcloud-auth-plugin
+    google-cloud-sdk.components.pubsub-emulator
+  ])
 
   # H
   herdr # Terminal workspace manager for coding agents

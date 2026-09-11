@@ -13,6 +13,7 @@ let
 
   # Development Tools
   "docker-desktop" # Docker VM, daemon, CLI, and Compose plugin
+  "soapui" # SOAP API testing and mock service tool
 
   # Browsers
   "firefox"
