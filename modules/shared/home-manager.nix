@@ -1,7 +1,8 @@
 { config, pkgs, lib, user ? "nsager", ... }:
 
 let name = "Nick Sager";
-    email = "sager.nick@gmail.com"; in
+    email = "sager.nick@gmail.com";
+    workGitRemote = "hasconfig:remote.*.url:git@gitlab.com:beacon-ecm/**"; in
 {
 
   neovim = {
@@ -153,6 +154,20 @@ let name = "Nick Sager";
     # .superpowers/ is the superpowers plugin's repo-local SDD working state;
     # its path is script-computed with no override, so it is ignored globally.
     ignores = [ "*.swp" ".superpowers/" ];
+    includes = [
+      {
+        condition = workGitRemote;
+        contentSuffix = "work-git-identity-required.gitconfig";
+        contents.user = {
+          name = "";
+          email = "";
+        };
+      }
+      {
+        condition = workGitRemote;
+        path = "~/.config/git/work-identity.gitconfig";
+      }
+    ];
     lfs = {
       enable = true;
     };
