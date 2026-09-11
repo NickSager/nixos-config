@@ -46,7 +46,7 @@ let
     };
     display = {
       interface = "tui";
-      mouse_tracking = "wheel";
+      mouse_tracking = "buttons";
     };
     security = {
       tirith_enabled = true;
