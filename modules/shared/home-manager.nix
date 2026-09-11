@@ -328,15 +328,28 @@ let name = "Nick Sager";
         ];
       };
 
-      # keyboard = {
-      #   bindings = [
-      #     {
-      #       key = "Slash";
-      #       mods = "Control";
-      #       chars = "\u001f";
-      #     }
-      #   ];
-      # };
+      keyboard.bindings = lib.optionals pkgs.stdenv.hostPlatform.isDarwin [
+        {
+          key = "H";
+          mods = "Control|Alt";
+          chars = builtins.fromJSON ''"\u001b[104;7u"'';
+        }
+        {
+          key = "J";
+          mods = "Control|Alt";
+          chars = builtins.fromJSON ''"\u001b[106;7u"'';
+        }
+        {
+          key = "K";
+          mods = "Control|Alt";
+          chars = builtins.fromJSON ''"\u001b[107;7u"'';
+        }
+        {
+          key = "L";
+          mods = "Control|Alt";
+          chars = builtins.fromJSON ''"\u001b[108;7u"'';
+        }
+      ];
 
       colors = {
         primary = {
@@ -465,7 +478,6 @@ let name = "Nick Sager";
       set -g base-index 1              # start indexing windows at 1 instead of 0
       set -g pane-base-index 1
       set -g detach-on-destroy off     # don't exit from tmux when closing a session
-      set -g escape-time 0             # zero-out escape time delay
       set -g history-limit 1000000     # increase history size (from 2,000)
       set -g renumber-windows on       # renumber all windows when any window is closed
       set -g set-clipboard on          # use system clipboard

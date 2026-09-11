@@ -4,6 +4,7 @@ _:
 let
   # Can put github public keys here to be copied
   nvimSource = ./config/nvim;
+  herdrConfig = ./config/herdr/config.toml;
 
   # NOTE: Claude Code's ~/.claude/settings.json is a real user-owned file,
   # seeded once by modules/shared/obsidian.nix and hand-editable without a
@@ -43,6 +44,8 @@ in
     };
 
     ".config/starship.toml".source = ./config/starship.toml;
+
+    ".config/herdr/config.toml".source = herdrConfig;
 
     # Can copy over public keys as text
     # ".ssh/id_github.pub" = {
