@@ -1,6 +1,8 @@
 { config, pkgs, lib, home-manager, user, profile, obsidian-mind, pstack, pocock, ... }:
 
 let
+  defaultNodeVersion = "24.19.0";
+  nvmScript = "${config.homebrew.prefix}/opt/nvm/nvm.sh";
   # Define the content of your file as a derivation
   myEmacsLauncher = pkgs.writeScript "emacs-launcher.command" ''
     #!/bin/sh
@@ -41,6 +43,7 @@ in
       autoUpdate = false; # `brew update` fails under mutableTaps = false
       cleanup = "none";   # don't uninstall undeclared casks
     };
+    brews = [ "nvm" ];
     casks = pkgs.callPackage ./casks.nix { inherit profile; };
     masApps = {
       # "Amphetamine" = 937984704; # Keep-awake w/ triggers + closed-display mode (App Store only)
@@ -69,9 +72,36 @@ in
             additionalFiles
             { "emacs-launcher.command".source = myEmacsLauncher; }
           ];
+          activation.nvmDefaultNode = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+            export NVM_DIR="$HOME/.nvm"
+            $DRY_RUN_CMD mkdir -p "$NVM_DIR"
+
+            if [ ! -s "${nvmScript}" ]; then
+              echo "nvm initialization script not found: ${nvmScript}" >&2
+              exit 1
+            fi
+
+            . "${nvmScript}"
+            if [ "$(nvm version "${defaultNodeVersion}")" = "N/A" ]; then
+              $DRY_RUN_CMD nvm install "${defaultNodeVersion}"
+            fi
+            $DRY_RUN_CMD nvm alias default "${defaultNodeVersion}"
+          '';
           stateVersion = "23.11";
         };
-        programs = {} // import ../shared/home-manager.nix { inherit config pkgs lib user; };
+        programs = lib.mkMerge [
+          (import ../shared/home-manager.nix { inherit config pkgs lib user; })
+          {
+            zsh.initContent = lib.mkAfter ''
+              export NVM_DIR="$HOME/.nvm"
+              if [ -s "${nvmScript}" ]; then
+                . "${nvmScript}"
+                nvm use --silent default >/dev/null 2>&1
+              fi
+              export PATH="${pkgs.pnpm_11}/bin:${pkgs.nest-cli}/bin:$PATH"
+            '';
+          }
+        ];
         manual.manpages.enable = false;
         # backupFileExtension = "backup";
       };
