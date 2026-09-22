@@ -349,6 +349,16 @@ let name = "Nick Sager";
           mods = "Control|Alt";
           chars = builtins.fromJSON ''"\u001b[108;7u"'';
         }
+        {
+          key = "[";
+          mods = "Control|Alt";
+          chars = builtins.fromJSON ''"\u001b[91;7u"'';
+        }
+        {
+          key = "]";
+          mods = "Control|Alt";
+          chars = builtins.fromJSON ''"\u001b[93;7u"'';
+        }
       ];
 
       colors = {
@@ -470,6 +480,8 @@ let name = "Nick Sager";
       # Color Options
       # set-option -g default-terminal 'screen-256color'
       set -as terminal-features ',xterm-256color:RGB'
+      set -s extended-keys on
+      set -s extended-keys-format csi-u
 
       unbind C-b
       # set -g prefix C-Space
