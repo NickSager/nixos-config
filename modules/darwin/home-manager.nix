@@ -55,7 +55,7 @@ in
   home-manager = {
     useGlobalPkgs = true;
     extraSpecialArgs = { inherit profile obsidian-mind pstack pocock; };
-    users.${user} = { pkgs, config, lib, ... }:
+    users.${user} = { pkgs, config, lib, runtimeTrustEnvironment, ... }:
       {
         imports = [
           ../shared/obsidian.nix
@@ -92,6 +92,9 @@ in
         programs = lib.mkMerge [
           (import ../shared/home-manager.nix { inherit config pkgs lib user; })
           {
+            git.settings = lib.optionalAttrs (runtimeTrustEnvironment ? SSL_CERT_FILE) {
+              http.sslCAInfo = runtimeTrustEnvironment.SSL_CERT_FILE;
+            };
             zsh.initContent = lib.mkAfter ''
               export NVM_DIR="$HOME/.nvm"
               if [ -s "${nvmScript}" ]; then
@@ -125,6 +128,8 @@ in
       ] else [
         { app = "/System/Applications/Apps.app"; }
         { app = "/System/Applications/Mail.app"; }
+        { app = "/Applications/Microsoft Outlook.app"; }
+        { app = "/Applications/Microsoft Teams.app"; }
         { app = "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app"; }
         { app = "/System/Applications/Messages.app"; }
         { app = "/System/Applications/Calendar.app"; }
