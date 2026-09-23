@@ -140,6 +140,7 @@ with pkgs; [
   tirith # Shell command security policy engine
   tmux # Terminal multiplexer
   tree # Directory tree viewer
+  tuicr # Review AI-generated diffs in the terminal
 
   # U
   unrar # RAR archive extractor
