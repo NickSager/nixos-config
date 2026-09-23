@@ -21,6 +21,7 @@ let
   potetoRuntimeAdapters = ./config/skills/poteto-runtimes;
   sharedRepoSkills = [
     { name = "comment-sicko"; source = ./config/skills/comment-sicko; }
+    { name = "tuicr"; source = ./config/skills/tuicr; }
   ];
   hermesRepoSkills = [
     { name = "implement-tickets"; source = ./config/skills/implement-tickets; }
