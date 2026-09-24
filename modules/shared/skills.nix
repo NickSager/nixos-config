@@ -24,6 +24,7 @@ let
     { name = "tuicr"; source = ./config/skills/tuicr; }
   ];
   hermesRepoSkills = [
+    { name = "code-review-tuicr"; source = ./config/skills/code-review-tuicr; }
     { name = "implement-tickets"; source = ./config/skills/implement-tickets; }
   ];
 
