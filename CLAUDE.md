@@ -26,7 +26,7 @@ nix flake update
 nix flake update homebrew-core homebrew-cask homebrew-bundle
 ```
 
-**Important:** Flakes only see files in the Git index. Run `git add -N .` before building. To enroll ignored local certificates without staging their contents, run `git add -f -N -- local-certs/*.pem`. Never use `git add .`, `git add -A`, or `git commit -a` because these commands can stage certificate contents.
+**Important:** Flakes only see files in the Git index. Stage new files with `git add <path>` before building. Local certificates are ignored; stage them with `git add -f local-certs/*.pem` so the flake sees them, and keep the `local changes` stash as a backup. Commit by path (`git commit -- <files>`) and never commit `flake.nix` profile switches or `local-certs/*.pem`. Never use `git commit -a`.
 
 ## Architecture
 
@@ -94,6 +94,7 @@ Uses agenix for encrypted secrets. Secrets are stored in a separate private repo
 ## Workflow
 
 1. Edit relevant `.nix` files in `modules/` or `hosts/`
-2. Run `git add -N .` so flakes see new files without staging their contents
+2. Stage new files with `git add <path>` so flakes see them
 3. Run `nix run .#build` to verify
 4. Run `nix run .#build-switch` to apply
+
