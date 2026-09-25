@@ -26,6 +26,7 @@ let
   hermesRepoSkills = [
     { name = "code-review-tuicr"; source = ./config/skills/code-review-tuicr; }
     { name = "implement-tickets"; source = ./config/skills/implement-tickets; }
+    { name = "orchestrate-tickets"; source = ./config/skills/orchestrate-tickets; }
   ];
 
   # Every agent's skills path becomes a single symlink to the shared root.
