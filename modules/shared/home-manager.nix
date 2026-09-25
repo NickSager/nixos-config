@@ -35,6 +35,8 @@ let name = "Nick Sager";
     };
     sessionVariables = {
       # Environment Variables
+      EDITOR = "nvim";
+      VISUAL = "nvim";
       # ANTHROPIC_API_KEY="$(cat ~/.ssh/anthropic_api_key)";
     };
     shellAliases = {
