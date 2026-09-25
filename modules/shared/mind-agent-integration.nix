@@ -3,6 +3,7 @@
 , gawk
 , git
 , gnugrep
+, gnupatch
 , gnused
 , writeShellApplication
 }:
@@ -15,6 +16,7 @@ writeShellApplication {
     gawk
     git
     gnugrep
+    gnupatch
     gnused
   ];
   text = builtins.readFile ./scripts/mind-agent-integration.sh;

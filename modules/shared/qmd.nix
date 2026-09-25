@@ -37,6 +37,14 @@ buildNpmPackage rec {
     mkdir -p "$out/lib/qmd"
     cp -R bin dist skills package.json LICENSE CHANGELOG.md node_modules "$out/lib/qmd/"
     makeWrapper "$out/lib/qmd/bin/qmd" "$out/bin/qmd"
+
+    # obsidian-mind locates qmd's JS entry at `npm root -g`/@tobilu/qmd, the
+    # layout `npm install -g` produces. Expose the same layout so the vault's
+    # hooks spawn the entry directly under node instead of falling back to an
+    # unquoted shell string that cannot carry a `**/*.md` mask intact.
+    # NPM_CONFIG_PREFIX points npm's global root at this prefix.
+    mkdir -p "$out/lib/node_modules/@tobilu"
+    ln -s "$out/lib/qmd" "$out/lib/node_modules/@tobilu/qmd"
   '';
 
   meta = {

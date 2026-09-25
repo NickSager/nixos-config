@@ -67,6 +67,29 @@ sync_tree_if_changed() {
   done < <(find "$source" -mindepth 1 -print0)
 }
 
+apply_patch_if_needed() {
+  local target="$1"
+  local patchfile="$2"
+
+  [ -f "$target" ] || die "patch target is not a file: $target"
+  [ -f "$patchfile" ] || die "patch file is not a file: $patchfile"
+
+  # Already applied (a rebuild where the upstream file was unchanged, so
+  # sync-tree-if-changed left our patched copy in place): reverse-apply as a
+  # dry run. Success there means the change is present, so this is a no-op.
+  if patch -p1 --reverse --dry-run --force --silent "$target" < "$patchfile" >/dev/null 2>&1; then
+    return 0
+  fi
+
+  chmod u+w "$target" 2>/dev/null || true
+  # No .orig/.rej litter in the vault: a failure must be loud and clean,
+  # because a half-patched hook is worse than an unpatched one.
+  if ! patch -p1 --forward --silent --no-backup-if-mismatch -r /dev/null \
+      "$target" < "$patchfile"; then
+    die "local patch no longer applies to $target ($patchfile) — upstream likely changed it; re-cut or retire the patch"
+  fi
+}
+
 replace_block() {
   local target="$1"
   local start="$2"
@@ -360,6 +383,10 @@ case "${1:-}" in
     [ "$#" -eq 3 ] || die 'usage: sync-tree-if-changed SOURCE TARGET'
     sync_tree_if_changed "$2" "$3"
     ;;
+  apply-patch-if-needed)
+    [ "$#" -eq 3 ] || die 'usage: apply-patch-if-needed TARGET PATCHFILE'
+    apply_patch_if_needed "$2" "$3"
+    ;;
   export-skills)
     [ "$#" -eq 2 ] || die 'usage: export-skills MIND_DIR'
     export_skills "$2"
@@ -377,6 +404,6 @@ case "${1:-}" in
     git_sync "$2" "$3"
     ;;
   *)
-    die 'expected validate-managed-path, install-if-changed, sync-tree-if-changed, export-skills, configure-instructions, configure-clients, or git-sync'
+    die 'expected validate-managed-path, install-if-changed, sync-tree-if-changed, apply-patch-if-needed, export-skills, configure-instructions, configure-clients, or git-sync'
     ;;
 esac

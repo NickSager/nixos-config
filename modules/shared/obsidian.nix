@@ -11,9 +11,15 @@ let
   vaultDir = "Documents/Notes";
   mindRevision = if obsidian-mind == null then "unknown" else obsidian-mind.rev or "unknown";
   mindIntegration = pkgs.callPackage ./mind-agent-integration.nix { };
+  qmdPackage = pkgs.callPackage ./qmd.nix { };
   omGlobalInstructions = ./config/obsidian-mind/global-instructions.md;
   omHermesInstructions = ./config/obsidian-mind/hermes-soul.md;
   omWrapUpAddon = ./config/obsidian-mind/wrap-up-addon.md;
+  # Local patches against pinned upstream files. Each is applied after the
+  # upstream file is installed, so a release bump re-applies them and a
+  # conflict fails the rebuild loudly instead of silently dropping the fix.
+  # Retire an entry once upstream carries the change.
+  omSessionStartPatch = ./config/obsidian-mind/session-start-active-subfolders.patch;
   omMcpWrapper = pkgs.writeShellScript "om-mcp" ''
     project_root="$PWD"
     if [ -n "''${OM_PROJECT_ROOT:-}" ]; then
@@ -105,6 +111,14 @@ in
     vaults.${vaultDir} = { };
   };
 
+  # obsidian-mind finds qmd's JS entry at `npm root -g`/@tobilu/qmd, the
+  # layout `npm install -g` produces, and falls back to an unquoted shell
+  # string when that lookup fails. Point npm's global prefix at the qmd
+  # package, which ships that layout, so the vault's hooks spawn the entry
+  # directly. Cost: `npm install -g` targets the read-only store and fails;
+  # this machine installs global tools through nix, not npm.
+  home.sessionVariables.NPM_CONFIG_PREFIX = "${qmdPackage}";
+
   home.file = {
     ".local/bin/om-mcp" = {
       source = omMcpWrapper;
@@ -150,6 +164,19 @@ in
       ${mindIntegration}/bin/mind-agent-integration install-if-changed \
         "$WRAP_UP_WITH_ADDON" "$MIND_DIR/.claude/commands/om-wrap-up.md"
       rm -f "$WRAP_UP_WITH_ADDON"
+
+      # Local patches on pinned upstream machinery. sync-tree-if-changed above
+      # restores the pristine upstream file whenever it differs, so each
+      # rebuild lands upstream and then re-applies these on top. Re-applying an
+      # already-patched file is a no-op, and a patch that no longer applies
+      # FAILS the rebuild rather than quietly reverting the fix.
+      #
+      # session-start-active-subfolders: upstream reads work/active one level
+      # deep, so the `active/<Topic>/` grouping upstream's own CLAUDE.md
+      # mandates makes every grouped project's tasks invisible in the
+      # SessionStart injection. Upstream issue to file; drop this when fixed.
+      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
+        "$MIND_DIR/.claude/scripts/session-start.ts" ${omSessionStartPatch}
       sort -u "$NEXT_MANIFEST" -o "$NEXT_MANIFEST"
       if [ -f "$MANAGED_MANIFEST" ]; then
         while IFS= read -r rel; do

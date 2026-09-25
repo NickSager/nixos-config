@@ -1,0 +1,65 @@
+--- a/.claude/scripts/session-start.ts
++++ b/.claude/scripts/session-start.ts
+@@ -351,6 +351,36 @@
+ 		if (!e.isFile() || !isMarkdownFilename(e.name) || skip(e.name)) continue;
+ 		const src = readMarkdownSource(pathFor(e.name));
+ 		if (src !== null) sources.push(src);
++	}
++	return sources;
++}
++
++/**
++ * Same as listMarkdownSources but walks subdirectories too. work/active groups
++ * multi-note workstreams into `active/<Topic>/` folders (CLAUDE.md § Creating
++ * Notes 5), so a flat read makes every grouped project's tasks invisible —
++ * exactly the projects big enough to have earned a folder.
++ */
++function listMarkdownSourcesDeep(
++	dir: string,
++	skip: (name: string) => boolean = () => false,
++): { path: string; content: string }[] {
++	let entries: Dirent[];
++	try {
++		entries = readdirSync(dir, { withFileTypes: true });
++	} catch {
++		return [];
++	}
++	const sources: { path: string; content: string }[] = [];
++	for (const e of entries) {
++		if (skip(e.name)) continue;
++		const path = `${dir}/${e.name}`;
++		if (e.isDirectory()) {
++			sources.push(...listMarkdownSourcesDeep(path, skip));
++		} else if (e.isFile() && isMarkdownFilename(e.name)) {
++			const src = readMarkdownSource(path);
++			if (src !== null) sources.push(src);
++		}
+ 	}
+ 	return sources;
+ }
+@@ -364,7 +394,7 @@
+ 	// user content only. Paths use forward slashes so the output reads the same
+ 	// in Claude's context on any OS.
+ 	const sources = [
+-		...listMarkdownSources("work/active", (name) => `work/active/${name}`),
++		...listMarkdownSourcesDeep("work/active"),
+ 		...listMarkdownSources(
+ 			".",
+ 			(name) => name,
+@@ -408,7 +438,15 @@
+ 	} catch {
+ 		return "(none)";
+ 	}
+-	const files = entries.filter((e) => e.isFile()).map((e) => e.name);
++	// A grouped workstream is ONE piece of active work, so a folder contributes
++	// its own name rather than each note inside it. Listing the members instead
++	// would push a single project's notes past the limit and hide the others.
++	const files = entries
++		.filter((e) => e.isFile())
++		.map((e) => e.name)
++		.concat(
++			entries.filter((e) => e.isDirectory()).map((e) => `${e.name}.md`),
++		);
+ 	return formatActiveWork(files, 10);
+ }
+ 
