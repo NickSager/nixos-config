@@ -38,6 +38,11 @@ let
     if [ -n "$caller" ]; then
       export OM_CALLER="$caller"
     fi
+    # obsidian-mind finds qmd's JS entry at `npm root -g`/@tobilu/qmd, the
+    # layout `npm install -g` produces. Point npm's global prefix at the qmd
+    # package for this process only. Globally, the variable makes nvm refuse
+    # to activate, which silently drops Node 24 from every shell.
+    export NPM_CONFIG_PREFIX="${qmdPackage}"
     exec ${pkgs.nodejs}/bin/node "$HOME/Documents/Notes/.claude/scripts/om-mcp.mjs"
   '';
 
@@ -111,13 +116,8 @@ in
     vaults.${vaultDir} = { };
   };
 
-  # obsidian-mind finds qmd's JS entry at `npm root -g`/@tobilu/qmd, the
-  # layout `npm install -g` produces, and falls back to an unquoted shell
-  # string when that lookup fails. Point npm's global prefix at the qmd
-  # package, which ships that layout, so the vault's hooks spawn the entry
-  # directly. Cost: `npm install -g` targets the read-only store and fails;
-  # this machine installs global tools through nix, not npm.
-  home.sessionVariables.NPM_CONFIG_PREFIX = "${qmdPackage}";
+  # NPM_CONFIG_PREFIX is set inside the om-mcp wrapper above, not as a session
+  # variable. Vault hooks run outside that wrapper fall back to `qmd` on PATH.
 
   home.file = {
     ".local/bin/om-mcp" = {
