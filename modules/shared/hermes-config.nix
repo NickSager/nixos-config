@@ -42,7 +42,45 @@ let
     "*vercel*deploy*"
   ];
 
+  # Atlassian Rovo MCP tool allowlist. Managed lists replace the user list wholesale,
+  # so this is the complete set. Jira and Confluence writes are enabled; executeWrite
+  # reaches write operations that are not exposed as primary tools. Destructive
+  # operations (executeDestructive) stay excluded.
+  atlassianTools = [
+    "getAccessibleAtlassianResources"
+    "atlassianUserInfo"
+    "discover"
+    "executeRead"
+    "executeWrite"
+    "search"
+    "getTeamworkGraphContext"
+    "getTeamworkGraphObject"
+    "getLoomVideo"
+    # Jira
+    "getJiraIssue"
+    "searchJiraIssuesUsingJql"
+    "createJiraIssue"
+    "editJiraIssue"
+    "addCommentToJiraIssue"
+    "transitionJiraIssue"
+    "getTransitionsForJiraIssue"
+    # Confluence
+    "getConfluenceContent"
+    "searchConfluence"
+    "createConfluencePage"
+    "updateConfluencePage"
+    "createConfluenceFooterComment"
+    "createConfluenceInlineComment"
+  ];
+
   managedPolicy = pkgs.writeTextDir "config.yaml" (lib.generators.toYAML { } {
+    mcp_servers.atlassian = {
+      url = "https://mcp.atlassian.com/v2/mcp";
+      connect_timeout = 120.0;
+      auth = "oauth";
+      enabled = true;
+      tools.include = atlassianTools;
+    };
     approvals = {
       mode = "smart";
       cron_mode = "deny";
