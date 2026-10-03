@@ -96,6 +96,8 @@ let
     dashboard = {
       show_token_analytics = true;
     };
+    # Managed lists replace the user list wholesale, so Herdr's plugin stays listed here.
+    plugins.enabled = [ "herdr-agent-state" "delegation-tiering" ];
     display = {
       interface = "tui";
       mouse_tracking = "buttons";
@@ -109,6 +111,8 @@ let
 in
 {
   home.sessionVariables.HERMES_MANAGED_DIR = "${managedPolicy}";
+
+  home.file.".hermes/plugins/delegation-tiering".source = ./config/hermes-plugins/delegation-tiering;
 
   home.activation.hermesManagedPolicy = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     /bin/launchctl setenv HERMES_MANAGED_DIR ${managedPolicy}

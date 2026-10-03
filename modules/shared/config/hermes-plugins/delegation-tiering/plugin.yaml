@@ -1,0 +1,3 @@
+name: delegation-tiering
+version: "1.0"
+description: Route delegate_task children to a model tier named by a trailing `tier:` context line

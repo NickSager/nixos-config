@@ -14,3 +14,5 @@ The selected runtime translates these operations: `delegate`, `wait`, `ask`, `co
 If the selected runtime does not implement a required operation, report `BLOCKED_RUNTIME` with the operation and the missing capability. Do not invent a command or switch to another host's adapter.
 
 When a host has no named `poteto-agent` role, use its native delegation operation. Tell the worker to read Poteto Mode and each applicable `principle-*` skill before work. Pass file paths instead of large inline payloads. Preserve the requested model role, background behavior, and read-only or writable boundary when the host supports them.
+
+Delegate by default when a child would be cheaper than doing the work inline. Read-only exploration beyond a few files, log or diff reading, verification, and test runs go to a fast-tier worker. Reviews and second opinions go to a judgment-tier worker. Keep summaries in the main thread, not raw output.

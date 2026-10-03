@@ -13,6 +13,7 @@ set -euo pipefail
 [ "$($YQ_BIN '.approvals.deny | contains(["*git*push* main*", "*git*push*release/*", "*git*push*hotfix/*", "*sudo*", "*terraform*apply*"])' "$HERMES_MANAGED_POLICY")" = true ]
 [ "$($YQ_BIN '.delegation.subagent_auto_approve' "$HERMES_MANAGED_POLICY")" = true ]
 [ "$($YQ_BIN '.delegation.worktree_isolation' "$HERMES_MANAGED_POLICY")" = true ]
+[ "$($YQ_BIN '.plugins.enabled | contains(["herdr-agent-state", "delegation-tiering"])' "$HERMES_MANAGED_POLICY")" = true ]
 [ "$($YQ_BIN 'has("model") or has("providers") or has("gateway")' "$HERMES_MANAGED_POLICY")" = false ]
 [ "$($YQ_BIN '.mcp_servers.atlassian.tools.include | any_c(. == "executeDestructive") | not' "$HERMES_MANAGED_POLICY")" = true ]
 

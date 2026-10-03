@@ -6,7 +6,7 @@ Use Hermes sessions, delegation, and goal mode. The active profile owns credenti
 
 | Operation | Native mechanism |
 |---|---|
-| `delegate` | Use `delegate_task` for bounded research, implementation, or review. Let the active profile choose its configured delegation model unless the task requires an explicit supported override. |
+| `delegate` | Use `delegate_task` for bounded research, implementation, or review. End every task's `context` with one line `tier: <name>`, where the name is the model or role the skill gives for that worker (`grok-4.6-fast-xhigh`, `claude-fable-5-thinking-max`, `gpt-5.6-sol-max`) or `fast`, `judgment`, or `instruction`. When no model is named, use `fast` for read-only exploration and verification and `judgment` for review, design, and synthesis. One call runs on one tier, so split mixed-tier workers into one `delegate_task` call per tier. Children always stay on the parent's provider. |
 | `wait` | Let Hermes manage a delegated task or goal. Use gateway and Kanban events for durable worker notifications. Do not keep a conversational session alive with a polling loop. |
 | `ask` | Ask in the active session only for decisions that Poteto Mode reserves for the human. Mark unattended Kanban work blocked when approved requirements remain ambiguous. |
 | `continue` | Use one normal session for bounded work. Use `/goal` when one task has a checkable completion predicate and must continue across turns. |
