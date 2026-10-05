@@ -114,6 +114,10 @@ grep -q '^## Cross-agent context$' "$mind/.agents/skills/om-standup/SKILL.md"
 grep -Fq "CLAUDE_PROJECT_DIR=\"\$PWD\" node --experimental-strip-types" \
   "$mind/.agents/skills/om-standup/SKILL.md"
 grep -q '^description: "Morning kickoff' "$mind/.agents/skills/om-standup/SKILL.md"
+for skill in om-standup om-weekly; do
+  if grep -q ': `obsidian daily:read`$' "$mind/.agents/skills/$skill/SKILL.md"; then exit 1; fi
+  grep -Fq 'never run `obsidian daily:read`' "$mind/.agents/skills/$skill/SKILL.md"
+done
 [ "$(grep -c 'NIX-MANAGED: OM PROJECT RECORDING START' "$mind/brain/CLAUDE-global.md")" = 1 ]
 [ "$(grep -c 'NIX-MANAGED: OM PROJECT RECORDING START' "$HOME/.hermes/SOUL.md")" = 1 ]
 [ "$(grep -c 'NIX-MANAGED: OM PROJECT RECORDING START' "$HOME/.hermes/profiles/work/SOUL.md")" = 1 ]

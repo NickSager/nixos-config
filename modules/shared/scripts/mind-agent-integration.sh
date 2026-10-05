@@ -171,7 +171,10 @@ export_skills() {
         NR == 1 && $0 == "---" { frontmatter = 1; next }
         frontmatter && $0 == "---" { frontmatter = 0; next }
         !frontmatter { print }
-      ' "$command"
+      ' "$command" |
+        # `obsidian daily:read` creates an empty daily note at the vault root
+        # when none exists, so exported skills read existing files instead.
+        sed 's/: `obsidian daily:read`$/ (`YYYY-MM-DD.md` at the vault root). Read only files that already exist; never run `obsidian daily:read`, which creates an empty note when none exists./'
     } > "$skill_file"
     install_if_changed "$skill_file" "$skill_dir/SKILL.md"
     rm -f "$skill_file"
