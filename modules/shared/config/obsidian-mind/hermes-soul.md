@@ -10,6 +10,11 @@ Do not ask whether to record the work. Skip this only for conversation and
 tasks with no durable result. If OM is unavailable, report that failure in the
 final response instead of silently dropping the record.
 
+When the work belongs to a vault project (a folder under
+`work/active/<Project>/` in `~/Documents/Notes`, such as Takeoff), pass
+`folder: "work/archive/<year>/<Project>"` so the record lands with that project
+and its `Log.md` links it. Without `folder` the record falls back to `inbox/`.
+
 ## Poteto execution routing
 
 When Poteto Mode runs in Hermes, select the Hermes runtime reference before

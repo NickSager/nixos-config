@@ -15,6 +15,8 @@ let
   omGlobalInstructions = ./config/obsidian-mind/global-instructions.md;
   omHermesInstructions = ./config/obsidian-mind/hermes-soul.md;
   omWrapUpAddon = ./config/obsidian-mind/wrap-up-addon.md;
+  omLogSweepAddon = ./config/obsidian-mind/log-sweep-addon.md;
+  omLogSweep = ./config/obsidian-mind/log-sweep.py;
   # Local patches against pinned upstream files. Each is applied after the
   # upstream file is installed, so a release bump re-applies them and a
   # conflict fails the rebuild loudly instead of silently dropping the fix.
@@ -164,6 +166,19 @@ in
       ${mindIntegration}/bin/mind-agent-integration install-if-changed \
         "$WRAP_UP_WITH_ADDON" "$MIND_DIR/.claude/commands/om-wrap-up.md"
       rm -f "$WRAP_UP_WITH_ADDON"
+
+      # Standup and tidy sweep ticked board tasks into each project's Log.md.
+      # The script is a custom sibling in .claude/scripts, outside the
+      # upstream manifest, so upstream syncs leave it alone.
+      for cmd in om-standup om-tidy; do
+        WITH_ADDON="$(mktemp)"
+        cat ${obsidian-mind}/.claude/commands/$cmd.md ${omLogSweepAddon} > "$WITH_ADDON"
+        ${mindIntegration}/bin/mind-agent-integration install-if-changed \
+          "$WITH_ADDON" "$MIND_DIR/.claude/commands/$cmd.md"
+        rm -f "$WITH_ADDON"
+      done
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed \
+        ${omLogSweep} "$MIND_DIR/.claude/scripts/log-sweep.py"
 
       # Local patches on pinned upstream machinery. sync-tree-if-changed above
       # restores the pristine upstream file whenever it differs, so each

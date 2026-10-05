@@ -11,7 +11,9 @@ Use OM when recorded rationale could change the work.
   repository's current behavior before changing it.
 - Before finishing work that changed files or made a durable project decision,
   use `record_work`. Also record findings that future work could not recover
-  from the repository.
+  from the repository. When the work belongs to a vault project
+  (`work/active/<Project>/`, e.g. Takeoff), pass
+  `folder: "work/archive/<year>/<Project>"`; otherwise it falls back to `inbox/`.
 - Use `remember` for lessons that apply beyond this repository. State their
   confidence and verification honestly.
 
