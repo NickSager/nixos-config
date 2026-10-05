@@ -136,6 +136,10 @@ export_skills() {
   local stage_manifest="$mind_dir/.obsidian-mind-stage-paths"
   local next_manifest
   local command name skill_dir description skill_file rel
+  # `obsidian daily:read` creates an empty daily note at the vault root when
+  # none exists, so exported skills read existing files instead.
+  # shellcheck disable=SC2016 # backticks are literal Markdown
+  local daily_read_fix='s/: `obsidian daily:read`$/ (`YYYY-MM-DD.md` at the vault root). Read only files that already exist; never run `obsidian daily:read`, which creates an empty note when none exists./'
 
   [ -d "$commands" ] || die "missing upstream command directory: $commands"
   next_manifest="$(mktemp "${manifest}.tmp.XXXXXX")"
@@ -171,10 +175,7 @@ export_skills() {
         NR == 1 && $0 == "---" { frontmatter = 1; next }
         frontmatter && $0 == "---" { frontmatter = 0; next }
         !frontmatter { print }
-      ' "$command" |
-        # `obsidian daily:read` creates an empty daily note at the vault root
-        # when none exists, so exported skills read existing files instead.
-        sed 's/: `obsidian daily:read`$/ (`YYYY-MM-DD.md` at the vault root). Read only files that already exist; never run `obsidian daily:read`, which creates an empty note when none exists./'
+      ' "$command" | sed "$daily_read_fix"
     } > "$skill_file"
     install_if_changed "$skill_file" "$skill_dir/SKILL.md"
     rm -f "$skill_file"
