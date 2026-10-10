@@ -13,7 +13,9 @@ final response instead of silently dropping the record.
 When the work belongs to a vault project (a folder under
 `work/active/<Project>/` in `~/Documents/Notes`, such as Takeoff), pass
 `folder: "work/archive/<year>/<Project>"` so the record lands with that project
-and its `Log.md` links it. Without `folder` the record falls back to `inbox/`.
+and its `Log.md` links it. Never pass the project folder itself
+(`work/active/<Project>`): records there clutter the project root. Without
+`folder` the record falls back to `inbox/`.
 
 ## Poteto execution routing
 
