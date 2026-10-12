@@ -105,6 +105,7 @@ let
     # Ctrl+B (the default) is Herdr's prefix and Ctrl+Space is tmux's.
     voice.record_key = "ctrl+q";
     stt.provider = "local";
+    compression.threshold_tokens = 200000;
     security = {
       tirith_enabled = true;
       tirith_path = "${pkgs.tirith}/bin/tirith";
