@@ -131,6 +131,7 @@ in
         { app = "/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app"; }
         { app = "/System/Applications/Messages.app"; }
         { app = "/System/Applications/Calendar.app"; }
+        { app = "/System/Applications/Reminders.app"; }
         { app = "/System/Applications/Notes.app"; }
         { app = "/System/Applications/Photos.app"; }
         { app = "/System/Applications/Maps.app"; }
