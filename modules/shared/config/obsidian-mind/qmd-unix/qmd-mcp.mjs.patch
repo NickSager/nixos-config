@@ -1,0 +1,156 @@
+--- a/.claude/scripts/qmd-mcp.mjs
++++ b/.claude/scripts/qmd-mcp.mjs
+@@ -1,39 +1,10 @@
+ #!/usr/bin/env node
+-/**
+- * qmd-mcp.mjs — cross-platform MCP launcher for QMD.
+- *
+- * Does three things no bare `qmd mcp` invocation can do:
+- *
+- *   1. Bypass the Windows .cmd/.ps1 shim. Claude Code spawns MCP servers
+- *      without a shell, and even `shell: true` isn't enough: the shim
+- *      delegates to /bin/sh via %_prog%, which fails on stock Windows without
+- *      Git Bash's sh.exe on PATH. We resolve @tobilu/qmd/dist/cli/qmd.js and
+- *      spawn it with the current Node binary — no shell, no shim, same code
+- *      path on every platform.
+- *
+- *   2. Scope the MCP server to this vault's named index. If vault-manifest.json
+- *      declares a `qmd_index`, pass `--index <name>` so the MCP reads the same
+- *      SQLite store as the SessionStart hook and the CLI.
+- *
+- *   3. Work around a qmd 2.1.0 bug. `qmd --index <name> mcp` currently ignores
+- *      the --index flag (mcp/server.js calls getDefaultDbPath() without the
+- *      configured name). Setting INDEX_PATH forces the correct SQLite path
+- *      regardless — store.js honors INDEX_PATH unconditionally. We keep
+- *      --index on argv too so a future qmd fix works without a wrapper change.
+- *
+- * Fallback: if @tobilu/qmd isn't resolvable, fall through to a bare `qmd`
+- * command with shell: true so non-npm installations still have a chance to
+- * work. When an index is configured, the INDEX_PATH env var still applies.
+- */
+-
+-import { spawn, spawnSync } from "node:child_process";
+-import { existsSync, readFileSync } from "node:fs";
+-import { basename, dirname, isAbsolute, join, resolve } from "node:path";
+-import { createRequire } from "node:module";
++import { spawn } from "node:child_process";
++import { accessSync, constants, readFileSync, realpathSync, statSync } from "node:fs";
++import { basename, delimiter, dirname, isAbsolute, join, resolve } from "node:path";
+ import { fileURLToPath, pathToFileURL } from "node:url";
+ import { homedir } from "node:os";
+ 
+-const require = createRequire(import.meta.url);
+ 
+ /**
+  * Resolve the wrapper's vault root from a `file://` URL and optional env
+@@ -44,8 +15,8 @@
+  */
+ export function resolveVaultRoot(metaUrl, env = process.env) {
+ 	const envRoot = env["CLAUDE_PROJECT_DIR"];
+-	if (envRoot && isAbsolute(envRoot)) return envRoot;
+-	return resolve(dirname(fileURLToPath(metaUrl)), "..", "..");
++	if (envRoot && isAbsolute(envRoot)) return canonicalPath(envRoot);
++	return canonicalPath(resolve(dirname(fileURLToPath(metaUrl)), "..", ".."));
+ }
+ 
+ // Resolved once at module load. Manifest lookups use this instead of the
+@@ -53,48 +24,15 @@
+ // per-vault isolation.
+ const VAULT_ROOT = resolveVaultRoot(import.meta.url);
+ 
+-/**
+- * Locate @tobilu/qmd's real JS entrypoint. Returns an absolute path when
+- * resolvable, null when not. Exported so the cross-platform test matrix can
+- * verify resolution works on Windows, macOS, and Linux without having to
+- * spawn the wrapper itself.
+- */
+ export function resolveQmdEntry() {
+-	try {
+-		return require.resolve("@tobilu/qmd/dist/cli/qmd.js");
+-	} catch {}
+-
+-	// Fallback for global npm installs that aren't on this package's resolution
+-	// path — ask npm directly where global packages live. Bounded timeout so a
+-	// hung npm process can't block MCP server startup indefinitely.
+-	//
+-	// Single-string command with shell:true rather than args+shell so this
+-	// stays clean on Node 24 (DEP0190 — args concatenated with shell:true is
+-	// an injection risk in the general case; our command is a literal
+-	// constant so the concatenated form is safe).
+-	const npmRoot = spawnSync("npm root -g", {
+-		shell: true,
+-		encoding: "utf8",
+-		timeout: 3000,
+-	});
+-	if (
+-		npmRoot.error ||
+-		npmRoot.signal !== null ||
+-		npmRoot.status !== 0
+-	) {
+-		return null;
+-	}
+-
+-	// Guard against success-with-empty-stdout or a relative path — either would
+-	// make join() produce a path anchored at cwd, and existsSync could then
+-	// match a local folder by accident.
+-	const root = npmRoot.stdout.trim();
+-	if (root === "" || !isAbsolute(root)) {
+-		return null;
+-	}
+-
+-	const entry = join(root, "@tobilu", "qmd", "dist", "cli", "qmd.js");
+-	return existsSync(entry) ? entry : null;
++	for (const directory of (process.env.PATH ?? "").split(delimiter)) {
++		const executable = resolve(directory, "qmd");
++		try {
++			accessSync(executable, constants.X_OK);
++			if (statSync(executable).isFile()) return executable;
++		} catch {}
++	}
++	return null;
+ }
+ 
+ /**
+@@ -205,22 +143,9 @@
+ 	return join(base, "qmd", `${indexName}.sqlite`);
+ }
+ 
+-/**
+- * Build the (command, args, shell) tuple the spawn layer should invoke.
+- * When `qmdIndex` is a non-empty string, `--index <name>` is prepended to
+- * the mcp subcommand; otherwise the invocation matches the pre-per-vault
+- * shape for backward compatibility.
+- *
+- * The shell-fallback path folds args into a single command string so the
+- * spawn site uses shell:true WITHOUT args, dodging Node 24's DEP0190
+- * deprecation of the args+shell concatenation pattern.
+- */
+ export function buildLaunchCommand(entry, extraArgs = [], qmdIndex = null) {
+-	const mcpArgs = qmdIndex ? ["--index", qmdIndex, "mcp"] : ["mcp"];
+-	const qmdArgs = [...mcpArgs, ...extraArgs];
+-	return entry
+-		? { cmd: process.execPath, args: [entry, ...qmdArgs], shell: false }
+-		: { cmd: ["qmd", ...qmdArgs].join(" "), args: [], shell: true };
++	const args = qmdIndex ? ["--index", qmdIndex, "mcp", ...extraArgs] : ["mcp", ...extraArgs];
++	return { cmd: entry ?? "qmd", args, shell: false };
+ }
+ 
+ function readManifestRaw() {
+@@ -282,12 +207,10 @@
+ 	});
+ }
+ 
+-// Only spawn a child when this file is the actual entry point. Importing it
+-// from tests (to exercise the pure helpers in isolation) must not trigger a
+-// spawn.
+-const entryUrl = process.argv[1]
+-	? pathToFileURL(process.argv[1]).href
+-	: null;
+-if (entryUrl === import.meta.url) {
++function canonicalPath(path) {
++	try { return realpathSync(path); } catch { return path; }
++}
++
++if (process.argv[1] && canonicalPath(process.argv[1]) === canonicalPath(fileURLToPath(import.meta.url))) {
+ 	runAsMcp();
+ }

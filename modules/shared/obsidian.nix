@@ -40,11 +40,7 @@ let
     if [ -n "$caller" ]; then
       export OM_CALLER="$caller"
     fi
-    # obsidian-mind finds qmd's JS entry at `npm root -g`/@tobilu/qmd, the
-    # layout `npm install -g` produces. Point npm's global prefix at the qmd
-    # package for this process only. Globally, the variable makes nvm refuse
-    # to activate, which silently drops Node 24 from every shell.
-    export NPM_CONFIG_PREFIX="${qmdPackage}"
+    export PATH="${qmdPackage}/bin:$PATH"
     exec ${pkgs.nodejs}/bin/node "$HOME/Documents/Notes/.claude/scripts/om-mcp.mjs"
   '';
 
@@ -118,8 +114,6 @@ in
     vaults.${vaultDir} = { };
   };
 
-  # NPM_CONFIG_PREFIX is set inside the om-mcp wrapper above, not as a session
-  # variable. Vault hooks run outside that wrapper fall back to `qmd` on PATH.
 
   home.file = {
     ".local/bin/om-mcp" = {
@@ -192,6 +186,20 @@ in
       # SessionStart injection. Upstream issue to file; drop this when fixed.
       ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
         "$MIND_DIR/.claude/scripts/session-start.ts" ${omSessionStartPatch}
+      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
+        "$MIND_DIR/.claude/scripts/lib/qmd.ts" ${./config/obsidian-mind/qmd-unix/qmd.ts.patch}
+      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
+        "$MIND_DIR/.claude/scripts/qmd-mcp.mjs" ${./config/obsidian-mind/qmd-unix/qmd-mcp.mjs.patch}
+      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
+        "$MIND_DIR/.claude/scripts/lib/main-guard.ts" ${./config/obsidian-mind/qmd-unix/main-guard.ts.patch}
+      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
+        "$MIND_DIR/.claude/scripts/lib/mcp-context.ts" ${./config/obsidian-mind/qmd-unix/mcp-context.ts.patch}
+      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
+        "$MIND_DIR/.claude/scripts/tests/qmd.test.ts" ${./config/obsidian-mind/qmd-unix/qmd.test.ts.patch}
+      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
+        "$MIND_DIR/.claude/scripts/tests/qmd-mcp.test.ts" ${./config/obsidian-mind/qmd-unix/qmd-mcp.test.ts.patch}
+      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
+        "$MIND_DIR/.claude/scripts/tests/qmd-refresh.test.ts" ${./config/obsidian-mind/qmd-unix/qmd-refresh.test.ts.patch}
       sort -u "$NEXT_MANIFEST" -o "$NEXT_MANIFEST"
       if [ -f "$MANAGED_MANIFEST" ]; then
         while IFS= read -r rel; do

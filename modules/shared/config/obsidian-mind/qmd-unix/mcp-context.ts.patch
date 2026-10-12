@@ -1,0 +1,39 @@
+--- a/.claude/scripts/lib/mcp-context.ts
++++ b/.claude/scripts/lib/mcp-context.ts
+@@ -14,7 +14,7 @@
+  * validation is trusted just because it was written down.
+  */
+ 
+-import { readFileSync } from "node:fs";
++import { readFileSync, realpathSync } from "node:fs";
+ import { dirname, join, resolve } from "node:path";
+ import { fileURLToPath } from "node:url";
+ 
+@@ -54,8 +54,8 @@
+ 	// and the result was a server silently serving a DIFFERENT vault than the
+ 	// launcher it was started from — reporting that vault's config as if correct.
+ 	const override = env.OM_VAULT_PATH;
+-	if (override && override.trim()) return resolve(override.trim());
+-	return resolve(dirname(fileURLToPath(metaUrl)), "..", "..");
++	if (override && override.trim()) return canonicalPath(resolve(override.trim()));
++	return canonicalPath(resolve(dirname(fileURLToPath(metaUrl)), "..", ".."));
+ }
+ 
+ /**
+@@ -63,7 +63,7 @@
+  * `health` to say when the two disagree.
+  */
+ export function derivedVaultRoot(metaUrl: string): string {
+-	return resolve(dirname(fileURLToPath(metaUrl)), "..", "..");
++	return canonicalPath(resolve(dirname(fileURLToPath(metaUrl)), "..", ".."));
+ }
+ 
+ /** Read and parse the manifest. A malformed manifest is `{}`, never a throw. */
+@@ -212,3 +212,7 @@
+ 		arguments: [{ name: "question", description: "The decision being faced", required: true }],
+ 	},
+ ];
++
++function canonicalPath(path: string): string {
++	try { return realpathSync(path); } catch { return path; }
++}
