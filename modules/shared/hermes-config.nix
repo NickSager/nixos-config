@@ -115,6 +115,8 @@ let
     };
     # Ctrl+B (the default) is Herdr's prefix and Ctrl+Space is tmux's.
     voice.record_key = "ctrl+q";
+    voice.silence_duration = 600;
+    voice.max_recording_seconds = 600;
     stt.provider = "local";
     compression.threshold_tokens = 200000;
     security = {
