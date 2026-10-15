@@ -10,6 +10,14 @@ let
     "*git*branch -D*"
     "*git*checkout --*"
     "*git*clean*"
+    # Stage by path only: blanket staging sweeps up untracked .envrc and local notes.
+    "*git*add -a*"
+    "*git*add --all*"
+    "*git*add -u*"
+    "*git*add ."
+    "*git*add . *"
+    "*git*commit -a*"
+    "*git*commit --all*"
     "git push"
     "git push origin"
     "git push -u origin"
@@ -91,7 +99,10 @@ let
     };
     delegation = {
       subagent_auto_approve = true;
-      worktree_isolation = true;
+      # Isolation tells every subagent to "commit your changes to your branch", which
+      # committed vault notes and, after a stray `cd`, an untracked .envrc with secrets
+      # to qxo-monorepo main. Commits are the parent's call, made by path.
+      worktree_isolation = false;
     };
     dashboard = {
       show_token_analytics = true;
