@@ -22,6 +22,7 @@ let
   sharedRepoSkills = [
     { name = "comment-sicko"; source = ./config/skills/comment-sicko; }
     { name = "tuicr"; source = ./config/skills/tuicr; }
+    { name = "report-writing"; source = ./config/skills/report-writing; }
   ];
   hermesRepoSkills = [
     { name = "code-review-tuicr"; source = ./config/skills/code-review-tuicr; }
