@@ -119,6 +119,7 @@ let
     voice.record_key = "ctrl+q";
     voice.silence_duration = 600;
     voice.max_recording_seconds = 600;
+    voice.barge_in = false;
     stt.provider = "local";
     compression.threshold_tokens = 200000;
     security = {
