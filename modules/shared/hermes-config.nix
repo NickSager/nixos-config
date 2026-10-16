@@ -1,4 +1,4 @@
-{ lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   approvalDeny = [
@@ -81,6 +81,8 @@ let
     "createConfluenceInlineComment"
   ];
 
+  managedDir = "${config.home.homeDirectory}/.config/hermes/managed";
+
   managedPolicy = pkgs.writeTextDir "config.yaml" (lib.generators.toYAML { } {
     mcp_servers.atlassian = {
       url = "https://mcp.atlassian.com/v2/mcp";
@@ -127,11 +129,12 @@ let
 
 in
 {
-  home.sessionVariables.HERMES_MANAGED_DIR = "${managedPolicy}";
+  home.file.".config/hermes/managed".source = managedPolicy;
+  home.sessionVariables.HERMES_MANAGED_DIR = managedDir;
 
   home.file.".hermes/plugins/delegation-tiering".source = ./config/hermes-plugins/delegation-tiering;
 
   home.activation.hermesManagedPolicy = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
-    /bin/launchctl setenv HERMES_MANAGED_DIR ${managedPolicy}
+    /bin/launchctl setenv HERMES_MANAGED_DIR ${managedDir}
   '';
 }
