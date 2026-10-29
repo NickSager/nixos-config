@@ -122,6 +122,7 @@ with pkgs; [
   poetry # Package manager for python
 
   # R
+  rclone # Cloud storage sync and mount (GCS, S3)
   ripgrep # Fast text search tool
   # R # Stats language
   rustup

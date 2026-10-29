@@ -154,6 +154,10 @@ in
           Dragging = 1;                 # Enable drag with Drag Lock
           TrackpadThreeFingerDrag = false; # Ensure Three-Finger Drag is disabled to avoid conflicts
         };
+        # Keep Finder's .DS_Store files out of mounted cloud buckets (rclone nfsmount)
+        "com.apple.desktopservices" = {
+          DSDontWriteNetworkStores = true;
+        };
       };
     };
     keyboard = {
