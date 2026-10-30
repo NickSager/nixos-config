@@ -17,6 +17,7 @@ let
 
   # Browsers
   "firefox"
+  "google-chrome" # Self-updating; cask always fetches latest stable
 
 #   # Development Tools
 #   "claude"
@@ -45,9 +46,6 @@ let
 #   # Productivity Tools
 #   "raycast"
 #   "asana"
-#
-#   # Browsers
-#   "google-chrome"
   ];
   workExcludedCasks = [
     "tailscale-app"
