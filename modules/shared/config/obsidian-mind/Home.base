@@ -2,8 +2,6 @@ filters:
   and:
     - file.ext == "md"
     - '!file.inFolder("templates")'
-formulas:
-  days_untouched: (now() - file.mtime).days.round(0)
 properties:
   file.name:
     displayName: Note
@@ -11,8 +9,8 @@ properties:
     displayName: Summary
   status:
     displayName: Status
-  formula.days_untouched:
-    displayName: Days untouched
+  due:
+    displayName: Due date
 views:
   - type: table
     name: Active Work
@@ -27,7 +25,7 @@ views:
     order:
       - file.name
       - description
-      - formula.days_untouched
+      - due
     sort:
       - property: file.mtime
         direction: DESC
@@ -41,7 +39,7 @@ views:
     order:
       - file.name
       - description
-      - formula.days_untouched
+      - due
     sort:
       - property: file.mtime
         direction: DESC
