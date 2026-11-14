@@ -22,7 +22,15 @@ tags:
 
 ## Active Work
 
-![[Home.base#Active Work]]
+Open tasks on each project page, soonest due first. Every open task in every work note: [[Open Tasks]].
+
+```tasks
+not done
+path regex matches /^work\/active\/([^/]+)\/\1\.md$/
+group by filename
+sort by due
+short mode
+```
 
 ## Recently Touched
 

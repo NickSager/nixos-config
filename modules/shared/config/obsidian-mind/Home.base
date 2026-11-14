@@ -13,23 +13,6 @@ properties:
     displayName: Due date
 views:
   - type: table
-    name: Active Work
-    filters:
-      and:
-        - file.hasTag("work-note")
-        - status == "active"
-        - file.inFolder("work/active")
-    groupBy:
-      property: project
-      direction: ASC
-    order:
-      - file.name
-      - description
-      - due
-    sort:
-      - property: file.mtime
-        direction: DESC
-  - type: table
     name: Recently Touched
     filters:
       and:
