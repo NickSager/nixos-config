@@ -17,6 +17,9 @@ let
   omWrapUpAddon = ./config/obsidian-mind/wrap-up-addon.md;
   omLogSweepAddon = ./config/obsidian-mind/log-sweep-addon.md;
   omLogSweep = ./config/obsidian-mind/log-sweep.py;
+  # Our Home page replaces upstream's and embeds our own Home.base views.
+  omHome = ./config/obsidian-mind/Home.md;
+  omHomeBase = ./config/obsidian-mind/Home.base;
   # Local patches against pinned upstream files. Each is applied after the
   # upstream file is installed, so a release bump re-applies them and a
   # conflict fails the rebuild loudly instead of silently dropping the fix.
@@ -148,11 +151,18 @@ in
           sed "s#^${obsidian-mind}/##" >> "$NEXT_MANIFEST"
       done
       for f in .claude/memory-template.md .claude/update-skills.ts .mcp.json \
-               .shardmindignore AGENTS.md CLAUDE.md GEMINI.md Home.md vault-manifest.json; do
+               .shardmindignore AGENTS.md CLAUDE.md GEMINI.md vault-manifest.json; do
         ${mindIntegration}/bin/mind-agent-integration install-if-changed \
           ${obsidian-mind}/$f "$MIND_DIR/$f"
         printf '%s\n' "$f" >> "$NEXT_MANIFEST"
       done
+
+      # Home.md stays in the manifest so the vault git sync keeps tracking it.
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed \
+        ${omHome} "$MIND_DIR/Home.md"
+      printf '%s\n' Home.md >> "$NEXT_MANIFEST"
+      ${mindIntegration}/bin/mind-agent-integration install-if-changed \
+        ${omHomeBase} "$MIND_DIR/bases/Home.base"
 
       WRAP_UP_WITH_ADDON="$(mktemp)"
       cat ${obsidian-mind}/.claude/commands/om-wrap-up.md ${omWrapUpAddon} \

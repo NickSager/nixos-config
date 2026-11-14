@@ -1,0 +1,48 @@
+filters:
+  and:
+    - file.ext == "md"
+    - '!file.inFolder("templates")'
+formulas:
+  days_untouched: (now() - file.mtime).days.round(0)
+properties:
+  file.name:
+    displayName: Note
+  description:
+    displayName: Summary
+  status:
+    displayName: Status
+  formula.days_untouched:
+    displayName: Days untouched
+views:
+  - type: table
+    name: Active Work
+    filters:
+      and:
+        - file.hasTag("work-note")
+        - status == "active"
+        - file.inFolder("work/active")
+    groupBy:
+      property: project
+      direction: ASC
+    order:
+      - file.name
+      - description
+      - formula.days_untouched
+    sort:
+      - property: file.mtime
+        direction: DESC
+  - type: table
+    name: Recently Touched
+    filters:
+      and:
+        - file.mtime > now() - "7 days"
+        - file.inFolder("work/active")
+        - '!file.hasProperty("source_repo")'
+    order:
+      - file.name
+      - description
+      - formula.days_untouched
+    sort:
+      - property: file.mtime
+        direction: DESC
+    limit: 15
