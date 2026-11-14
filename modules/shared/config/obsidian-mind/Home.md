@@ -22,14 +22,18 @@ tags:
 
 ## Active Work
 
-Open tasks on each project page, soonest due first. Every open task in every work note: [[Open Tasks]].
+Every open task in `work/active/`, soonest due first. Check tasks off in their note; [[Open Tasks]] has the same list as clickable checkboxes.
 
-```tasks
-not done
-path regex matches /^work\/active\/([^/]+)\/\1\.md$/
-group by filename
-sort by due
-short mode
+```dataview
+TABLE WITHOUT ID
+  regexreplace(t.text, "\\s*📅\\s*\\d{4}-\\d{2}-\\d{2}", "") AS Task,
+  t.due AS Due,
+  split(t.path, "/")[2] AS Project,
+  file.link AS Note
+FROM "work/active"
+FLATTEN file.tasks AS t
+WHERE !t.completed AND t.status != "-"
+SORT default(t.due, date("2999-12-31")) ASC, split(t.path, "/")[2] ASC
 ```
 
 ## Recently Touched
