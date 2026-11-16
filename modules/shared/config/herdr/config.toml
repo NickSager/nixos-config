@@ -1,3 +1,5 @@
+onboarding = false
+
 [keys]
 previous_workspace = "ctrl+alt+k"
 next_workspace = "ctrl+alt+j"
