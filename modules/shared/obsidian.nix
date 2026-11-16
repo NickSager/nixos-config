@@ -20,11 +20,35 @@ let
   # Our Home page replaces upstream's and embeds our own Home.base views.
   omHome = ./config/obsidian-mind/Home.md;
   omHomeBase = ./config/obsidian-mind/Home.base;
-  # Local patches against pinned upstream files. Each is applied after the
-  # upstream file is installed, so a release bump re-applies them and a
-  # conflict fails the rebuild loudly instead of silently dropping the fix.
-  # Retire an entry once upstream carries the change.
-  omSessionStartPatch = ./config/obsidian-mind/session-start-active-subfolders.patch;
+  # Local patches against pinned upstream machinery, applied when the source is
+  # built. A patch that no longer applies fails `nix run .#build`, before
+  # anything touches the vault. Retire an entry once upstream carries the change.
+  #
+  # session-start-active-subfolders: upstream reads work/active one level deep,
+  # so every grouped `active/<Topic>/` project's tasks are invisible in the
+  # SessionStart injection.
+  # qmd-unix: run the installed qmd launcher instead of its JS entry under the
+  # caller's Node, which breaks qmd's Node 22 native modules, and compare vault
+  # paths by canonical identity so symlinked vault paths resolve to one vault.
+  mindSource = pkgs.applyPatches {
+    name = "obsidian-mind-patched";
+    src = obsidian-mind;
+    patches = [ ./config/obsidian-mind/session-start-active-subfolders.patch ]
+      ++ map (name: ./config/obsidian-mind/qmd-unix + "/${name}.patch") [
+        "qmd.ts" "qmd-mcp.mjs" "main-guard.ts" "mcp-context.ts"
+        "qmd.test.ts" "qmd-mcp.test.ts" "qmd-refresh.test.ts"
+      ];
+  };
+  mindDirs = [
+    ".claude/agents" ".claude/commands" ".claude/scripts" ".claude/skills"
+    ".claude-plugin" ".codex" ".gemini" ".scripts" ".shardmind" "bases" "templates"
+  ];
+  mindFiles = [
+    ".claude/memory-template.md" ".claude/update-skills.ts" ".mcp.json"
+    ".shardmindignore" "AGENTS.md" "CLAUDE.md" "GEMINI.md" "vault-manifest.json"
+  ];
+  missingMindPaths = lib.filter (rel: !builtins.pathExists "${obsidian-mind}/${rel}")
+    (mindDirs ++ mindFiles);
   omMcpWrapper = pkgs.writeShellScript "om-mcp" ''
     project_root="$PWD"
     if [ -n "''${OM_PROJECT_ROOT:-}" ]; then
@@ -125,6 +149,11 @@ in
     };
   };
 
+  assertions = lib.optional (obsidian-mind != null) {
+    assertion = missingMindPaths == [ ];
+    message = "obsidian-mind no longer ships: ${lib.concatStringsSep ", " missingMindPaths}. Update mindDirs/mindFiles in obsidian.nix.";
+  };
+
   home.activation = lib.optionalAttrs (obsidian-mind != null) {
     # Pinned obsidian-mind and writable Obsidian configuration share one vault.
     # Upstream obsidian-mind lands here from the pinned flake input.
@@ -142,18 +171,16 @@ in
       # Machinery: changed upstream files are replaced when a release-tag
       # bump lands, while unchanged files and custom siblings are untouched.
       # A new upstream top-level directory needs one entry here.
-      for dir in .claude/agents .claude/commands .claude/scripts .claude/skills \
-                 .claude-plugin .codex .gemini .scripts .shardmind bases templates; do
+      for dir in ${lib.escapeShellArgs mindDirs}; do
         mkdir -p "$MIND_DIR/$dir"
         ${mindIntegration}/bin/mind-agent-integration sync-tree-if-changed \
-          ${obsidian-mind}/$dir "$MIND_DIR/$dir"
-        find ${obsidian-mind}/$dir \( -type f -o -type l \) -print | \
-          sed "s#^${obsidian-mind}/##" >> "$NEXT_MANIFEST"
+          ${mindSource}/$dir "$MIND_DIR/$dir"
+        find ${mindSource}/$dir \( -type f -o -type l \) -print | \
+          sed "s#^${mindSource}/##" >> "$NEXT_MANIFEST"
       done
-      for f in .claude/memory-template.md .claude/update-skills.ts .mcp.json \
-               .shardmindignore AGENTS.md CLAUDE.md GEMINI.md vault-manifest.json; do
+      for f in ${lib.escapeShellArgs mindFiles}; do
         ${mindIntegration}/bin/mind-agent-integration install-if-changed \
-          ${obsidian-mind}/$f "$MIND_DIR/$f"
+          ${mindSource}/$f "$MIND_DIR/$f"
         printf '%s\n' "$f" >> "$NEXT_MANIFEST"
       done
 
@@ -165,7 +192,7 @@ in
         ${omHomeBase} "$MIND_DIR/bases/Home.base"
 
       WRAP_UP_WITH_ADDON="$(mktemp)"
-      cat ${obsidian-mind}/.claude/commands/om-wrap-up.md ${omWrapUpAddon} \
+      cat ${mindSource}/.claude/commands/om-wrap-up.md ${omWrapUpAddon} \
         > "$WRAP_UP_WITH_ADDON"
       ${mindIntegration}/bin/mind-agent-integration install-if-changed \
         "$WRAP_UP_WITH_ADDON" "$MIND_DIR/.claude/commands/om-wrap-up.md"
@@ -176,7 +203,7 @@ in
       # upstream manifest, so upstream syncs leave it alone.
       for cmd in om-standup om-tidy; do
         WITH_ADDON="$(mktemp)"
-        cat ${obsidian-mind}/.claude/commands/$cmd.md ${omLogSweepAddon} > "$WITH_ADDON"
+        cat ${mindSource}/.claude/commands/$cmd.md ${omLogSweepAddon} > "$WITH_ADDON"
         ${mindIntegration}/bin/mind-agent-integration install-if-changed \
           "$WITH_ADDON" "$MIND_DIR/.claude/commands/$cmd.md"
         rm -f "$WITH_ADDON"
@@ -184,32 +211,6 @@ in
       ${mindIntegration}/bin/mind-agent-integration install-if-changed \
         ${omLogSweep} "$MIND_DIR/.claude/scripts/log-sweep.py"
 
-      # Local patches on pinned upstream machinery. sync-tree-if-changed above
-      # restores the pristine upstream file whenever it differs, so each
-      # rebuild lands upstream and then re-applies these on top. Re-applying an
-      # already-patched file is a no-op, and a patch that no longer applies
-      # FAILS the rebuild rather than quietly reverting the fix.
-      #
-      # session-start-active-subfolders: upstream reads work/active one level
-      # deep, so the `active/<Topic>/` grouping upstream's own CLAUDE.md
-      # mandates makes every grouped project's tasks invisible in the
-      # SessionStart injection. Upstream issue to file; drop this when fixed.
-      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
-        "$MIND_DIR/.claude/scripts/session-start.ts" ${omSessionStartPatch}
-      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
-        "$MIND_DIR/.claude/scripts/lib/qmd.ts" ${./config/obsidian-mind/qmd-unix/qmd.ts.patch}
-      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
-        "$MIND_DIR/.claude/scripts/qmd-mcp.mjs" ${./config/obsidian-mind/qmd-unix/qmd-mcp.mjs.patch}
-      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
-        "$MIND_DIR/.claude/scripts/lib/main-guard.ts" ${./config/obsidian-mind/qmd-unix/main-guard.ts.patch}
-      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
-        "$MIND_DIR/.claude/scripts/lib/mcp-context.ts" ${./config/obsidian-mind/qmd-unix/mcp-context.ts.patch}
-      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
-        "$MIND_DIR/.claude/scripts/tests/qmd.test.ts" ${./config/obsidian-mind/qmd-unix/qmd.test.ts.patch}
-      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
-        "$MIND_DIR/.claude/scripts/tests/qmd-mcp.test.ts" ${./config/obsidian-mind/qmd-unix/qmd-mcp.test.ts.patch}
-      ${mindIntegration}/bin/mind-agent-integration apply-patch-if-needed \
-        "$MIND_DIR/.claude/scripts/tests/qmd-refresh.test.ts" ${./config/obsidian-mind/qmd-unix/qmd-refresh.test.ts.patch}
       sort -u "$NEXT_MANIFEST" -o "$NEXT_MANIFEST"
       if [ -f "$MANAGED_MANIFEST" ]; then
         while IFS= read -r rel; do
@@ -244,7 +245,7 @@ in
       # not copied here; the settings split owns it.
       for dir in .obsidian brain org perf reference thinking work; do
         mkdir -p "$MIND_DIR/$dir"
-        cp -Rn ${obsidian-mind}/$dir/. "$MIND_DIR/$dir/" 2>/dev/null || true
+        cp -Rn ${mindSource}/$dir/. "$MIND_DIR/$dir/" 2>/dev/null || true
       done
 
       # Store copies arrive read-only; the vault must stay editable.
