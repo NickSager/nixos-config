@@ -52,8 +52,8 @@
 
     # obsidian-mind agent vault, pinned to an upstream release tag.
     # Copied into ~/Documents/Notes by modules/shared/obsidian.nix.
-    # Upgrade: bump the tag, `nix flake update obsidian-mind`, read the
-    # upstream CHANGELOG, rebuild.
+    # `nix run .#update` moves it within the major version; majors are manual
+    # (docs/MAINTENANCE.md).
     obsidian-mind = {
       url = "github:breferrari/obsidian-mind/v8.3.6";
       flake = false;

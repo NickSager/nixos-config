@@ -1,8 +1,10 @@
 """Refresh every pinned input: flake.lock, the Herdr tag, and modules/shared/pins.json.
 
 Run from the repository root through `nix run .#update`. Each source moves to its
-latest stable upstream release. obsidian-mind is only reported, because a new
-release migrates the vault and needs a read of its changelog first.
+latest stable upstream release. obsidian-mind moves only within its current major
+version: a major release reshapes the vault, so it is reported for a manual
+upgrade instead. Local obsidian-mind patches apply at build time, so a release
+they no longer fit fails `nix run .#build` before anything reaches the vault.
 """
 
 import json
@@ -41,15 +43,23 @@ def fetch(url):
         return r.read()
 
 
-def latest_tag(repo):
+def stable_tags(repo):
     # Upstreams publish rc, dev, and preview builds as ordinary releases, so
     # GitHub's "latest" and prerelease flags can't be trusted to mean stable.
     releases = json.loads(fetch(f"https://api.github.com/repos/{repo}/releases"))
-    return next(
+    return [
         r["tag_name"]
         for r in releases
         if not (r["draft"] or r["prerelease"]) and STABLE_TAG.fullmatch(r["tag_name"])
-    )
+    ]
+
+
+def latest_tag(repo):
+    return stable_tags(repo)[0]
+
+
+def major(tag):
+    return int(re.match(r"v?(\d+)", tag).group(1))
 
 
 def run(*cmd, cwd=None):
@@ -113,23 +123,33 @@ def update_plugin(name, pin):
     return f"{name} {old} -> {tag}"
 
 
-def update_herdr():
-    text = FLAKE.read_text()
-    pattern = r'(url = "github:herdrdev/herdr/)([^"]+)(")'
-    old = re.search(pattern, text).group(2)
-    tag = latest_tag("herdrdev/herdr")
+def flake_tag(repo):
+    pattern = rf'(url = "github:{repo}/)([^"]+)(")'
+    return pattern, re.search(pattern, FLAKE.read_text()).group(2)
+
+
+def set_flake_tag(repo, tag):
+    pattern, old = flake_tag(repo)
     if tag == old:
         return None
-    FLAKE.write_text(re.sub(pattern, rf"\g<1>{tag}\g<3>", text))
-    return f"herdr {old} -> {tag}"
+    FLAKE.write_text(re.sub(pattern, rf"\g<1>{tag}\g<3>", FLAKE.read_text()))
+    return f"{repo.split('/')[1]} {old} -> {tag}"
 
 
-def check_obsidian_mind():
-    current = re.search(r'github:breferrari/obsidian-mind/([^"]+)"', FLAKE.read_text()).group(1)
-    latest = latest_tag("breferrari/obsidian-mind")
-    if latest != current:
-        return f"obsidian-mind {current} -> {latest} is available; follow docs/MAINTENANCE.md"
-    return None
+def update_herdr():
+    return set_flake_tag("herdrdev/herdr", latest_tag("herdrdev/herdr"))
+
+
+def update_obsidian_mind():
+    """Bump within the current major; return (change, manual notice)."""
+    repo = "breferrari/obsidian-mind"
+    _, current = flake_tag(repo)
+    tags = stable_tags(repo)
+    same_major = next(t for t in tags if major(t) == major(current))
+    notice = None
+    if major(tags[0]) > major(current):
+        notice = f"obsidian-mind {tags[0]} is a major release; follow docs/MAINTENANCE.md"
+    return set_flake_tag(repo, same_major), notice
 
 
 def main():
@@ -137,10 +157,14 @@ def main():
         sys.exit("Run from the nixos-config repository root.")
 
     pins = json.loads(PINS.read_text())
-    changes = [update_herdr()]
-    token = github_token()
-    access = ["--option", "access-tokens", f"github.com={token}"] if token else []
-    subprocess.run(["nix", "flake", "update", *access], check=True)
+    mind_change, notice = update_obsidian_mind()
+    changes = [update_herdr(), mind_change]
+    config = [os.environ.get("NIX_CONFIG", "")]
+    if token := github_token():
+        # In the environment, not argv, so the token stays out of `ps`.
+        config.append(f"access-tokens = github.com={token}")
+    env = dict(os.environ, NIX_CONFIG="\n".join(config))
+    subprocess.run(["nix", "flake", "update"], check=True, env=env)
     changes.append(update_omlx(pins["omlx"]))
     changes.append(update_qmd(pins["qmd"]))
     changes += [update_plugin(n, p) for n, p in pins["obsidianPlugins"].items()]
@@ -151,7 +175,6 @@ def main():
         print(f"  {line}")
     if not any(changes):
         print("  all current")
-    notice = check_obsidian_mind()
     if notice:
         print(f"\nManual: {notice}")
     print("\nReview `git diff flake.lock modules/shared`, then run `nix run .#build`.")
