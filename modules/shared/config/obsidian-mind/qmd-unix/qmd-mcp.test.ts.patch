@@ -1,27 +1,15 @@
 --- a/.claude/scripts/tests/qmd-mcp.test.ts
 +++ b/.claude/scripts/tests/qmd-mcp.test.ts
-@@ -1,20 +1,3 @@
--/**
-- * Cross-platform tests for the QMD MCP wrapper.
-- *
-- * The real value of these tests is the CI matrix: they run on
-- * ubuntu-latest, macos-latest, and windows-latest × Node 22/24.
-- * CI installs @tobilu/qmd globally before the suite, so the happy-path
-- * resolution assertion proves `require.resolve` + `npm root -g` find qmd
-- * on every platform the template supports — exactly the guarantee this
-- * wrapper exists to deliver.
-- *
-- * Pure-function tests for `buildLaunchCommand` lock both branches (resolved
-- * entrypoint vs PATH fallback) without spawning anything.
-- *
-- * End-to-end spawn behaviour (JSON-RPC stream passthrough) is out of scope
-- * here — that belongs in an MCP integration suite.
-- */
--
+@@ -17,7 +17,7 @@
+ 
  import { test, describe } from "node:test";
  import assert from "node:assert/strict";
- import { existsSync } from "node:fs";
-@@ -34,101 +17,16 @@
+-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
++import { existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+ import { isAbsolute, join } from "node:path";
+ import { tmpdir } from "node:os";
+ 
+@@ -35,101 +35,18 @@
  	resolveQmdIndex as resolveQmdIndexTs,
  } from "../lib/session-start.ts";
  
@@ -50,8 +38,11 @@
 -			`resolved path should point at @tobilu/qmd's CLI entry, got: ${entry}`,
 -		);
 -	});
--});
--
++// nixos-config: see tests/qmd.test.ts.
++test("installed executable is resolved on PATH", () => {
++	assert.ok(resolveQmdEntry()?.endsWith("/qmd"));
+ });
+ 
 -describe("buildLaunchCommand", () => {
 -	test("routes through process.execPath when an entrypoint is resolved", () => {
 -		const { cmd, args, shell } = buildLaunchCommand(
@@ -120,9 +111,6 @@
 -			"--verbose",
 -		]);
 -	});
-+test("installed executable is resolved on PATH", () => {
-+	assert.ok(resolveQmdEntry()?.endsWith("/qmd"));
-+});
 +test("MCP commands preserve named index and literal extra args", () => {
 +	for (const entry of ["/bin/qmd", null]) {
 +		assert.deepEqual(buildLaunchCommand(entry, ["Nick's **/*.md"], "notes"), {
@@ -133,3 +121,21 @@
  });
  
  describe("readQmdIndex", () => {
+@@ -201,7 +118,7 @@
+ 	});
+ 
+ 	test("walks up from a vault subfolder in CLAUDE_PROJECT_DIR to the vault root (#263)", () => {
+-		const vault = mkdtempSync(join(tmpdir(), "qmd-mcp-root-"));
++		const vault = realpathSync(mkdtempSync(join(tmpdir(), "qmd-mcp-root-")));  // nixos-config: canonical vault identity
+ 		try {
+ 			mkdirSync(join(vault, "work", "deep"), { recursive: true });
+ 			writeFileSync(join(vault, "vault-manifest.json"), "{}");
+@@ -213,7 +130,7 @@
+ 	});
+ 
+ 	test("passes a directory named vault-manifest.json, as the hook commands' [ -f ] does", () => {
+-		const vault = mkdtempSync(join(tmpdir(), "qmd-mcp-dirmarker-"));
++		const vault = realpathSync(mkdtempSync(join(tmpdir(), "qmd-mcp-dirmarker-")));  // nixos-config: canonical vault identity
+ 		try {
+ 			mkdirSync(join(vault, "work", "vault-manifest.json"), { recursive: true });
+ 			writeFileSync(join(vault, "vault-manifest.json"), "{}");

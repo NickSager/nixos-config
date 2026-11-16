@@ -55,7 +55,7 @@
     # `nix run .#update` moves it within the major version; majors are manual
     # (docs/MAINTENANCE.md).
     obsidian-mind = {
-      url = "github:breferrari/obsidian-mind/v8.3.6";
+      url = "github:breferrari/obsidian-mind/v10.0.0";
       flake = false;
     };
 

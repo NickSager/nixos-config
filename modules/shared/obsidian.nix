@@ -40,12 +40,12 @@ let
       ];
   };
   mindDirs = [
-    ".claude/agents" ".claude/commands" ".claude/scripts" ".claude/skills"
+    ".claude/agents" ".claude/commands" ".claude/rules" ".claude/scripts" ".claude/skills"
     ".claude-plugin" ".codex" ".gemini" ".scripts" ".shardmind" "bases" "templates"
   ];
   mindFiles = [
     ".claude/memory-template.md" ".claude/update-skills.ts" ".mcp.json"
-    ".shardmindignore" "AGENTS.md" "CLAUDE.md" "GEMINI.md" "vault-manifest.json"
+    ".shardmindignore" "AGENTS.md" "vault-manifest.json"
   ];
   missingMindPaths = lib.filter (rel: !builtins.pathExists "${obsidian-mind}/${rel}")
     (mindDirs ++ mindFiles);
@@ -219,7 +219,7 @@ in
           ${mindIntegration}/bin/mind-agent-integration validate-managed-path \
             "$MIND_DIR" "$rel"
           case "$rel" in
-            .claude/agents/*|.claude/commands/*|.claude/scripts/*|.claude/skills/*|\
+            .claude/agents/*|.claude/commands/*|.claude/rules/*|.claude/scripts/*|.claude/skills/*|\
             .claude-plugin/*|.codex/*|.gemini/*|.scripts/*|.shardmind/*|bases/*|templates/*|\
             .claude/memory-template.md|.claude/update-skills.ts|.mcp.json|.shardmindignore|\
             AGENTS.md|CLAUDE.md|GEMINI.md|Home.md|vault-manifest.json)

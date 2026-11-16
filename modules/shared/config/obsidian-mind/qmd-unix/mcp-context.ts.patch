@@ -29,7 +29,7 @@
  }
  
  /** Read and parse the manifest. A malformed manifest is `{}`, never a throw. */
-@@ -212,3 +212,7 @@
+@@ -213,3 +213,7 @@
  		arguments: [{ name: "question", description: "The decision being faced", required: true }],
  	},
  ];

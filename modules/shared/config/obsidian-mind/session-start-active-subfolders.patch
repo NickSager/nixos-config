@@ -1,6 +1,6 @@
 --- a/.claude/scripts/session-start.ts
 +++ b/.claude/scripts/session-start.ts
-@@ -351,6 +351,36 @@
+@@ -393,6 +393,36 @@
  		if (!e.isFile() || !isMarkdownFilename(e.name) || skip(e.name)) continue;
  		const src = readMarkdownSource(pathFor(e.name));
  		if (src !== null) sources.push(src);
@@ -37,7 +37,7 @@
  	}
  	return sources;
  }
-@@ -364,7 +394,7 @@
+@@ -406,7 +436,7 @@
  	// user content only. Paths use forward slashes so the output reads the same
  	// in Claude's context on any OS.
  	const sources = [
@@ -46,9 +46,9 @@
  		...listMarkdownSources(
  			".",
  			(name) => name,
-@@ -408,7 +438,15 @@
+@@ -454,7 +484,15 @@
  	} catch {
- 		return "(none)";
+ 		return { body: "(none)" };
  	}
 -	const files = entries.filter((e) => e.isFile()).map((e) => e.name);
 +	// A grouped workstream is ONE piece of active work, so a folder contributes
@@ -60,6 +60,6 @@
 +		.concat(
 +			entries.filter((e) => e.isDirectory()).map((e) => `${e.name}.md`),
 +		);
- 	return formatActiveWork(files, 10);
+ 	const notes = files.filter((f) => isMarkdownFilename(f)).length;
+ 	return { body: formatActiveWork(files, ACTIVE_WORK_LIMIT), cut: keptOf(ACTIVE_WORK_LIMIT, notes) };
  }
- 

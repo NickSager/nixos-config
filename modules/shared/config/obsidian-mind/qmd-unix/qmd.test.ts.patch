@@ -1,28 +1,9 @@
 --- a/.claude/scripts/tests/qmd.test.ts
 +++ b/.claude/scripts/tests/qmd.test.ts
-@@ -1,107 +1,14 @@
--/**
-- * Tests for the shared cross-platform qmd spawn helpers.
-- *
-- * Paired with `tests/qmd-mcp.test.ts` — the MCP wrapper duplicates this
-- * logic in .mjs (because .ts imports don't flow from .mjs at strip-types
-- * runtime). Both copies are exercised in the CI matrix so drift between
-- * them surfaces as a test failure rather than a silent platform bug.
-- */
--
- import { test, describe } from "node:test";
- import assert from "node:assert/strict";
--import { existsSync } from "node:fs";
--import { isAbsolute } from "node:path";
-+import { buildQmdCommand, parseVersionTriple, qmdVersionAtLeast, resolveQmdEntry } from "../lib/qmd.ts";
+@@ -98,89 +98,18 @@
+ 	});
+ }
  
--import {
--	buildQmdCommand,
--	parseVersionTriple,
--	qmdVersionAtLeast,
--	resolveQmdEntry,
--} from "../lib/qmd.ts";
--
 -describe("lib/qmd.resolveQmdEntry", () => {
 -	test("returns an absolute path to an existing qmd entrypoint when qmd is installed", () => {
 -		const entry = resolveQmdEntry();
@@ -56,10 +37,12 @@
 -			`resolved path should point at @tobilu/qmd's CLI entry, got: ${entry}`,
 -		);
 -	});
++// nixos-config: qmd is the installed launcher on PATH, run directly so its own
++// Node and native modules are used instead of the caller's Node.
 +test("installed executable is resolved on PATH", () => {
 +	assert.ok(resolveQmdEntry()?.endsWith("/qmd"));
  });
--
+ 
 -describe("lib/qmd.buildQmdCommand", () => {
 -	test("routes through process.execPath when an entrypoint is resolved", () => {
 -		const out = buildQmdCommand("/fake/qmd.js", ["update"]);
@@ -108,10 +91,12 @@
 -		// And the returned args is its own array, not aliased to the input.
 -		assert.notEqual(out.args, input);
 -	});
-+test("commands preserve argv and the launcher's runtime", () => {
-+	const args = ["collection", "add", "/tmp/Nick's Notes", "--mask", "**/*.md"];
-+	assert.deepEqual(buildQmdCommand("/bin/qmd", args), { cmd: "/bin/qmd", args, shell: false });
-+	assert.deepEqual(buildQmdCommand(null, args), { cmd: "qmd", args, shell: false });
++test("commands run the executable directly with literal args", () => {
++	for (const entry of ["/bin/qmd", null]) {
++		assert.deepEqual(buildQmdCommand(entry, ["--index", "vault-a", "query", "Nick's **/*.md"]), {
++			cmd: entry ?? "qmd", args: ["--index", "vault-a", "query", "Nick's **/*.md"], shell: false,
++		});
++	}
  });
  
  describe("parseVersionTriple", () => {
