@@ -60,15 +60,15 @@
     };
 
     # pstack skill set (Lauren Tan / poteto) from Cursor's plugins repo,
-    # pinned to a commit. Copied into the shared skills root by
+    # locked in flake.lock. Copied into the shared skills root by
     # modules/shared/skills.nix.
     pstack = {
-      url = "github:cursor/plugins/46125561306434d8a1d7745d540d8932ab0cd2a2";
+      url = "github:cursor/plugins";
       flake = false;
     };
 
     herdr = {
-      url = "github:herdrdev/herdr/v0.8.2";
+      url = "github:herdrdev/herdr/v0.9.5";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -76,7 +76,7 @@
     # pstack so either set can be updated or removed without touching the
     # other's managed files.
     pocock = {
-      url = "github:mattpocock/skills/6654f6b60cd9d5be8b54c6fafe44346dabeb3b76";
+      url = "github:mattpocock/skills";
       flake = false;
     };
     emacs-overlay = {
