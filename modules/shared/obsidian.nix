@@ -348,9 +348,9 @@ in
       # everything except hooks, hand-editable without a rebuild. The om
       # hooks live in the agent vault's .claude/settings.json (upstream's
       # hooks plus vault write rules) and fire only in vault sessions.
-      # Both are seed-once. The old install symlinked the global path into
-      # the human vault; the symlink must go first, or the -f guard follows
-      # it and the seed never lands.
+      # Both are seed-once, except the vault hooks synced below. The old
+      # install symlinked the global path into the human vault; the symlink
+      # must go first, or the -f guard follows it and the seed never lands.
       if [ -L "$HOME/.claude/settings.json" ]; then
         rm "$HOME/.claude/settings.json"
       fi
@@ -388,6 +388,15 @@ in
       }
       migrate_claude_settings "$HOME/.claude/settings.json"
       migrate_claude_settings "$MIND_DIR/.claude/settings.json"
+
+      # Upstream owns the vault's hooks: their commands track upstream script
+      # paths, so a seed-once copy goes stale on upgrade. Every other key in
+      # the vault settings stays local.
+      tmp="$(mktemp "$MIND_DIR/.claude/settings.json.tmp.XXXXXX")"
+      ${pkgs.jq}/bin/jq --slurpfile up ${mindSource}/.claude/settings.json \
+        '.hooks = $up[0].hooks' "$MIND_DIR/.claude/settings.json" > "$tmp"
+      chmod --reference="$MIND_DIR/.claude/settings.json" "$tmp" 2>/dev/null || chmod 644 "$tmp"
+      mv "$tmp" "$MIND_DIR/.claude/settings.json"
 
       ${mindIntegration}/bin/mind-agent-integration export-skills "$MIND_DIR"
       ${mindIntegration}/bin/mind-agent-integration configure-instructions \
