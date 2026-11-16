@@ -1,12 +1,16 @@
 { _7zz, fetchurl, lib, stdenvNoCC }:
 
+let
+  pin = (builtins.fromJSON (builtins.readFile ../shared/pins.json)).omlx;
+in
+
 stdenvNoCC.mkDerivation (finalAttrs: {
   pname = "omlx";
-  version = "0.6.4";
+  inherit (pin) version;
 
   src = fetchurl {
     url = "https://github.com/jundot/omlx/releases/download/v${finalAttrs.version}/oMLX-${finalAttrs.version}-macos26-27.dmg";
-    hash = "sha256-U/FQbCOF6JIKZxmLctH+CTUcGzU4vpxr3reOUnfQbZM=";
+    inherit (pin) hash;
   };
 
   nativeBuildInputs = [ _7zz ];

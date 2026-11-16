@@ -121,6 +121,7 @@
         "copy-keys" = mkApp "copy-keys" system;
         "create-keys" = mkApp "create-keys" system;
         "check-keys" = mkApp "check-keys" system;
+        "update" = mkApp "update" system;
       };
       mkDarwinApps = system: {
         "apply" = mkApp "apply" system;
@@ -129,6 +130,7 @@
         "copy-keys" = mkApp "copy-keys" system;
         "create-keys" = mkApp "create-keys" system;
         "check-keys" = mkApp "check-keys" system;
+        "update" = mkApp "update" system;
         "rollback" = mkApp "rollback" system;
       };
     in

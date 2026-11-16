@@ -1,0 +1,4 @@
+#!/bin/sh -e
+exec nix --extra-experimental-features 'nix-command flakes' shell \
+  nixpkgs#python3 nixpkgs#nodejs_22 nixpkgs#prefetch-npm-deps \
+  -c python3 "$(dirname "$0")/../update.py" "$@"

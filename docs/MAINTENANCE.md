@@ -1,12 +1,56 @@
 # Maintenance
 
-Run these updates manually. Activation must never fetch an unpinned skill set,
-vault release, or QMD package.
+## Routine updates
+
+```sh
+nix run .#update
+git diff flake.lock flake.nix modules/shared
+nix run .#build
+```
+
+`update` moves every source to its latest stable upstream release.
+
+| Source | Pinned in | How `update` moves it |
+|---|---|---|
+| nixpkgs, home-manager, nix-darwin, Homebrew taps, other inputs | `flake.lock` | `nix flake update` |
+| pstack and Pocock skills | `flake.lock`, default branch | `nix flake update` |
+| Herdr | release tag in `flake.nix` | latest GitHub release, then `nix flake update` |
+| oMLX | `modules/shared/pins.json` | latest GitHub release, hash prefetched |
+| QMD | `modules/shared/pins.json` and `qmd-package-lock.json` | latest npm release, lock file regenerated, hash from `prefetch-npm-deps` |
+| Obsidian plugins | `modules/shared/pins.json` | latest GitHub release, release files hashed |
+
+Herdr stays a tagged flake input. nixpkgs lags its releases, and its default
+branch carries unreleased work. oMLX, QMD, and the plugins need content hashes
+that `nix flake update` cannot compute, so `update` writes them.
+
+Activation never fetches anything unpinned. Every update lands as a reviewable
+diff in `flake.lock`, `flake.nix`, or `modules/shared/`.
+
+After a skill-set change, confirm that one pstack skill and one Pocock skill
+resolve through each client:
+
+```sh
+test -f "$HOME/.claude/skills/unslop/SKILL.md"
+test -f "$HOME/.claude/skills/ask-matt/SKILL.md"
+test -f "$HOME/.agents/skills/unslop/SKILL.md"
+test -f "$HOME/.agents/skills/ask-matt/SKILL.md"
+```
+
+Also confirm that Hermes lists the shared skill root in `skills.external_dirs`.
+Pocock owns any shared skill names. The activation keeps separate
+`.pstack-managed-files` and `.pocock-managed-files` manifests, so one source
+cannot remove files owned by the other.
+
+To add an Obsidian plugin, add an entry under `obsidianPlugins` in `pins.json`
+keyed by its manifest ID, with a placeholder `hash`, and run `update`.
 
 ## Update obsidian-mind
 
+A new obsidian-mind release migrates the vault, so it stays manual. `update`
+prints a notice when one is available.
+
 1. Read the upstream release notes and select a release.
-2. Update the release in `flake.nix` if needed.
+2. Update the release in `flake.nix`.
 3. Run `nix flake update obsidian-mind`.
 4. Inspect the lock-file change and the upstream managed paths.
 5. Run the Mind integration test:
@@ -21,83 +65,3 @@ vault release, or QMD package.
 
 6. Stage the intended files and run `nix run .#build`.
 7. After activation, inspect the managed-only upgrade commit in the vault.
-
-## Update Herdr
-
-Herdr is pinned to a release tag in `flake.nix`. A plain `nix flake update`
-only refreshes the revision for that tag; it does not select a newer Herdr
-release.
-
-1. Read the upstream release notes and select the latest stable release.
-2. Update the tag in `herdr.url` in `flake.nix`.
-3. Run `nix flake update herdr`.
-4. Inspect the `flake.lock` change and confirm it resolves the selected tag.
-5. Stage the intended files and run `nix run .#build`.
-6. After activation, run `herdr --version` and confirm the selected version.
-
-## Update pstack or Pocock skills
-
-Update one source at a time:
-
-```sh
-nix flake update pstack
-nix flake update pocock
-```
-
-For pstack, inspect changed directories under `pstack/skills` and
-`pstack/agents`. For Pocock, inspect directories containing `SKILL.md` under
-`skills/`. The activation keeps separate `.pstack-managed-files` and
-`.pocock-managed-files` manifests. Pocock owns any shared skill names, so one
-source cannot remove files owned by the other.
-
-After either update, stage the lock file, run `nix run .#build`, and activate.
-Confirm that one pstack skill and one Pocock skill resolve through each client:
-
-```sh
-test -f "$HOME/.claude/skills/unslop/SKILL.md"
-test -f "$HOME/.claude/skills/ask-matt/SKILL.md"
-test -f "$HOME/.agents/skills/unslop/SKILL.md"
-test -f "$HOME/.agents/skills/ask-matt/SKILL.md"
-```
-
-Also confirm that Hermes lists the shared skill root in
-`skills.external_dirs`. Record the new input revision and verification result
-in the handoff or audit TSV.
-
-## Update QMD
-
-1. Choose the new `@tobilu/qmd` version and read its release notes.
-2. In `modules/shared/qmd.nix`, update `version`.
-3. Get the tarball integrity:
-
-   ```sh
-   npm view @tobilu/qmd@VERSION dist.integrity
-   ```
-
-4. Set `src.hash` to that integrity value.
-5. Regenerate `modules/shared/qmd-package-lock.json` from the exact tarball:
-
-   ```sh
-   version=VERSION
-   workdir="$(mktemp -d)"
-   curl --fail --location --output "$workdir/qmd.tgz" \
-     "https://registry.npmjs.org/@tobilu/qmd/-/qmd-${version}.tgz"
-   tar -xzf "$workdir/qmd.tgz" -C "$workdir"
-   (
-     cd "$workdir/package"
-     nix shell nixpkgs#nodejs_22 -c npm install \
-       --package-lock-only --ignore-scripts --omit=dev
-   )
-   cp "$workdir/package/package-lock.json" modules/shared/qmd-package-lock.json
-   rm -rf "$workdir"
-   ```
-
-6. Inspect the lock file. Confirm that its root dependencies and optional
-   dependencies match the tarball's `package.json`.
-7. Set `npmDeps.hash = lib.fakeHash`. Stage `modules/shared/qmd.nix` and
-   `modules/shared/qmd-package-lock.json`. Then run `nix run .#build`.
-8. Replace the fake hash with the `got:` hash from the failed build.
-9. Stage both QMD files and run `nix run .#build` again.
-
-Do not run `build-switch` merely to compute QMD hashes. Record the version,
-source hash, dependency hash, and build result in the handoff or audit TSV.

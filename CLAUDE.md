@@ -18,12 +18,10 @@ nix run .#build-switch
 # Rollback to previous generation (macOS only)
 nix run .#rollback
 
-# Update flake inputs
-nix flake update
-
-# Update Homebrew cask/formula definitions (replaces `brew update`, which is
-# disabled by mutableTaps = false). Then build-switch upgrades installed casks.
-nix flake update homebrew-core homebrew-cask homebrew-bundle
+# Update everything: flake inputs (including Homebrew taps and skill sets),
+# the Herdr release tag, and the hashed pins in modules/shared/pins.json.
+# obsidian-mind stays manual; the command reports when a release is available.
+nix run .#update
 ```
 
 **Important:** Flakes only see files in the Git index. Stage new files with `git add <path>` before building. Local certificates are ignored; stage them with `git add -f local-certs/*.pem` so the flake sees them, and keep the `local changes` stash as a backup. Commit by path (`git commit -- <files>`) and never commit `flake.nix` profile switches or `local-certs/*.pem`. Never use `git commit -a`.

@@ -57,18 +57,15 @@ nix run .#build-switch
 # Roll back one macOS generation
 nix run .#rollback
 
-# Update all pinned inputs
-nix flake update
-
-# Refresh immutable Homebrew taps
-nix flake update homebrew-core homebrew-cask homebrew-bundle
+# Update everything: flake inputs, the Herdr tag, and modules/shared/pins.json
+nix run .#update
 ```
 
 Flakes only include files in the Git index. Stage new files with `git add <path>`
 before building. Local certificates in `local-certs/` are ignored; stage them
 with `git add -f local-certs/*.pem` and do not commit them.
-See [the maintenance guide](docs/MAINTENANCE.md) for pinned obsidian-mind,
-pstack, Pocock skill, and QMD updates.
+See [the maintenance guide](docs/MAINTENANCE.md) for what `update` covers and
+the obsidian-mind upgrade, which stays manual.
 
 ## Platform notes
 

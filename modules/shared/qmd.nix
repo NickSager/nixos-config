@@ -6,13 +6,16 @@
 , nodejs_22
 }:
 
+let
+  pin = (builtins.fromJSON (builtins.readFile ./pins.json)).qmd;
+in
 buildNpmPackage rec {
   pname = "qmd";
-  version = "2.8.3";
+  inherit (pin) version;
 
   src = fetchurl {
     url = "https://registry.npmjs.org/@tobilu/qmd/-/qmd-${version}.tgz";
-    hash = "sha512-zjfVwrObPB618B6x8SdhlGv/tX9OxRHsbQnr5DUtBvqPK6HGQ27lM+9/BAY5okpjrHVnW56hLyDkqoTcsrVLzA=";
+    inherit (pin) hash;
   };
 
   sourceRoot = "package";
@@ -26,7 +29,7 @@ buildNpmPackage rec {
     postPatch = ''
       cp ${./qmd-package-lock.json} ./package-lock.json
     '';
-    hash = "sha256-sz4tCZzmJDJ4yiPXA/o1Yjqu22tLDp1Jm07x+vjKmVw=";
+    hash = pin.npmDepsHash;
   };
 
   postPatch = ''
