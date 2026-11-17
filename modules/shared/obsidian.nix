@@ -27,13 +27,19 @@ let
   # session-start-active-subfolders: upstream reads work/active one level deep,
   # so every grouped `active/<Topic>/` project's tasks are invisible in the
   # SessionStart injection.
+  # organization-threshold-1mb: raise the oversized-note flag from 25KB to 1MB;
+  # long project logs and transcripts are fine as single notes. 1MB rather than
+  # off so upstream tests that build MONOLITH_BYTES-sized files still run.
   # qmd-unix: run the installed qmd launcher instead of its JS entry under the
   # caller's Node, which breaks qmd's Node 22 native modules, and compare vault
   # paths by canonical identity so symlinked vault paths resolve to one vault.
   mindSource = pkgs.applyPatches {
     name = "obsidian-mind-patched";
     src = obsidian-mind;
-    patches = [ ./config/obsidian-mind/session-start-active-subfolders.patch ]
+    patches = [
+      ./config/obsidian-mind/session-start-active-subfolders.patch
+      ./config/obsidian-mind/organization-threshold-1mb.patch
+    ]
       ++ map (name: ./config/obsidian-mind/qmd-unix + "/${name}.patch") [
         "qmd.ts" "qmd-mcp.mjs" "main-guard.ts" "mcp-context.ts"
         "qmd.test.ts" "qmd-mcp.test.ts" "qmd-refresh.test.ts"
