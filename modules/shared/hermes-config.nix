@@ -138,4 +138,23 @@ in
   home.activation.hermesManagedPolicy = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     /bin/launchctl setenv HERMES_MANAGED_DIR ${managedDir}
   '';
+
+  # Every Hermes profile shares the default profile's skills directory, so a skill
+  # added or patched in any profile is seen by all of them. `hermes profile create`
+  # writes a real copy; the next activation folds any skill only that copy has back
+  # into the shared root and replaces the copy with the link.
+  home.activation.hermesProfileSkills = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+    root="$HOME/.hermes/skills"
+    if [ -d "$root" ]; then
+      for profile in "$HOME"/.hermes/profiles/*/; do
+        dir="''${profile%/}/skills"
+        [ -L "$dir" ] && continue
+        if [ -d "$dir" ]; then
+          cp -Rn "$dir"/. "$root"/ 2>/dev/null || true
+          rm -rf "$dir"
+        fi
+        ln -sfn "$root" "$dir"
+      done
+    fi
+  '';
 }
