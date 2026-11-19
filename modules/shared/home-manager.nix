@@ -43,7 +43,6 @@ let name = "Nick Sager";
       cat="bat";
       cd="z";
       cl="clear";
-      lg="lazygit";
       nm="nmap -sC -sV -oN nmap";
       v="nvim";
       c="claude";
@@ -71,6 +70,20 @@ let name = "Nick Sager";
       # ---- ALIASES -----
       e() {
           emacsclient -t "$@"
+      }
+
+      # lazygit, then cd to the repo or worktree it was in when it quit. lazygit writes that
+      # directory to LAZYGIT_NEW_DIR_FILE; a file per call keeps parallel panes apart.
+      lg() {
+          local newdir_file
+          newdir_file=$(mktemp -t lazygit-newdir) || return
+          LAZYGIT_NEW_DIR_FILE="$newdir_file" lazygit "$@"
+          local exit_code=$?
+          if [[ -s "$newdir_file" ]]; then
+              builtin cd "$(<"$newdir_file")"
+          fi
+          rm -f "$newdir_file"
+          return $exit_code
       }
 
       # Claude GUI
