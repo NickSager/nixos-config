@@ -12,8 +12,9 @@ Use this skill only in Hermes. Use a normal session and `/goal` for one task.
 
 ## Inputs
 
-Require the feature directory, the credential-domain profile, the Hermes project, and one mode:
+Require the tickets' source, the credential-domain profile, the Hermes project, and one mode:
 
+- Tickets come from either a local `to-tickets` feature directory (`spec.md` plus `issues/NN-*.md`) or a Jira epic. Jira is the source of truth when the program is tracked there; never copy Jira tickets into local files.
 - `stack` leaves reviewed commits in their worktrees.
 - `full-local` sends reviewed commits through one serial local integration lane.
 
@@ -21,7 +22,9 @@ Reject `full`. Never push, open or merge a pull request, deploy, or modify produ
 
 ## Build the graph
 
-1. Run `scripts/plan.py FEATURE_DIR --repo-root REPO_ROOT > PLAN.json` from this skill.
+1. Build `PLAN.json` from the source:
+   - Local: `scripts/plan.py FEATURE_DIR --repo-root REPO_ROOT > PLAN.json`.
+   - Jira: scripts hold no Jira credentials, so fetch the epic's issues through the Atlassian MCP and save the raw result to a file, then run `scripts/plan.py --jira-export EXPORT.json --spec SPEC_KEY --repo-root REPO_ROOT [--program KEY] > PLAN.json`. The export must include, per issue, `summary`, `description`, `labels`, `status` and `issuelinks`; `searchJiraIssuesUsingJql` omits `issuelinks`, so fetch each issue with `getJiraIssue` (view `evidence`, fields `summary,description,labels,status,issuelinks`) and save the results as a JSON array. The planner takes every issue except the spec as a ticket, requires the `ready-for-agent` label and an unfinished status, reads blockers from `is blocked by` links, and reads acceptance criteria from unchecked checkboxes in the description. Branches are `feat/<KEY>-<slug>`; the card title is `<KEY>: <summary>`; the card body points at the Jira URL.
 2. Stop if the planner rejects the ticket status, an identifier, a blocker, or a cycle. Do not repair approved requirements while importing them.
 3. Select or create one Hermes board for the repository. Keep unrelated repositories on separate boards.
 4. Import the graph with `scripts/import.py PLAN.json --profile PROFILE --project PROJECT --check COMMAND [--check COMMAND ...]`. The importer first creates a content-addressed blocked gate, then creates each implementation card with that gate ahead of otherwise-unblocked work, a graph-revision-qualified `idempotency_key` and branch, the selected profile and project, `workspace=worktree`, `goal=true`, `skill=poteto-mode`, complete card body, and blocker parents. It re-reads every card and rejects any mismatch before completing the gate, so no worker can claim a partially imported graph. Re-running the same import must return the existing cards; changing the approved graph or execution contract creates a new isolated graph revision.
