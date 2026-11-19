@@ -9,6 +9,13 @@ Nick's house style for documents other people read: vault one-pagers, study writ
 
 Also apply `unslop` for sentence-level AI tells. This skill covers documents, not chat replies.
 
+## The document stands on its own
+
+Applies to every document for readers outside the team, including plans, tickets and messages, not only reports.
+
+- **Never mention earlier versions of the writing.** No "cut from the table", "previous draft", "now", "moved", "added back" or "unchanged". The reader has only seen this version. Say what each thing is.
+- **Don't tell the reader who fills in a column or how to use the document.** Show the table; empty cells speak for themselves.
+
 ## Structure
 
 - **Summary first.** Open with one or two plain sentences on what was asked, then three or four findings. No background the audience already knows (don't explain the team's own domain to the team).
