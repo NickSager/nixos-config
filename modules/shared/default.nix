@@ -19,6 +19,7 @@
       ++ [
         emacs-overlay.overlays.default
         herdr.overlays.default
+        (import ./herdr/overlay.nix)
       ];
   };
 }

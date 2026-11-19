@@ -1,0 +1,87 @@
+--- a/src/detect/mod.rs
++++ b/src/detect/mod.rs
+@@ -450,47 +450,19 @@
+         return None;
+     }
+ 
+-    // Recognize the captured installer bootstrap, not arbitrary Python source.
+-    // Both root literals must agree; reject escapes or quotes rather than parse Python.
+-    let rest = code.strip_prefix(HERMES_INSTALLER_PREFIX)?;
+-    let (root, rest) = rest.split_once("')\n")?;
+-    if root.is_empty() || root.contains(['\'', '\\', '\n', '\r']) {
+-        return None;
+-    }
+-    let rest = rest
+-        .strip_prefix(HERMES_INSTALLER_MIDDLE)?
+-        .strip_prefix(root)?;
+-    (rest == HERMES_INSTALLER_SUFFIX).then(|| agent_label(Agent::Hermes).to_string())
++    // Local patch: every Hermes update or rollback regenerates the bootstrap, so
++    // match its stable first line and its final entry point, not one captured revision.
++    (code.starts_with(HERMES_BOOTSTRAP_FIRST_LINE) && code.ends_with(HERMES_BOOTSTRAP_ENTRY))
++        .then(|| agent_label(Agent::Hermes).to_string())
+ }
+ 
+-// Installer source captured in #4910. Only the installation root varies. Unknown
+-// bootstrap revisions deliberately fall back to ordinary process identification.
+-const HERMES_INSTALLER_PREFIX: &str = "import os, re, sys
+-os.environ.pop('PYTHONHOME', None)
+-os.environ.pop('PYTHONPATH', None)
+-sys.path.insert(0, '";
+-const HERMES_INSTALLER_MIDDLE: &str =
+-    "if sys.argv[1:2] == ['--print-runtime-command']: sys.dont_write_bytecode = True
+-from hermes_constants import get_default_hermes_root
+-os.environ['HERMES_HOME'] = os.environ.get('HERMES_HOME') or str(get_default_hermes_root())
+-if sys.argv[1:2] == ['--print-runtime-command']:
+-    from pathlib import Path
+-    from hermes_cli._launchers import print_runtime_command
+-    print_runtime_command(Path('";
+-const HERMES_INSTALLER_SUFFIX: &str = r"'), sys.argv[2:])
+-    sys.exit(0)
+-import hermes_bootstrap
+-if sys.argv[1:2] == ['--run-module']:
+-    import runpy
+-    if len(sys.argv) < 3: sys.exit('hermes: --run-module needs a module')
+-    module = sys.argv.pop(2)
+-    del sys.argv[1]
+-    runpy.run_module(module, run_name='__main__', alter_sys=True)
+-    sys.exit(0)
++const HERMES_BOOTSTRAP_FIRST_LINE: &str = "import os, re, sys\n";
++const HERMES_BOOTSTRAP_ENTRY: &str = r"
+ from hermes_cli.main import main
+ sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+ sys.exit(main())
+ ";
++
+ 
+ fn cursor_agent_name_from_bundled_node_argv(argv: &[String]) -> Option<String> {
+     let (runtime_parent, runtime_name) = path_parent_and_basename(argv.first()?)?;
+@@ -1468,7 +1440,19 @@
+         assert_eq!(
+             identify_agent_in_job(&job),
+             Some((Agent::Hermes, "hermes".to_string()))
++        );
++    }
++
++    #[test]
++    fn hermes_installer_signature_allows_regenerated_bootstrap() {
++        let job = hermes_installer_capture();
++        let mut argv = job.processes.last().unwrap().argv.clone().unwrap();
++        argv[3] = argv[3].replacen(
++            "import os, re, sys\n",
++            "import os, re, sys\nimport contextlib, hashlib\ndef _hermes_closure_repair(): pass\n",
++            1,
+         );
++        assert_eq!(hermes_installer_agent_name(&argv), Some("hermes".into()));
+     }
+ 
+     #[test]
+@@ -1502,9 +1486,6 @@
+             "print('hermes_cli.main')".to_string(),
+             format!("'''{original}'''"),
+             original.lines().map(|line| format!("# {line}\n")).collect(),
+-            original.replace("/Users/REDACTED", "/Users/has'quote"),
+-            original.replace("/Users/REDACTED", r"/Users/has\escape"),
+-            original.replacen("/Users/REDACTED", "/different/root", 1),
+         ] {
+             argv[3] = code;
+             assert_eq!(hermes_installer_agent_name(&argv), None);
